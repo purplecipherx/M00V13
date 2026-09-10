@@ -13,6 +13,8 @@
         <activity android:name=".PlayerActivity" android:screenOrientation="landscape" />
         <activity android:name=".SourceSelectionActivity" android:screenOrientation="landscape" />
         <activity android:name=".DownloadsActivity" android:screenOrientation="landscape" />
+        <activity android:name=".BrowseActivity" android:screenOrientation="landscape" />
+        <activity android:name=".SearchActivity" android:screenOrientation="landscape" />
 
         <activity
             android:name=".MainActivity"
