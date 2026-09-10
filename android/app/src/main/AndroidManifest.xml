@@ -11,6 +11,8 @@
         android:theme="@style/AppTheme">
 
         <activity android:name=".PlayerActivity" android:screenOrientation="landscape" />
+        <activity android:name=".SourceSelectionActivity" android:screenOrientation="landscape" />
+        <activity android:name=".DownloadsActivity" android:screenOrientation="landscape" />
 
         <activity
             android:name=".MainActivity"
