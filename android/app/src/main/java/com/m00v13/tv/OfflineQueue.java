@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public final class OfflineQueue {
@@ -62,7 +63,9 @@ public final class OfflineQueue {
 
     public synchronized void remove(String mediaId) {
         List<Entry> entries = list();
-        entries.removeIf(e -> e.mediaId.equals(mediaId));
+        for (Iterator<Entry> it = entries.iterator(); it.hasNext();) {
+            if (it.next().mediaId.equals(mediaId)) it.remove();
+        }
         save(entries);
     }
 
