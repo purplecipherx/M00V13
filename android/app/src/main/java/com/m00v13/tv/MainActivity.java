@@ -22,8 +22,10 @@ import java.util.concurrent.Executors;
 public final class MainActivity extends Activity {
     private ProfileStore profiles;
     private CatalogStore catalog;
+    private DiscoveryStore discovery;
     private ScreenProfile screen;
     private final ExecutorService artworkExecutor = Executors.newFixedThreadPool(2);
+    private final ExecutorService discoveryExecutor = Executors.newSingleThreadExecutor();
     private TextView heroTitle;
     private TextView heroMeta;
 
@@ -31,11 +33,13 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         profiles = new ProfileStore(this);
         catalog = new CatalogStore(this);
+        discovery = new DiscoveryStore(this);
         screen = ScreenProfile.detect(this);
         DebugLog.boot(this);
         DebugLog.append(this,"UI","Screen profile "+screen.kind+" "+screen.widthPx+"x"+screen.heightPx);
         getWindow().getDecorView().setBackgroundColor(TvUi.BG);
         setContentView(buildHome());
+        refreshDiscovery();
     }
 
     @Override protected void onResume() {
@@ -43,7 +47,17 @@ public final class MainActivity extends Activity {
         if (profiles != null && catalog != null) { screen=ScreenProfile.detect(this); setContentView(buildHome()); }
     }
 
-    @Override protected void onDestroy() { artworkExecutor.shutdownNow(); super.onDestroy(); }
+    @Override protected void onDestroy() { artworkExecutor.shutdownNow(); discoveryExecutor.shutdownNow(); super.onDestroy(); }
+
+    private void refreshDiscovery(){
+        if(discovery==null||!discovery.stale())return;
+        discoveryExecutor.submit(()->{
+            try{
+                discovery.refresh();
+                runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()){screen=ScreenProfile.detect(this);setContentView(buildHome());}});
+            }catch(Exception e){DebugLog.append(this,"DISCOVERY","Refresh failed: "+e.getMessage());}
+        });
+    }
 
     private View buildHome() {
         ScrollView scroll = new ScrollView(this); scroll.setFillViewport(true); scroll.setVerticalScrollBarEnabled(false);
@@ -58,17 +72,24 @@ public final class MainActivity extends Activity {
         if(!screen.mobile()) addNav(top,"Downloads",v->startActivity(new Intent(this,DownloadsActivity.class)));
         addNav(top,"⚙",v->startActivity(new Intent(this,SettingsActivity.class))); root.addView(top);
 
-        List<MediaCard> all=catalog.all(); List<MediaCard> continuing=continueWatching(all); RecommendationEngine recommender=new RecommendationEngine(); List<MediaCard> recommended=recommender.rankOverall(all,profiles,16);
-        MediaCard hero=!continuing.isEmpty()?continuing.get(0):(!recommended.isEmpty()?recommended.get(0):mostRecentlyTouched(all));
+        List<MediaCard> all=catalog.all();
+        List<MediaCard> continuing=continueWatching(all);
+        RecommendationEngine recommender=new RecommendationEngine();
+        List<MediaCard> recommended=recommender.rankOverall(all,profiles,16);
+        List<MediaCard> popularMovies=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.POPULAR_MOVIES);
+        List<MediaCard> popularTv=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.POPULAR_TV);
+        List<MediaCard> blockbusterMovies=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.BLOCKBUSTER_MOVIES);
+        List<MediaCard> blockbusterTv=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.BLOCKBUSTER_TV);
+        MediaCard hero=!continuing.isEmpty()?continuing.get(0):(!popularMovies.isEmpty()?popularMovies.get(0):(!recommended.isEmpty()?recommended.get(0):mostRecentlyTouched(all)));
         root.addView(buildHero(hero),new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,dp(screen.heroHeightDp)));
 
-        addRow(root,"Continue Watching",continuing,"Nothing in progress yet");
-        addRow(root,"Popular Movies",filter(all,false),"Popular movies will fill as metadata is cached");
-        addRow(root,"Popular TV",filter(all,true),"Popular shows will fill as metadata is cached");
-        addRow(root,"Recommended Movies",filterRecommended(recommended,false),"Movie recommendations build from this profile");
-        addRow(root,"Recommended TV",filterRecommended(recommended,true),"TV recommendations build from this profile");
-        addRow(root,"Blockbusters • Movies",filter(all,false),"Blockbuster movie rail will use cached discovery metadata");
-        addRow(root,"Blockbusters • TV",filter(all,true),"Blockbuster TV rail will use cached discovery metadata");
+        if(!continuing.isEmpty()) addRow(root,"Continue Watching",continuing,"");
+        addRow(root,"Popular Movies",popularMovies,"Loading popular movies…");
+        addRow(root,"Popular TV",popularTv,"Loading popular TV…");
+        addRow(root,"Recommended Movies",filterRecommended(recommended,false),"Recommendations build from your profile");
+        addRow(root,"Recommended TV",filterRecommended(recommended,true),"Recommendations build from your profile");
+        addRow(root,"Blockbusters • Movies",blockbusterMovies,"Loading blockbuster movies…");
+        addRow(root,"Blockbusters • TV",blockbusterTv,"Loading blockbuster TV…");
 
         LinearLayout footer=new LinearLayout(this); footer.setOrientation(LinearLayout.HORIZONTAL); footer.setGravity(Gravity.CENTER_VERTICAL); footer.setPadding(0,dp(20),0,0);
         TextView status=TvUi.text(this,storageSummary(),screen.mobile()?12:14,false); status.setTextColor(TvUi.MUTED); footer.addView(status,new LinearLayout.LayoutParams(0,dp(48),1f));
@@ -99,20 +120,19 @@ public final class MainActivity extends Activity {
         LinearLayout card=new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setFocusable(true); card.setClickable(true); card.setPadding(dp(4),dp(4),dp(4),dp(4)); card.setBackgroundColor(Color.TRANSPARENT);
         ImageView art=new ImageView(this); art.setScaleType(ImageView.ScaleType.CENTER_CROP); art.setBackgroundColor(TvUi.CARD); card.addView(art,new LinearLayout.LayoutParams(dp(screen.posterWidthDp),dp(screen.posterHeightDp)));
         TextView title=TvUi.text(this,item.title,screen.mobile()?12:14,true); title.setSingleLine(true); title.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(title,new LinearLayout.LayoutParams(dp(screen.posterWidthDp),dp(32)));
-        card.setOnFocusChangeListener((v,focused)->{ title.setTextColor(focused?TvUi.BLUE:TvUi.WHITE); card.animate().scaleX(focused?1.07f:1f).scaleY(focused?1.07f:1f).setDuration(100).start(); card.setElevation(dp(focused?12:0)); if(focused)showHero(item); });
+        card.setOnFocusChangeListener((v,focused)->{ title.setTextColor(focused?TvUi.BLUE:TvUi.WHITE); card.setBackgroundColor(focused?Color.rgb(43,34,55):Color.TRANSPARENT); card.animate().scaleX(focused?1.07f:1f).scaleY(focused?1.07f:1f).setDuration(100).start(); card.setElevation(dp(focused?12:0)); if(focused){showHero(item);if(new AppSettingsStore(this).clickSounds())card.playSoundEffect(android.view.SoundEffectConstants.CLICK);} });
         card.setOnClickListener(v->openMedia(item)); card.setOnLongClickListener(v->{profiles.setWatchlist(item.id,!profiles.isInWatchlist(item.id));return true;});
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(dp(screen.posterWidthDp+14),dp(screen.railHeightDp-4)); p.setMarginEnd(dp(10)); card.setLayoutParams(p); loadArtwork(art,item.artworkUrl); return card;
     }
 
-    private void loadArtwork(ImageView image,String url){ if(url==null||url.trim().isEmpty())return; artworkExecutor.submit(()->{ try{ File f=new ArtworkCache(this).fetch(url,80); if(f==null)return; android.graphics.Bitmap bitmap=BitmapFactory.decodeFile(f.getAbsolutePath()); runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&bitmap!=null)image.setImageBitmap(bitmap);}); }catch(Exception e){DebugLog.append(this,"ART","Artwork failed: "+e.getMessage());} }); }
+    private void loadArtwork(ImageView image,String url){ if(url==null||url.trim().isEmpty())return; artworkExecutor.submit(()->{ try{ File f=new ArtworkCache(this).fetch(url,80,screen.artworkWidthPx); if(f==null)return; android.graphics.Bitmap bitmap=BitmapFactory.decodeFile(f.getAbsolutePath()); runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&bitmap!=null)image.setImageBitmap(bitmap);}); }catch(Exception e){DebugLog.append(this,"ART","Artwork failed: "+e.getMessage());} }); }
     private void showHero(MediaCard item){if(heroTitle!=null)heroTitle.setText(item.title);if(heroMeta!=null)heroMeta.setText(heroDetail(item));}
     private String heroDetail(MediaCard item){String type=item.series?"TV":"Movie";String sub=item.subtitle==null||item.subtitle.isEmpty()?"":" • "+item.subtitle;long p=profiles.progressMs(item.id),d=profiles.durationMs(item.id);String progress=p>0&&d>0?" • "+Math.min(99,p*100/d)+"% watched":"";return type+sub+progress;}
     private void openBrowse(String kind){Intent i=new Intent(this,BrowseActivity.class);i.putExtra(BrowseActivity.EXTRA_KIND,kind);startActivity(i);}
-    private List<MediaCard> filter(List<MediaCard> all,boolean series){ArrayList<MediaCard> out=new ArrayList<>();for(MediaCard c:all)if(c.series==series)out.add(c);out.sort(Comparator.comparing((MediaCard c)->c.title.toLowerCase(java.util.Locale.US)));if(out.size()>18)return new ArrayList<>(out.subList(0,18));return out;}
     private List<MediaCard> filterRecommended(List<MediaCard> in,boolean series){ArrayList<MediaCard> out=new ArrayList<>();for(MediaCard c:in)if(c.series==series)out.add(c);return out;}
     private List<MediaCard> continueWatching(List<MediaCard> all){ArrayList<MediaCard> out=new ArrayList<>();for(MediaCard c:all){long p=profiles.progressMs(c.id),d=profiles.durationMs(c.id);if(!profiles.isWatched(c.id)&&p>0&&d>0)out.add(c);}out.sort(Comparator.comparingLong((MediaCard c)->profiles.lastUpdatedMs(c.id)).reversed());return out;}
     private MediaCard mostRecentlyTouched(List<MediaCard> all){MediaCard best=null;long when=0;for(MediaCard c:all){long t=profiles.lastUpdatedMs(c.id);if(t>when){when=t;best=c;}}return best;}
-    private void openMedia(MediaCard item){List<SourceOption> sources=new SourceStore(this).getFresh(item.id);if(!sources.isEmpty()){Intent choose=new Intent(this,SourceSelectionActivity.class);choose.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID,item.id);choose.putExtra(SourceSelectionActivity.EXTRA_TITLE,item.title);startActivity(choose);return;}if(item.streamUri==null||item.streamUri.isEmpty()){startActivity(new Intent(this,SearchActivity.class));return;}Intent play=new Intent(this,PlayerActivity.class);play.putExtra(PlayerActivity.EXTRA_MEDIA_ID,item.id);play.putExtra(PlayerActivity.EXTRA_URI,item.streamUri);startActivity(play);}
-    private String storageSummary(){long free=StoragePolicy.availableBytes(getFilesDir());String debrid=new DebridStore(this).isConnected()?"RD ✓":"RD off";String metadata=new MetadataStore(this).isConfigured()?"Metadata ✓":"Metadata off";return debrid+" • "+metadata+" • Free "+(free/StoragePolicy.MIB)+" MiB";}
+    private void openMedia(MediaCard item){List<SourceOption> sources=new SourceStore(this).getFresh(item.id);if(!sources.isEmpty()){Intent choose=new Intent(this,SourceSelectionActivity.class);choose.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID,item.id);choose.putExtra(SourceSelectionActivity.EXTRA_TITLE,item.title);startActivity(choose);return;}Intent search=new Intent(this,SearchActivity.class);startActivity(search);}
+    private String storageSummary(){long free=StoragePolicy.availableBytes(getFilesDir());String debrid=new DebridStore(this).isConnected()?"RD ✓":"RD off";String metadata=new MetadataStore(this).isConfigured()?"TMDB ✓":"Keyless metadata ✓";return debrid+" • "+metadata+" • Free "+(free/StoragePolicy.MIB)+" MiB";}
     private int dp(int value){return TvUi.dp(this,value);}
 }
