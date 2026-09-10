@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote_plus
 import yaml
 
-COMPILER_SCHEMA = 8
+COMPILER_SCHEMA = 9
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
@@ -31,6 +31,7 @@ MANUAL = {
     "kickasstorrents-ws": {"searchPath":"usearch/{query}/?field=time_add&sorder=desc","rowSelector":"table.data tr[id]:has(a[data-download])","titleSelector":'a[class="cellMainLink"]',"detailsSelector":'a[class="cellMainLink"]',"detailsAttribute":"href","seedersSelector":"td:nth-child(4)","sizeSelector":"td:nth-child(2)","rowMagnetSelector":"td:nth-child(1) > div > a[data-download]","rowMagnetAttribute":"href","rowMagnetQueryParam":"url","maxResults":16},
     "nekobt": {"responseType":"xml","searchPath":"api/torznab/api?t=search&q={query}&limit=100","rowSelector":"rss > channel > item","titleSelector":"title","detailsSelector":"comments","detailsAttribute":"text","sizeSelector":"size","rowMagnetSelector":"enclosure","rowMagnetAttribute":"url","maxResults":20},
     "showrss-yml": {"responseType":"xml","searchPath":"other/all.rss","rowSelector":"rss > channel > item","titleSelector":"raw_title","detailsSelector":"link","detailsAttribute":"text","rowMagnetSelector":"link","rowMagnetAttribute":"text","clientFilterQuery":true,"maxResults":20},
+    "torrentdownloads": {"searchPath":"search/?search={query}","rowSelector":'div.inner_container > div:has(p:has(a[href^="/torrent/"])):not(:has(span.__cf_email__))',"titleSelector":"p:nth-child(1) > a","detailsSelector":'p:nth-child(1) > a[href^="/torrent/"]',"detailsAttribute":"href","seedersSelector":"span:nth-child(4)","sizeSelector":"span:nth-child(5)","detailMagnetSelector":'a[href*="magnet:"]',"maxResults":16},
 }
 
 CONFIG_RE = re.compile(r"\{\{\s*\.Config\.([A-Za-z0-9_-]+)\s*\}\}")
