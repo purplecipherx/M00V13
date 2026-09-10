@@ -9,9 +9,10 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 public final class DiagnosticsActivity extends Activity {
     private TextView log;
@@ -26,7 +27,8 @@ public final class DiagnosticsActivity extends Activity {
         log=TvUi.text(this,"",13,false); log.setTextIsSelectable(true); log.setGravity(Gravity.START); log.setPadding(TvUi.dp(this,12),TvUi.dp(this,12),TvUi.dp(this,12),TvUi.dp(this,12)); log.setBackgroundColor(TvUi.PANEL); LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,TvUi.dp(this,420)); lp.topMargin=TvUi.dp(this,12); root.addView(log,lp); load(); return scroll;
     }
     private String deviceSummary(ScreenProfile sp){ StatFs fs=new StatFs(getFilesDir().getAbsolutePath()); long free=fs.getAvailableBytes()/StoragePolicy.MIB; return "Layout: "+sp.kind+" • "+sp.widthPx+"×"+sp.heightPx+" • Free "+free+" MiB • RD "+(new DebridStore(this).isConnected()?"connected":"off")+" • Metadata "+(new MetadataStore(this).isConfigured()?"connected":"off"); }
-    private void load(){ try{ File f=DebugLog.file(this); String s=f.exists()?new String(Files.readAllBytes(f.toPath()),StandardCharsets.UTF_8):"No log entries yet."; log.setText(s); }catch(Exception e){ log.setText("Unable to read log: "+e.getMessage()); } }
-    private void export(){ try{ File f=DebugLog.file(this); Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT); i.setType("text/plain"); i.putExtra(Intent.EXTRA_TITLE,"M00V13-debug.log"); startActivityForResult(i,51); }catch(Exception e){ DebugLog.append(this,"DIAG","Export failed: "+e); } }
+    private void load(){ try{ File f=DebugLog.file(this); log.setText(f.exists()?read(f):"No log entries yet."); }catch(Exception e){ log.setText("Unable to read log: "+e.getMessage()); } }
+    private String read(File file)throws Exception{ try(FileInputStream in=new FileInputStream(file); ByteArrayOutputStream out=new ByteArrayOutputStream()){ byte[] b=new byte[8192]; int n; while((n=in.read(b))>0)out.write(b,0,n); return new String(out.toByteArray(),StandardCharsets.UTF_8); } }
+    private void export(){ try{ Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT); i.setType("text/plain"); i.putExtra(Intent.EXTRA_TITLE,"M00V13-debug.log"); startActivityForResult(i,51); }catch(Exception e){ DebugLog.append(this,"DIAG","Export failed: "+e); } }
     @Override protected void onActivityResult(int request,int result,Intent data){ super.onActivityResult(request,result,data); if(request==51&&result==RESULT_OK&&data!=null&&data.getData()!=null){ try(java.io.InputStream in=new java.io.FileInputStream(DebugLog.file(this)); java.io.OutputStream out=getContentResolver().openOutputStream(data.getData())){ if(out!=null){ byte[] b=new byte[8192]; int n; while((n=in.read(b))>0)out.write(b,0,n); } }catch(Exception e){ DebugLog.append(this,"DIAG","Export write failed: "+e); } } }
 }
