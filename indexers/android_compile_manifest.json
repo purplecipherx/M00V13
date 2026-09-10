@@ -9,12 +9,20 @@
       "tier": 1
     },
     {
+      "id": "thepiratebay",
+      "tier": 1
+    },
+    {
       "id": "torrentdownload",
       "tier": 1
     },
     {
       "id": "yts",
       "tier": 1
+    },
+    {
+      "id": "anisource",
+      "tier": 2
     },
     {
       "id": "extratorrent-st",
@@ -33,42 +41,40 @@
       "tier": 2
     },
     {
+      "id": "torrentbyte",
+      "tier": 2
+    },
+    {
       "id": "uindex",
       "tier": 2
+    },
+    {
+      "id": "torrentcore",
+      "tier": 3
     }
   ],
-  "compiled_count": 9,
-  "compiler_schema": 5,
+  "compiled_count": 13,
+  "compiler_schema": 6,
   "rejected": [
     {
       "file": "52bt.yml",
       "id": "52bt",
       "reasons": [
-        "search path/inputs need unsupported template logic",
-        "no supported magnet selector"
-      ]
-    },
-    {
-      "file": "anisource.yml",
-      "id": "anisource",
-      "reasons": [
-        "no supported magnet selector"
+        "search path/inputs need unsupported template logic"
       ]
     },
     {
       "file": "bangumi-moe.yml",
       "id": "bangumi-moe",
       "reasons": [
-        "generic JSON definition not yet representable",
-        "details must be a direct static selector",
-        "no supported magnet selector"
+        "generic JSON definition not yet representable"
       ]
     },
     {
       "file": "ehentai.yml",
       "id": "ehentai",
       "reasons": [
-        "no supported magnet selector"
+        "no supported magnet/infohash selector"
       ]
     },
     {
@@ -78,7 +84,7 @@
         "generic JSON definition not yet representable",
         "search path/inputs need unsupported template logic",
         "details must be a direct static selector",
-        "no supported magnet selector"
+        "no supported magnet/infohash selector"
       ]
     },
     {
@@ -86,15 +92,14 @@
       "id": "kickasstorrents-ws",
       "reasons": [
         "search path/inputs need unsupported template logic",
-        "no supported magnet selector"
+        "no supported magnet/infohash selector"
       ]
     },
     {
       "file": "magnetcat.yml",
       "id": "magnetcat",
       "reasons": [
-        "search path/inputs need unsupported template logic",
-        "no supported magnet selector"
+        "search path/inputs need unsupported template logic"
       ]
     },
     {
@@ -108,7 +113,7 @@
       "file": "shanaproject.yml",
       "id": "shanaproject",
       "reasons": [
-        "no supported magnet selector"
+        "no supported magnet/infohash selector"
       ]
     },
     {
@@ -117,48 +122,21 @@
       "reasons": [
         "search path/inputs need unsupported template logic",
         "details must be a direct static selector",
-        "no supported magnet selector"
-      ]
-    },
-    {
-      "file": "thepiratebay.yml",
-      "id": "thepiratebay",
-      "reasons": [
-        "generic JSON definition not yet representable",
-        "search path/inputs need unsupported template logic",
-        "row selector is dynamic/missing",
-        "details must be a direct static selector",
-        "no supported magnet selector"
-      ]
-    },
-    {
-      "file": "torrentbyte.yml",
-      "id": "torrentbyte",
-      "reasons": [
-        "title attribute/filter extraction unsupported",
-        "no supported magnet selector"
-      ]
-    },
-    {
-      "file": "torrentcore.yml",
-      "id": "torrentcore",
-      "reasons": [
-        "no supported magnet selector"
+        "no supported magnet/infohash selector"
       ]
     },
     {
       "file": "torrentdownloads.yml",
       "id": "torrentdownloads",
       "reasons": [
-        "search path/inputs need unsupported template logic",
-        "title attribute/filter extraction unsupported"
+        "search path/inputs need unsupported template logic"
       ]
     }
   ],
-  "rejected_count": 14,
+  "rejected_count": 10,
   "tier_counts": {
-    "1": 4,
-    "2": 5,
-    "3": 0
+    "1": 5,
+    "2": 7,
+    "3": 1
   }
 }
