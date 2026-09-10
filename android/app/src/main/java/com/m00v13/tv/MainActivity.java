@@ -64,10 +64,10 @@ public final class MainActivity extends Activity {
         nav.setOrientation(LinearLayout.HORIZONTAL);
         nav.setPadding(0, dp(14), 0, dp(8));
         nav.addView(navButton("Home", null));
-        nav.addView(navButton("Movies", null));
-        nav.addView(navButton("TV", null));
+        nav.addView(navButton("Movies", v -> openBrowse(BrowseActivity.KIND_MOVIES)));
+        nav.addView(navButton("TV", v -> openBrowse(BrowseActivity.KIND_TV)));
         nav.addView(navButton("Downloads", v -> startActivity(new Intent(this, DownloadsActivity.class))));
-        nav.addView(navButton("Search", null));
+        nav.addView(navButton("Search", v -> startActivity(new Intent(this, SearchActivity.class))));
         nav.addView(navButton("System", v -> startActivity(new Intent(Settings.ACTION_SETTINGS))));
         root.addView(nav);
 
@@ -93,6 +93,12 @@ public final class MainActivity extends Activity {
         storage.setPadding(0, dp(24), 0, 0);
         root.addView(storage);
         return scroll;
+    }
+
+    private void openBrowse(String kind) {
+        Intent i = new Intent(this, BrowseActivity.class);
+        i.putExtra(BrowseActivity.EXTRA_KIND, kind);
+        startActivity(i);
     }
 
     private List<MediaCard> continueWatching(List<MediaCard> all) {
