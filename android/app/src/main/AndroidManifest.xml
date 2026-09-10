@@ -16,6 +16,7 @@
         <activity android:name=".BrowseActivity" android:screenOrientation="landscape" />
         <activity android:name=".SearchActivity" android:screenOrientation="landscape" />
         <activity android:name=".ProfileActivity" android:screenOrientation="landscape" />
+        <activity android:name=".DebridActivity" android:screenOrientation="landscape" />
 
         <activity
             android:name=".MainActivity"
