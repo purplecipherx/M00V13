@@ -31,7 +31,9 @@ public final class NativeScraperEngine {
     private static final int CONNECT_TIMEOUT_MS=4500, READ_TIMEOUT_MS=5500, MAX_BODY_BYTES=2*1024*1024, MAX_TOTAL_RESULTS=30;
     private static final String USER_AGENT="Mozilla/5.0 (Linux; Android TV) AppleWebKit/537.36 Chrome/126 Safari/537.36 M00V13/0.1";
     private final Context context;
-    public NativeScraperEngine(Context context){this.context=context.getApplicationContext();}
+    private final int providerTier;
+    public NativeScraperEngine(Context context){this(context,0);}
+    public NativeScraperEngine(Context context,int providerTier){this.context=context.getApplicationContext();this.providerTier=Math.max(0,Math.min(3,providerTier));}
 
     public static final class SearchResult{public final List<SourceOption> sources;public final List<String> providerErrors;SearchResult(List<SourceOption>s,List<String>e){sources=s;providerErrors=e;}}
     private static final class Candidate{final NativeProviderDefinition provider;final String baseUrl,title,detailsUrl,directUri;final int seeders;final long sizeBytes;Candidate(NativeProviderDefinition p,String b,String t,String d,String u,int s,long z){provider=p;baseUrl=b;title=t;detailsUrl=d;directUri=u;seeders=s;sizeBytes=z;}}
@@ -39,7 +41,7 @@ public final class NativeScraperEngine {
 
     public SearchResult search(String rawQuery){
         String query=rawQuery==null?"":rawQuery.trim();if(query.isEmpty())return new SearchResult(Collections.emptyList(),Collections.emptyList());
-        List<NativeProviderDefinition> providers=NativeProviderDefinition.load(context);if(providers.isEmpty())return new SearchResult(Collections.emptyList(),Collections.singletonList("provider catalog is empty"));
+        List<NativeProviderDefinition> providers=NativeProviderDefinition.load(context,providerTier);if(providers.isEmpty())return new SearchResult(Collections.emptyList(),Collections.singletonList(providerTier==0?"provider catalog is empty":"tier "+providerTier+" provider catalog is empty"));
         ExecutorService providerPool=Executors.newFixedThreadPool(Math.max(1,Math.min(6,providers.size())));ArrayList<Future<List<Candidate>>> futures=new ArrayList<>();ArrayList<String> errors=new ArrayList<>();
         for(NativeProviderDefinition p:providers)futures.add(providerPool.submit(new Callable<List<Candidate>>(){public List<Candidate> call()throws Exception{return searchProvider(p,query);}}));
         ArrayList<Candidate> candidates=new ArrayList<>();for(int i=0;i<futures.size();i++){try{candidates.addAll(futures.get(i).get());}catch(Exception e){errors.add(providers.get(i).name+": "+shortMessage(e));}}providerPool.shutdownNow();candidates.sort(Comparator.comparingInt((Candidate c)->c.seeders).reversed());
