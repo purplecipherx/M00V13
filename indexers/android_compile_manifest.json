@@ -1,24 +1,50 @@
 {
   "compiled": [
-    "1337x",
-    "extratorrent-st",
-    "kickasstorrents-to",
-    "limetorrents",
-    "nyaasi",
-    "tokyotosho",
-    "torrentdownload",
-    "uindex",
-    "yts"
+    {
+      "id": "1337x",
+      "tier": 1
+    },
+    {
+      "id": "limetorrents",
+      "tier": 1
+    },
+    {
+      "id": "torrentdownload",
+      "tier": 1
+    },
+    {
+      "id": "yts",
+      "tier": 1
+    },
+    {
+      "id": "extratorrent-st",
+      "tier": 2
+    },
+    {
+      "id": "kickasstorrents-to",
+      "tier": 2
+    },
+    {
+      "id": "nyaasi",
+      "tier": 2
+    },
+    {
+      "id": "tokyotosho",
+      "tier": 2
+    },
+    {
+      "id": "uindex",
+      "tier": 2
+    }
   ],
   "compiled_count": 9,
-  "compiler_schema": 4,
+  "compiler_schema": 5,
   "rejected": [
     {
       "file": "52bt.yml",
       "id": "52bt",
       "reasons": [
         "search path/inputs need unsupported template logic",
-        "seeders must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -26,7 +52,6 @@
       "file": "anisource.yml",
       "id": "anisource",
       "reasons": [
-        "seeders must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -53,7 +78,6 @@
         "generic JSON definition not yet representable",
         "search path/inputs need unsupported template logic",
         "details must be a direct static selector",
-        "seeders must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -70,7 +94,6 @@
       "id": "magnetcat",
       "reasons": [
         "search path/inputs need unsupported template logic",
-        "seeders must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -85,7 +108,6 @@
       "file": "shanaproject.yml",
       "id": "shanaproject",
       "reasons": [
-        "seeders must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -95,8 +117,6 @@
       "reasons": [
         "search path/inputs need unsupported template logic",
         "details must be a direct static selector",
-        "seeders must be a direct static selector",
-        "size must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -116,7 +136,6 @@
       "id": "torrentbyte",
       "reasons": [
         "title attribute/filter extraction unsupported",
-        "seeders must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -124,7 +143,6 @@
       "file": "torrentcore.yml",
       "id": "torrentcore",
       "reasons": [
-        "seeders must be a direct static selector",
         "no supported magnet selector"
       ]
     },
@@ -137,5 +155,10 @@
       ]
     }
   ],
-  "rejected_count": 14
+  "rejected_count": 14,
+  "tier_counts": {
+    "1": 4,
+    "2": 5,
+    "3": 0
+  }
 }
