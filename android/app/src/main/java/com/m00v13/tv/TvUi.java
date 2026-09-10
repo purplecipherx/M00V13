@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.Gravity;
+import android.view.SoundEffectConstants;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -36,6 +37,7 @@ public final class TvUi {
             b.setBackgroundTintList(ColorStateList.valueOf(focused ? Color.rgb(43, 34, 55) : CARD));
             b.animate().scaleX(focused ? 1.055f : 1f).scaleY(focused ? 1.055f : 1f).setDuration(90).start();
             b.setElevation(dp(c, focused ? 10 : 0));
+            if (focused && new AppSettingsStore(c).clickSounds()) b.playSoundEffect(SoundEffectConstants.CLICK);
         });
         return b;
     }
