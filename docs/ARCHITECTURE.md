@@ -84,6 +84,101 @@ Unsupported definition features cause the indexer to be marked incompatible rath
 
 Every provider returns a normalized mapping compatible with `m00v13.source.NormalizedSource`. Native Viper results are adapted into the same model before ranking.
 
+## Predictive metadata and image cache
+
+Artwork and metadata caching must improve perceived speed without growing into a permanent media library cache.
+
+### Cache classes
+
+Use separate logical classes so eviction can be intelligent:
+
+- **hot UI cache**: posters/backdrops/logos for rows currently visible or about to become visible
+- **next-session cache**: Continue Watching, Next Up, active downloads, watchlist/favorites, recently viewed details, and the highest-confidence recommendations for the active profile
+- **cold discovery cache**: search/discovery/recommendation artwork that has not been displayed recently
+- **metadata cache**: titles, IDs, season/episode maps, lightweight recommendation features, language/runtime/genre data, and source-query hints
+
+Do not prefetch entire catalogs. Prefetch only bounded windows around likely navigation targets.
+
+### Predictive scoring
+
+Each cache object should carry a small eviction score derived from cheap signals already available locally:
+
+```text
+keep_score =
+    visible_now
+  + next_up
+  + continue_watching
+  + active_download
+  + pinned_or_watchlisted
+  + recent_view
+  + profile_recommendation_score
+  + likely_next_row
+  - age
+  - storage_pressure
+```
+
+No ML model is required on-device. A weighted heuristic is preferred because it is fast, deterministic, tiny, and explainable.
+
+Examples:
+
+- If the user is watching a series, keep the current show's poster, season art, next episodes, cast/detail art, and a small set of related recommendations warm.
+- If the home screen is showing ten tiles, cache those tiles plus a small look-ahead window in the direction the remote is moving.
+- If a recommendation has repeatedly been skipped and is no longer in visible rows, its images become early eviction candidates.
+- Switching profiles reprioritizes cache immediately; globally shared artwork may remain deduplicated on disk while profile-specific ranking metadata stays separate.
+
+### Image rules
+
+- request display-appropriate image sizes rather than original-resolution artwork
+- prefer modern compressed formats supported efficiently by Android; avoid runtime transcoding when the source service already exposes sized variants
+- deduplicate identical artwork by content/key across profiles and rows
+- keep only one or a very small number of useful resolutions per artwork item
+- do not store large backdrops for items that only appear as poster tiles
+- lazy-load lower-priority images after text/UI is already usable
+- cancel or deprioritize prefetches when the user navigates away
+- failed/404 artwork receives a short negative-cache TTL to prevent repeated network requests
+
+### Cache budgets and cleanup
+
+Cache is subordinate to Android safety space and offline downloads.
+
+Initial internal-storage design target:
+
+- image/artwork disk cache soft target: **192 MiB**
+- image/artwork disk cache hard cap: **320 MiB**
+- metadata/query cache target: **32-64 MiB**
+- decoded in-memory image cache: adaptive and bounded; trim aggressively on Android memory-pressure callbacks
+
+These values are design defaults and should be benchmarked on the target Xiaomi stick before being considered final.
+
+Cleanup behavior:
+
+1. evict expired negative-cache/network entries
+2. evict cold discovery artwork
+3. evict old recommendation/search artwork
+4. evict stale backdrops before posters needed by Continue Watching/Next Up
+5. preserve visible/current-title/next-up artwork as long as practical
+6. under critical storage pressure, the image cache may be dropped almost entirely because every image can be fetched again
+
+Cache cleanup may run opportunistically when the app is idle, after profile switches, and whenever cache hard limits or system storage thresholds are crossed. It must not perform large scans while video playback is active.
+
+## Low-bloat feature set
+
+High-value features that should remain inexpensive in RAM/storage/CPU:
+
+- **instant resume state**: persist the last screen, selected profile, focused item, playback position, and navigation context so reopening M00V13 feels immediate
+- **source health memory**: tiny rolling provider statistics for success rate, latency, dead links, and playback failures; use these to rank providers without keeping large logs
+- **network-aware quality policy**: select lower-bitrate sources and favor offline download during poor connectivity; no continuous heavy speed test
+- **pre-resolve Next Up**: resolve a bounded number of likely next episodes while playback is stable, then expire those results quickly
+- **automatic source failover**: retain a small number of already-ranked backup sources for the currently playing title rather than the entire scrape result set
+- **lightweight watch-state journal**: append/compact profile watch events so a crash or power loss does not lose progress
+- **quick diagnostics overlay**: codec, resolution, HDR, audio format/language, subtitle state, source/provider, dropped frames, buffer health, and network rate; hidden unless requested
+- **background-work governor**: artwork prefetch, scraping, recommendation refresh, and downloads all yield to playback and remote/UI responsiveness
+- **offline-first home rows**: when internet is unavailable, immediately surface downloaded titles, Continue Watching downloads, and cached metadata instead of waiting on failed network calls
+- **capability cache**: remember stable device/HDMI/audio capabilities and only re-probe on boot/output change rather than every playback
+- **small undo window for auto-cleanup**: record what was automatically deleted and why; re-download when possible rather than keeping duplicate trash/recycle-bin data
+
+Avoid adding heavyweight services, always-on databases, embedded browsers, local recommendation models, full-catalog indexing, or large telemetry stores unless measurements prove they are needed.
+
 ## Download storage policy
 
 Offline downloads must enforce a built-in system safety floor in addition to optional user limits.
@@ -119,12 +214,13 @@ A download may start only when its estimated size plus 256 MiB of headroom fits 
 M00V13 should automatically reclaim storage when necessary rather than allowing Android to become unusable.
 
 1. Pause queued/background automatic downloads.
-2. Delete **watched, unpinned downloads**, oldest/least-recently-accessed first.
-3. If free space is still below the emergency target and system operation is threatened, delete **oldest unpinned unwatched downloads**, oldest/least-recently-accessed first.
-4. Never automatically delete pinned downloads.
-5. Stop cleanup once the emergency target is restored or no eligible downloads remain.
+2. Drop expendable image/query cache toward its minimum footprint.
+3. Delete **watched, unpinned downloads**, oldest/least-recently-accessed first.
+4. If free space is still below the emergency target and system operation is threatened, delete **oldest unpinned unwatched downloads**, oldest/least-recently-accessed first.
+5. Never automatically delete pinned downloads.
+6. Stop cleanup once the emergency target is restored or no eligible downloads remain.
 
-Automatic series/collection downloads are disposable cache-like media unless pinned. A watched episode is therefore normally the first storage candidate after its watched state is safely recorded.
+Automatic series/collection downloads are disposable cache-like media unless pinned. A watched episode is therefore normally the first media-storage candidate after its watched state is safely recorded.
 
 Required behavior:
 
