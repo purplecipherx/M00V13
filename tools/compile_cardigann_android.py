@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Compile a conservative Cardigann v11 subset into M00V13's tiny Android runtime format.
 
-The compiler is intentionally strict. A definition is emitted only when its search row,
-title/details link, seeders, size and magnet extraction can be represented by the native
-Android engine without executing Cardigann templates or arbitrary filters at runtime.
-Unsupported definitions remain available in indexers/ for future interpreter expansion.
+The compiler intentionally emits only patterns the Android runtime can faithfully execute.
+Complex definitions remain in indexers/ for later interpreter expansion.
 """
 from __future__ import annotations
 
@@ -12,7 +10,7 @@ import argparse, json, pathlib, re
 from typing import Any, Dict, List, Optional, Tuple
 import yaml
 
-COMPILER_SCHEMA = 1
+COMPILER_SCHEMA = 2
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
@@ -22,12 +20,46 @@ MANUAL = {
         "searchPath": "search/{query}/1/",
         "rowSelector": 'tr:has(a[href^=/torrent/])',
         "titleSelector": 'td[class^=coll-1] a[href^=/torrent/]',
+        "detailsSelector": 'td[class^=coll-1] a[href^=/torrent/]',
         "detailsAttribute": "href",
         "seedersSelector": 'td[class^=coll-2]',
         "sizeSelector": 'td[class^=coll-4]',
-        "magnetSelector": 'ul li a[href^=magnet:]',
+        "detailMagnetSelector": 'ul li a[href^=magnet:]',
         "maxResults": 16,
-    }
+    },
+    "torrentdownload": {
+        "searchPath": "searchd?q={query}",
+        "rowSelector": "table.table2 > tbody > tr:has(span.smallish)",
+        "titleSelector": 'div.tt-name > a[href^="/"]',
+        "detailsSelector": 'div.tt-name > a[href^="/"]',
+        "detailsAttribute": "href",
+        "seedersSelector": "td.tdseed",
+        "sizeSelector": "td:nth-child(3)",
+        "detailMagnetSelector": 'a[href^="magnet:?xt="]',
+        "maxResults": 16,
+    },
+    "limetorrents": {
+        "searchPath": "search/all/{query}/date/1/",
+        "rowSelector": ".table2 > tbody > tr[bgcolor]",
+        "titleSelector": 'div.tt-name > a[href^="/"]',
+        "detailsSelector": 'div.tt-name > a[href^="/"]',
+        "detailsAttribute": "href",
+        "seedersSelector": ".tdseed",
+        "sizeSelector": "td:nth-child(3)",
+        "detailMagnetSelector": 'a.csprite_dltorrent[href^="magnet:"]',
+        "maxResults": 16,
+    },
+    "nyaasi": {
+        "searchPath": "?q={query}&f=0&c=0_0&s=id&o=desc",
+        "rowSelector": "tr.default,tr.danger,tr.success",
+        "titleSelector": "td:nth-child(2) a:last-of-type",
+        "detailsSelector": "td:nth-child(2) a:last-of-type",
+        "detailsAttribute": "href",
+        "seedersSelector": "td:nth-child(6):not(:empty)",
+        "sizeSelector": "td:nth-child(4)",
+        "rowMagnetSelector": 'td:nth-child(3) a[href^="magnet:?"]',
+        "maxResults": 16,
+    },
 }
 
 
@@ -59,16 +91,6 @@ def choose_path(search: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def magnet_selector(download: Dict[str, Any]) -> Optional[str]:
-    selectors = download.get("selectors") or []
-    for entry in selectors:
-        if not isinstance(entry, dict): continue
-        s = static(entry.get("selector"))
-        attr = entry.get("attribute", "href")
-        if s and attr == "href" and "magnet" in s.lower(): return s
-    return None
-
-
 def compile_one(raw: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], List[str]]:
     reasons: List[str] = []
     ident = str(raw.get("id") or "").strip()
@@ -85,26 +107,30 @@ def compile_one(raw: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], List[str
     path = choose_path(search)
     row_sel = static(rows.get("selector"))
     title_field = fields.get("title") if isinstance(fields.get("title"), dict) else None
+    details_field = fields.get("details") if isinstance(fields.get("details"), dict) else title_field
     title_sel = selector(title_field)
-    title_attr = title_field.get("attribute", "href") if isinstance(title_field, dict) else None
+    details_sel = selector(details_field)
+    details_attr = details_field.get("attribute", "href") if isinstance(details_field, dict) else "href"
     seed_sel = selector(fields.get("seeders"))
     size_sel = selector(fields.get("size"))
-    mag_sel = magnet_selector(raw.get("download") if isinstance(raw.get("download"), dict) else {})
+    magnet_field = fields.get("magnet") if isinstance(fields.get("magnet"), dict) else None
+    row_magnet = selector(magnet_field)
 
     if not path: reasons.append("search path needs unsupported template logic")
     if not row_sel: reasons.append("row selector is dynamic/missing")
     if not title_sel: reasons.append("title must be a direct static selector")
-    if title_attr not in (None, "href"): reasons.append("title/details attribute is not href")
+    if not details_sel: reasons.append("details must be a direct static selector")
+    if details_attr != "href": reasons.append("details attribute is not href")
     if not seed_sel: reasons.append("seeders must be a direct static selector")
     if not size_sel: reasons.append("size must be a direct static selector")
-    if not mag_sel: reasons.append("no static magnet download selector")
+    if not row_magnet: reasons.append("no direct row magnet selector")
     if reasons: return None, reasons
 
     return {
         "id": ident, "name": name, "mirrors": links[:8], "searchPath": path,
-        "rowSelector": row_sel, "titleSelector": title_sel, "detailsAttribute": "href",
-        "seedersSelector": seed_sel, "sizeSelector": size_sel, "magnetSelector": mag_sel,
-        "maxResults": 16,
+        "rowSelector": row_sel, "titleSelector": title_sel, "detailsSelector": details_sel,
+        "detailsAttribute": "href", "seedersSelector": seed_sel, "sizeSelector": size_sel,
+        "rowMagnetSelector": row_magnet, "maxResults": 16,
     }, []
 
 
