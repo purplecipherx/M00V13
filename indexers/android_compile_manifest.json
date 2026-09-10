@@ -45,7 +45,15 @@
       "tier": 2
     },
     {
+      "id": "nekobt",
+      "tier": 2
+    },
+    {
       "id": "nyaasi",
+      "tier": 2
+    },
+    {
+      "id": "showrss-yml",
       "tier": 2
     },
     {
@@ -63,10 +71,14 @@
     {
       "id": "torrentcore",
       "tier": 3
+    },
+    {
+      "id": "torrentdownloads",
+      "tier": 3
     }
   ],
-  "compiled_count": 16,
-  "compiler_schema": 7,
+  "compiled_count": 19,
+  "compiler_schema": 9,
   "rejected": [
     {
       "file": "bangumi-moe.yml",
@@ -93,40 +105,17 @@
       ]
     },
     {
-      "file": "nekobt.yml",
-      "id": "nekobt",
-      "reasons": [
-        "search path/inputs need unsupported template logic"
-      ]
-    },
-    {
       "file": "shanaproject.yml",
       "id": "shanaproject",
       "reasons": [
         "no supported magnet/infohash selector"
       ]
-    },
-    {
-      "file": "showrss.yml",
-      "id": "showrss-yml",
-      "reasons": [
-        "search path/inputs need unsupported template logic",
-        "details must be a direct static selector",
-        "no supported magnet/infohash selector"
-      ]
-    },
-    {
-      "file": "torrentdownloads.yml",
-      "id": "torrentdownloads",
-      "reasons": [
-        "search path/inputs need unsupported template logic"
-      ]
     }
   ],
-  "rejected_count": 7,
+  "rejected_count": 4,
   "tier_counts": {
     "1": 5,
-    "2": 10,
-    "3": 1
+    "2": 12,
+    "3": 2
   }
 }
