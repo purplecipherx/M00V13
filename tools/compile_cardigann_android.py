@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote_plus
 import yaml
 
-COMPILER_SCHEMA = 7
+COMPILER_SCHEMA = 8
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
@@ -29,6 +29,8 @@ MANUAL = {
     "52bt": {"searchPath":"search-{query}-0-2-1.html?lang=en","rowSelector":"article.resource-card","titleSelector":'a[href^="/hash/"]',"detailsSelector":'a[href^="/hash/"]',"detailsAttribute":"href","rowInfoHashSelector":'a[href^="/hash/"]',"rowInfoHashAttribute":"href","sizeSelector":"div.meta span:nth-child(2)","maxResults":16},
     "magnetcat": {"searchPath":"search-{query}-0-2-1.html","rowSelector":"article.zsky-result-row","titleSelector":'a[href^="/hash/"]',"detailsSelector":'a[href^="/hash/"]',"detailsAttribute":"href","rowInfoHashSelector":'a[href^="/hash/"]',"rowInfoHashAttribute":"href","sizeSelector":"div.zsky-result-meta span:nth-child(2)","maxResults":16},
     "kickasstorrents-ws": {"searchPath":"usearch/{query}/?field=time_add&sorder=desc","rowSelector":"table.data tr[id]:has(a[data-download])","titleSelector":'a[class="cellMainLink"]',"detailsSelector":'a[class="cellMainLink"]',"detailsAttribute":"href","seedersSelector":"td:nth-child(4)","sizeSelector":"td:nth-child(2)","rowMagnetSelector":"td:nth-child(1) > div > a[data-download]","rowMagnetAttribute":"href","rowMagnetQueryParam":"url","maxResults":16},
+    "nekobt": {"responseType":"xml","searchPath":"api/torznab/api?t=search&q={query}&limit=100","rowSelector":"rss > channel > item","titleSelector":"title","detailsSelector":"comments","detailsAttribute":"text","sizeSelector":"size","rowMagnetSelector":"enclosure","rowMagnetAttribute":"url","maxResults":20},
+    "showrss-yml": {"responseType":"xml","searchPath":"other/all.rss","rowSelector":"rss > channel > item","titleSelector":"raw_title","detailsSelector":"link","detailsAttribute":"text","rowMagnetSelector":"link","rowMagnetAttribute":"text","clientFilterQuery":true,"maxResults":20},
 }
 
 CONFIG_RE = re.compile(r"\{\{\s*\.Config\.([A-Za-z0-9_-]+)\s*\}\}")
