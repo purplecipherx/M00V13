@@ -21,6 +21,10 @@
       "tier": 1
     },
     {
+      "id": "52bt",
+      "tier": 2
+    },
+    {
       "id": "anisource",
       "tier": 2
     },
@@ -30,6 +34,14 @@
     },
     {
       "id": "kickasstorrents-to",
+      "tier": 2
+    },
+    {
+      "id": "kickasstorrents-ws",
+      "tier": 2
+    },
+    {
+      "id": "magnetcat",
       "tier": 2
     },
     {
@@ -53,16 +65,9 @@
       "tier": 3
     }
   ],
-  "compiled_count": 13,
-  "compiler_schema": 6,
+  "compiled_count": 16,
+  "compiler_schema": 7,
   "rejected": [
-    {
-      "file": "52bt.yml",
-      "id": "52bt",
-      "reasons": [
-        "search path/inputs need unsupported template logic"
-      ]
-    },
     {
       "file": "bangumi-moe.yml",
       "id": "bangumi-moe",
@@ -85,21 +90,6 @@
         "search path/inputs need unsupported template logic",
         "details must be a direct static selector",
         "no supported magnet/infohash selector"
-      ]
-    },
-    {
-      "file": "kickasstorrents-ws.yml",
-      "id": "kickasstorrents-ws",
-      "reasons": [
-        "search path/inputs need unsupported template logic",
-        "no supported magnet/infohash selector"
-      ]
-    },
-    {
-      "file": "magnetcat.yml",
-      "id": "magnetcat",
-      "reasons": [
-        "search path/inputs need unsupported template logic"
       ]
     },
     {
@@ -133,10 +123,10 @@
       ]
     }
   ],
-  "rejected_count": 10,
+  "rejected_count": 7,
   "tier_counts": {
     "1": 5,
-    "2": 7,
+    "2": 10,
     "3": 1
   }
 }
