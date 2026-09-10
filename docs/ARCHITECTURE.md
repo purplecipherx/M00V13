@@ -84,6 +84,50 @@ Unsupported definition features cause the indexer to be marked incompatible rath
 
 Every provider returns a normalized mapping compatible with `m00v13.source.NormalizedSource`. Native Viper results are adapted into the same model before ranking.
 
+## Download storage policy
+
+Offline downloads must support two independent user controls:
+
+- **Maximum M00V13 download space**: hard cap on bytes M00V13 may consume for offline media on the selected storage volume.
+- **Minimum free-space reserve**: amount of free space that must remain available on that volume after any download, expansion, remux, subtitle fetch, or artwork write.
+
+Both controls are enforced at the same time and the stricter one wins. Before accepting or starting a download, calculate:
+
+```text
+allowed_by_quota   = max_download_bytes - current_m00v13_download_bytes
+allowed_by_reserve = current_free_bytes - minimum_free_reserve_bytes
+allowed_to_write   = max(0, min(allowed_by_quota, allowed_by_reserve))
+```
+
+A download may start only when its estimated required space plus a configurable safety margin is less than or equal to `allowed_to_write`.
+
+Required behavior:
+
+- check space again immediately before writing and periodically during long downloads
+- account for temporary/partial files when calculating M00V13 usage
+- never allow automatic series/collection downloads to consume the protected reserve
+- pause queued automatic downloads before deleting anything when space becomes constrained
+- optional cleanup policy may remove watched/expired auto-downloads, oldest eligible downloads, or user-approved cache files
+- manually pinned downloads are never auto-deleted unless the user explicitly enables that policy
+- show projected post-download free space before a manual download starts
+- expose storage controls per storage target, so internal storage and attached USB/storage can have different limits
+
+Suggested UI:
+
+```text
+Downloads & Storage
+
+Maximum space M00V13 can use     [ 3.0 GB ]
+Always leave this much free      [ 1.5 GB ]
+Download location                [ Internal storage > ]
+
+Currently used by M00V13          1.2 GB
+Device free space                 3.4 GB
+Available for new downloads       1.8 GB
+```
+
+For constrained devices such as an 8 GB streaming stick, the reserve should be enabled by default so Android, app updates, databases, thumbnails, and temporary files cannot be starved by automated downloads.
+
 ## Repository integration
 
 The current source repositories are kept as upstream references. M00V13 should contain the integrated source tree and attribution/license notices required by the upstream licenses, rather than depending on the three repositories at runtime.
