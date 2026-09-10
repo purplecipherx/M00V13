@@ -108,16 +108,19 @@ public final class SourceSelectionActivity extends Activity {
 
         button.setEnabled(false);
         status.setText("Resolving selected source through Real-Debrid…");
+        final LoadingOverlay loading = LoadingOverlay.show(this);
         resolverExecutor.submit(() -> {
             try {
                 String resolved = new RealDebridClient(this).resolveMagnet(uri);
                 runOnUiThread(() -> {
+                    loading.hide();
                     if (isFinishing() || isDestroyed()) return;
                     status.setText("Resolved ✓ starting playback");
                     startPlayer(mediaId, resolved, new ArrayList<>());
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
+                    loading.hide();
                     if (isFinishing() || isDestroyed()) return;
                     button.setEnabled(true);
                     status.setText("Resolve failed: " + message(e));
