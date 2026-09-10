@@ -158,7 +158,7 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams pms = new LinearLayout.LayoutParams(dp(250), dp(112));
         pms.setMarginEnd(dp(12));
         b.setLayoutParams(pms);
-        b.setOnClickListener(v -> playKnown(item));
+        b.setOnClickListener(v -> openMedia(item));
         b.setOnLongClickListener(v -> {
             profiles.setWatchlist(item.id, !profiles.isInWatchlist(item.id));
             return true;
@@ -166,7 +166,15 @@ public final class MainActivity extends Activity {
         return b;
     }
 
-    private void playKnown(MediaCard item) {
+    private void openMedia(MediaCard item) {
+        List<SourceOption> sources = new SourceStore(this).getFresh(item.id);
+        if (!sources.isEmpty()) {
+            Intent choose = new Intent(this, SourceSelectionActivity.class);
+            choose.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID, item.id);
+            choose.putExtra(SourceSelectionActivity.EXTRA_TITLE, item.title);
+            startActivity(choose);
+            return;
+        }
         if (item.streamUri == null || item.streamUri.isEmpty()) return;
         Intent play = new Intent(this, PlayerActivity.class);
         play.putExtra(PlayerActivity.EXTRA_MEDIA_ID, item.id);
