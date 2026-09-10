@@ -22,8 +22,13 @@ env:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    concurrency:
+      group: indexer-catalog-sync
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -41,4 +46,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Sync and compile public English Prowlarr indexers"
-          git push
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
