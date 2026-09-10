@@ -33,12 +33,12 @@ jobs:
       - name: Commit catalog changes
         shell: bash
         run: |
-          if git diff --quiet -- indexers android/app/src/main/assets/cardigann_providers.json; then
+          git add indexers android/app/src/main/assets/cardigann_providers.json
+          if git diff --cached --quiet; then
             echo "Indexer catalog already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add indexers android/app/src/main/assets/cardigann_providers.json
           git commit -m "Sync and compile public English Prowlarr indexers"
           git push
