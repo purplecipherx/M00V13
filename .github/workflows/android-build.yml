@@ -5,10 +5,14 @@ on:
   push:
     paths:
       - 'android/**'
+      - 'tools/compile_cardigann_android.py'
+      - 'indexers/definitions/**'
       - '.github/workflows/android-build.yml'
   pull_request:
     paths:
       - 'android/**'
+      - 'tools/compile_cardigann_android.py'
+      - 'indexers/definitions/**'
 
 concurrency:
   group: android-build-${{ github.ref }}
@@ -20,6 +24,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile Cardigann Android catalog
+        run: |
+          python -m pip install 'PyYAML>=6,<7'
+          python tools/compile_cardigann_android.py
+          cat indexers/android_compile_manifest.json
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
