@@ -12,6 +12,7 @@ import argparse, json, pathlib, re
 from typing import Any, Dict, List, Optional, Tuple
 import yaml
 
+COMPILER_SCHEMA = 1
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
@@ -39,7 +40,6 @@ def static(value: Any) -> Optional[str]:
 def simple_path(value: Any) -> Optional[str]:
     if not isinstance(value, str): return None
     s = value.strip()
-    # Accept the common direct Keywords placeholder only. Any other template logic is rejected.
     s = re.sub(r"\{\{\s*\.Keywords\s*\}\}", "{query}", s)
     if "{{" in s or "}}" in s or "{query}" not in s: return None
     return s.lstrip("/")
@@ -121,8 +121,8 @@ def main() -> None:
         except Exception as exc: rejected.append({"file":path.name,"reasons":[f"parse error: {exc}"]})
     providers.sort(key=lambda x:x["id"])
     a.output.parent.mkdir(parents=True,exist_ok=True); a.report.parent.mkdir(parents=True,exist_ok=True)
-    a.output.write_text(json.dumps({"schema":1,"providers":providers},separators=(",",":"))+"\n",encoding="utf-8")
-    a.report.write_text(json.dumps({"compiled_count":len(providers),"rejected_count":len(rejected),"compiled":[p["id"] for p in providers],"rejected":rejected},indent=2,sort_keys=True)+"\n",encoding="utf-8")
+    a.output.write_text(json.dumps({"schema":COMPILER_SCHEMA,"providers":providers},separators=(",",":"))+"\n",encoding="utf-8")
+    a.report.write_text(json.dumps({"compiler_schema":COMPILER_SCHEMA,"compiled_count":len(providers),"rejected_count":len(rejected),"compiled":[p["id"] for p in providers],"rejected":rejected},indent=2,sort_keys=True)+"\n",encoding="utf-8")
     print(f"compiled {len(providers)} Android-native providers; rejected {len(rejected)}")
 
 if __name__=="__main__": main()
