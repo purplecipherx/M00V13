@@ -33,7 +33,7 @@ public final class PlayerActivity extends Activity {
         String raw = getIntent().getStringExtra(EXTRA_URI);
         ArrayList<String> supplied = getIntent().getStringArrayListExtra(EXTRA_FALLBACK_URIS);
         if (supplied != null) fallbacks.addAll(supplied);
-        if (raw == null || raw.isBlank()) { finish(); return; }
+        if (raw == null || raw.trim().isEmpty()) { finish(); return; }
 
         PlayerView view = new PlayerView(this);
         view.setUseController(true);
