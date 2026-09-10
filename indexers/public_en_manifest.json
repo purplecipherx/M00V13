@@ -1,0 +1,6198 @@
+{
+  "included": [
+    {
+      "file": "1337x.yml",
+      "id": "1337x",
+      "language": "en-us",
+      "name": "1337x",
+      "type": "public"
+    },
+    {
+      "file": "52bt.yml",
+      "id": "52bt",
+      "language": "en-us",
+      "name": "52BT",
+      "type": "public"
+    },
+    {
+      "file": "anisource.yml",
+      "id": "anisource",
+      "language": "en-us",
+      "name": "AniSource",
+      "type": "public"
+    },
+    {
+      "file": "bangumi-moe.yml",
+      "id": "bangumi-moe",
+      "language": "en-us",
+      "name": "Bangumi Moe",
+      "type": "public"
+    },
+    {
+      "file": "ehentai.yml",
+      "id": "ehentai",
+      "language": "en-us",
+      "name": "E-Hentai",
+      "type": "public"
+    },
+    {
+      "file": "extratorrent-st.yml",
+      "id": "extratorrent-st",
+      "language": "en-us",
+      "name": "ExtraTorrent.st",
+      "type": "public"
+    },
+    {
+      "file": "internetarchive.yml",
+      "id": "internetarchive",
+      "language": "en-us",
+      "name": "Internet Archive",
+      "type": "public"
+    },
+    {
+      "file": "kickasstorrents-to.yml",
+      "id": "kickasstorrents-to",
+      "language": "en-us",
+      "name": "kickasstorrents.to",
+      "type": "public"
+    },
+    {
+      "file": "kickasstorrents-ws.yml",
+      "id": "kickasstorrents-ws",
+      "language": "en-us",
+      "name": "kickasstorrents.ws",
+      "type": "public"
+    },
+    {
+      "file": "limetorrents.yml",
+      "id": "limetorrents",
+      "language": "en-us",
+      "name": "LimeTorrents",
+      "type": "public"
+    },
+    {
+      "file": "magnetcat.yml",
+      "id": "magnetcat",
+      "language": "en-us",
+      "name": "Magnet Cat",
+      "type": "public"
+    },
+    {
+      "file": "nekobt.yml",
+      "id": "nekobt",
+      "language": "en-us",
+      "name": "nekoBT",
+      "type": "public"
+    },
+    {
+      "file": "nyaasi.yml",
+      "id": "nyaasi",
+      "language": "en-us",
+      "name": "Nyaa.si",
+      "type": "public"
+    },
+    {
+      "file": "shanaproject.yml",
+      "id": "shanaproject",
+      "language": "en-us",
+      "name": "Shana Project",
+      "type": "public"
+    },
+    {
+      "file": "showrss.yml",
+      "id": "showrss-yml",
+      "language": "en-us",
+      "name": "showRSS",
+      "type": "public"
+    },
+    {
+      "file": "thepiratebay.yml",
+      "id": "thepiratebay",
+      "language": "en-us",
+      "name": "The Pirate Bay",
+      "type": "public"
+    },
+    {
+      "file": "tokyotosho.yml",
+      "id": "tokyotosho",
+      "language": "en-us",
+      "name": "Tokyo Toshokan",
+      "type": "public"
+    },
+    {
+      "file": "torrentbyte.yml",
+      "id": "torrentbyte",
+      "language": "en-us",
+      "name": "TorrentByte",
+      "type": "public"
+    },
+    {
+      "file": "torrentcore.yml",
+      "id": "torrentcore",
+      "language": "en-us",
+      "name": "Torrent[CORE]",
+      "type": "public"
+    },
+    {
+      "file": "torrentdownload.yml",
+      "id": "torrentdownload",
+      "language": "en-us",
+      "name": "TorrentDownload",
+      "type": "public"
+    },
+    {
+      "file": "torrentdownloads.yml",
+      "id": "torrentdownloads",
+      "language": "en-us",
+      "name": "Torrent Downloads",
+      "type": "public"
+    },
+    {
+      "file": "uindex.yml",
+      "id": "uindex",
+      "language": "en-us",
+      "name": "Uindex",
+      "type": "public"
+    },
+    {
+      "file": "yts.yml",
+      "id": "yts",
+      "language": "en-us",
+      "name": "YTS",
+      "type": "public"
+    }
+  ],
+  "included_count": 23,
+  "policy": "public + English + movie/TV + no explicit account login",
+  "rejected": [
+    {
+      "file": "0daykiev.yml",
+      "id": "0daykiev",
+      "language": "uk-ua",
+      "name": "0day.kiev",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: uk-ua",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "0magnet.yml",
+      "id": "0magnet",
+      "language": "zh-cn",
+      "name": "0Magnet",
+      "reasons": [
+        "not English: zh-cn",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "13city.yml",
+      "id": "13city",
+      "language": "zh-cn",
+      "name": "13City",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "1ptbar.yml",
+      "id": "1ptbar",
+      "language": "zh-cn",
+      "name": "1ptbar",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "3dtorrents.yml",
+      "id": "3dtorrents",
+      "language": "en-us",
+      "name": "3D Torrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "3dvault-api.yml",
+      "id": "3dvault-api",
+      "language": "en-us",
+      "name": "3D Vault (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "4thd.yml",
+      "id": "4thd",
+      "language": "en-us",
+      "name": "4thD",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "52pt.yml",
+      "id": "52pt",
+      "language": "zh-cn",
+      "name": "52PT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "Bittorrentfiles.yml",
+      "id": "Bittorrentfiles",
+      "language": "de-de",
+      "name": "Bittorrentfiles",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "abnormal-api.yml",
+      "id": "abnormal-api",
+      "language": "fr-fr",
+      "name": "Abnormal (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "abtorrents.yml",
+      "id": "abtorrents",
+      "language": "en-us",
+      "name": "ABtorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "acgrip.yml",
+      "id": "acgrip",
+      "language": "zh-cn",
+      "name": "ACG.RIP",
+      "reasons": [
+        "not English: zh-cn",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "acrossthetasman.yml",
+      "id": "acrossthetasman",
+      "language": "en-au",
+      "name": "Across The Tasman",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "aftershock.yml",
+      "id": "aftershock",
+      "language": "hu-hu",
+      "name": "Aftershock",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "agsvpt.yml",
+      "id": "agsvpt",
+      "language": "zh-cn",
+      "name": "AGSVPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "aidoruonline.yml",
+      "id": "aidoruonline",
+      "language": "en-us",
+      "name": "Aidoru!Online",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "aither-api.yml",
+      "id": "aither-api",
+      "language": "en-us",
+      "name": "Aither (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "alingpt.yml",
+      "id": "alingpt",
+      "language": "zh-cn",
+      "name": "alingPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "amigosshare.yml",
+      "id": "amigosshare",
+      "language": "pt-br",
+      "name": "Amigos Share Club",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "anibt.yml",
+      "id": "anibt",
+      "language": "zh-cn",
+      "name": "Anibt",
+      "reasons": [
+        "not English: zh-cn"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "animebybelka.yml",
+      "id": "animebybelka",
+      "language": "ru-ru",
+      "name": "Anime by Belka",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "animelayer.yml",
+      "id": "animelayer",
+      "language": "ru-ru",
+      "name": "AnimeLayer",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "animetorrentsro.yml",
+      "id": "animetorrentsro",
+      "language": "ro-ro",
+      "name": "AnimeTorrents.ro",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "animetosho-xyz.yml",
+      "id": "animetosho-xyz",
+      "language": "en-us",
+      "name": "Anime Tosho",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "animeworld-api.yml",
+      "id": "animeworld-api",
+      "language": "de-de",
+      "name": "AnimeWorld (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "anthelion-api.yml",
+      "id": "anthelion-api",
+      "language": "en-us",
+      "name": "Anthelion (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "arabafenice.yml",
+      "id": "arabafenice",
+      "language": "it-it",
+      "name": "ArabaFenice",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: it-it",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "arabicsource-api.yml",
+      "id": "arabicsource-api",
+      "language": "ar-sa",
+      "name": "ArabicSource (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ar-sa"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "arabp2p.yml",
+      "id": "arabp2p",
+      "language": "ar-ae",
+      "name": "ArabP2P",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ar-ae",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "arabscene.yml",
+      "id": "arabscene",
+      "language": "ar-ae",
+      "name": "ArabScene",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ar-ae",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "arabtorrents.yml",
+      "id": "arabtorrents",
+      "language": "ar-ae",
+      "name": "ArabTorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ar-ae",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "asiancinema.yml",
+      "id": "asiancinema",
+      "language": "en-us",
+      "name": "AsianCinema",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "asiandvdclub.yml",
+      "id": "asiandvdclub",
+      "language": "en-us",
+      "name": "AsianDVDClub",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "audiences.yml",
+      "id": "audiences",
+      "language": "zh-cn",
+      "name": "Audiences",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "audionews.yml",
+      "id": "audionews",
+      "language": "en-us",
+      "name": "AudioNews",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "aussierules.yml",
+      "id": "aussierules",
+      "language": "en-au",
+      "name": "Aussierul.es",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "azusa.yml",
+      "id": "azusa",
+      "language": "zh-cn",
+      "name": "Azusa (\u6893\u55b5)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "backups.yml",
+      "id": "backups",
+      "language": "en-us",
+      "name": "Back-ups",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "baozipt.yml",
+      "id": "baozipt",
+      "language": "zh-cn",
+      "name": "baoziPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "beload.yml",
+      "id": "beload",
+      "language": "hu-hu",
+      "name": "Beload",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "best-torrents.yml",
+      "id": "best-torrents",
+      "language": "pl-pl",
+      "name": "Best-Torrents",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "bestcore.yml",
+      "id": "bestcore",
+      "language": "hu-hu",
+      "name": "Best-Core",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bibliotik.yml",
+      "id": "bibliotik",
+      "language": "en-us",
+      "name": "Bibliotik",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bigbbs.yml",
+      "id": "bigbbs",
+      "language": "pl-pl",
+      "name": "BigBBS",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bigcore.yml",
+      "id": "bigcore",
+      "language": "hu-hu",
+      "name": "BigCore",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bigfangroup.yml",
+      "id": "bigfangroup",
+      "language": "ru-ru",
+      "name": "BigFANGroup",
+      "reasons": [
+        "not English: ru-ru"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "bitbazis.yml",
+      "id": "bitbazis",
+      "language": "hu-hu",
+      "name": "Bit-B\u00e1zis",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bitded.yml",
+      "id": "bitded",
+      "language": "th-th",
+      "name": "Bitded",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: th-th",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bitgamer.yml",
+      "id": "bitgamer",
+      "language": "en-us",
+      "name": "bitGAMER",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bithumen.yml",
+      "id": "bithumen",
+      "language": "hu-hu",
+      "name": "BitHUmen",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bitmagnet.yml",
+      "id": "bitmagnet",
+      "language": "en-us",
+      "name": "BitMagnet (Local DHT)",
+      "reasons": [
+        "not a public indexer type: semi-private"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "bitpalace.yml",
+      "id": "bitpalace",
+      "language": "hu-hu",
+      "name": "Bitpalace",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bitporn.yml",
+      "id": "bitporn",
+      "language": "hu-hu",
+      "name": "BitPorn (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bitturk.yml",
+      "id": "bitturk",
+      "language": "en-us",
+      "name": "BiTTuRK",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bjshare.yml",
+      "id": "bjshare",
+      "language": "pt-br",
+      "name": "BJ-Share",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bluebird.yml",
+      "id": "bluebirdhd",
+      "language": "ru-ru",
+      "name": "BlueBird",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "blueroms.yml",
+      "id": "blueroms",
+      "language": "en-us",
+      "name": "BlueRoms",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "bluetorrents.yml",
+      "id": "bluetorrents",
+      "language": "en-us",
+      "name": "BlueTorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bluraytracker.yml",
+      "id": "bluraytracker",
+      "language": "cs-cz",
+      "name": "BlurayTracker",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: cs-cz",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "blutopia-api.yml",
+      "id": "blutopia-api",
+      "language": "en-us",
+      "name": "Blutopia (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "booktracker.yml",
+      "id": "booktracker",
+      "language": "ru-ru",
+      "name": "BookTracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "bootytape.yml",
+      "id": "bootytape",
+      "language": "en-us",
+      "name": "BootyTape",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "borgzelle.yml",
+      "id": "borgzelle",
+      "language": "de-de",
+      "name": "Borgzelle",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "boxingtorrents.yml",
+      "id": "boxingtorrents",
+      "language": "en-us",
+      "name": "Boxing Torrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "brasiltracker.yml",
+      "id": "brasiltracker",
+      "language": "pt-br",
+      "name": "BrasilTracker",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "btarg.yml",
+      "id": "btarg",
+      "language": "es-ar",
+      "name": "BTArg",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-ar",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "btdirectory.yml",
+      "id": "btdirectory",
+      "language": "en-us",
+      "name": "BTdirectory",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "btetree.yml",
+      "id": "btetree",
+      "language": "en-us",
+      "name": "BT.etree",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "btnext.yml",
+      "id": "btnext",
+      "language": "pt-pt",
+      "name": "BTNext",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-pt",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "btschool.yml",
+      "id": "btschool",
+      "language": "zh-cn",
+      "name": "BTSCHOOL",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "bwtorrents.yml",
+      "id": "bwtorrents",
+      "language": "en-us",
+      "name": "BwTorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "byrbt.yml",
+      "id": "byrbt",
+      "language": "zh-cn",
+      "name": "BYRBT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "byrutor.yml",
+      "id": "byrutor",
+      "language": "ru-ru",
+      "name": "Byrutor",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "c411.yml",
+      "id": "c411",
+      "language": "fr-fr",
+      "name": "C411",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cangbaoge.yml",
+      "id": "cangbaoge",
+      "language": "zh-cn",
+      "name": "cangbaoge (CBG)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "capybarabr.yml",
+      "id": "capybarabr",
+      "language": "pt-br",
+      "name": "CapybaraBR (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "carpathians.yml",
+      "id": "carpathians",
+      "language": "hu-hu",
+      "name": "Carpathians",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "carpt.yml",
+      "id": "carpt",
+      "language": "zh-cn",
+      "name": "CarPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cathoderaytube.yml",
+      "id": "cathoderaytube",
+      "language": "en-gb",
+      "name": "Cathode-Ray.Tube",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "catorrent.yml",
+      "id": "catorrent",
+      "language": "ru-ru",
+      "name": "Catorrent",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "ceskeforum.yml",
+      "id": "ceskeforum",
+      "language": "cs-cz",
+      "name": "CeskeForum",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: cs-cz",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cgpeers.yml",
+      "id": "cgpeers",
+      "language": "en-us",
+      "name": "CGPeers",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "chdbits.yml",
+      "id": "chdbits",
+      "language": "zh-cn",
+      "name": "CHDBits",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cinemageddon.yml",
+      "id": "cinemageddon",
+      "language": "en-us",
+      "name": "Cinemageddon",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cinemamovies.yml",
+      "id": "cinemamovies",
+      "language": "pl-pl",
+      "name": "CinemaMovieS_ZT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cinematik.yml",
+      "id": "cinematik",
+      "language": "en-us",
+      "name": "Cinematik (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "clearjav-api.yml",
+      "id": "clearjav-api",
+      "language": "en-us",
+      "name": "ClearJAV (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "coastalcrew.yml",
+      "id": "coastalcrew",
+      "language": "de-de",
+      "name": "Coastal-Music-Crew",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "comicat.yml",
+      "id": "comicat",
+      "language": "zh-cn",
+      "name": "comicat",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "concen.yml",
+      "id": "concen",
+      "language": "en-us",
+      "name": "ConCen",
+      "reasons": [
+        "not a public indexer type: private",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "concertos.yml",
+      "id": "concertos",
+      "language": "en-us",
+      "name": "Concertos (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "crabpt.yml",
+      "id": "crabpt",
+      "language": "zh-cn",
+      "name": "CrabPT (\u87f9\u9ec4\u5821)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "crackingpatching.yml",
+      "id": "crackingpatching",
+      "language": "en-us",
+      "name": "CrackingPatching",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "crazyspirits-api.yml",
+      "id": "crazyspirits-api",
+      "language": "fr-fr",
+      "name": "CrazySpirits (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "crnaberza.yml",
+      "id": "crnaberza",
+      "language": "sr-sp",
+      "name": "CrnaBerza",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: sr-sp",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "crnaberza2fa.yml",
+      "id": "crnaberza2fa",
+      "language": "sr-sp",
+      "name": "CrnaBerza2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: sr-sp",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "crt2fa.yml",
+      "id": "crt2fa",
+      "language": "en-gb",
+      "name": "CRT2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cspt.yml",
+      "id": "cspt",
+      "language": "zh-cn",
+      "name": "Caishen (\u8d22\u795e)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cyanbug.yml",
+      "id": "cyanbug",
+      "language": "zh-cn",
+      "name": "cyanbug (\u5927\u9752\u866b)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "cyclingarchiveclub.yml",
+      "id": "cyclingarchiveclub",
+      "language": "en-us",
+      "name": "CyclingArchiveClub",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "czteam-api.yml",
+      "id": "czteam-api",
+      "language": "ro-ro",
+      "name": "CZTeam (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "damagnet.yml",
+      "id": "damagnet",
+      "language": "en-us",
+      "name": "DaMagNet",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "danishbits-api.yml",
+      "id": "danishbits-api",
+      "language": "en-us",
+      "name": "DanishBits (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "darkpeers.yml",
+      "id": "darkpeers-api",
+      "language": "en-us",
+      "name": "Darkpeers (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "dasunerwartete.yml",
+      "id": "dasunerwartete",
+      "language": "de-de",
+      "name": "Das Unerwartete",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "dasunerwartete-api.yml",
+      "id": "dasunerwartete-api",
+      "language": "de-de",
+      "name": "Das Unerwartete (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "datascene-api.yml",
+      "id": "datascene-api",
+      "language": "en-us",
+      "name": "DataScene (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "daxiangjiao.yml",
+      "id": "daxiangjiao",
+      "language": "zh-cn",
+      "name": "DaXiangJiao (\u5927\u9999\u8549)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "deildu.yml",
+      "id": "deildu",
+      "language": "is-is",
+      "name": "Deildu",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: is-is",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "depthstudio.yml",
+      "id": "depthstudio",
+      "language": "zh-cn",
+      "name": "Depth Studio",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "desitorrents-api.yml",
+      "id": "desitorrents-api",
+      "language": "en-us",
+      "name": "DesiTorrents (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "devil-torrents.yml",
+      "id": "devil-torrents",
+      "language": "pl-pl",
+      "name": "Devil-Torrents",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "diablotorrent.yml",
+      "id": "diablotorrent",
+      "language": "hu-hu",
+      "name": "Diablo Torrent",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "digitalcore-api.yml",
+      "id": "digitalcore-api",
+      "language": "en-us",
+      "name": "DigitalCore (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "dimeadozen.yml",
+      "id": "dimeadozen",
+      "language": "en-gb",
+      "name": "DimeADozen",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "discfan.yml",
+      "id": "discfan",
+      "language": "zh-cn",
+      "name": "DiscFan",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "dmhy.yml",
+      "id": "dmhy",
+      "language": "zh-tw",
+      "name": "dmhy",
+      "reasons": [
+        "not English: zh-tw"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "docspedia.yml",
+      "id": "docspedia",
+      "language": "en-us",
+      "name": "DocsPedia",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "draupnirr.yml",
+      "id": "draupnirr",
+      "language": "fr-fr",
+      "name": "Draupnirr",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "dreadvault-api.yml",
+      "id": "dreadvault-api",
+      "language": "en-us",
+      "name": "DreadVault (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "dreamingtree.yml",
+      "id": "dreamingtree",
+      "language": "en-us",
+      "name": "DreamingTree",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "drugari.yml",
+      "id": "drugari",
+      "language": "hr-hr",
+      "name": "Drugari",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hr-hr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ds-reloaded.yml",
+      "id": "ds-reloaded",
+      "language": "de-de",
+      "name": "DS-Reloaded",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "dubhe.yml",
+      "id": "dubhe",
+      "language": "zh-cn",
+      "name": "dubhe (\u5929\u67a2)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "dxp.yml",
+      "id": "dxp",
+      "language": "ru-ru",
+      "name": "DXP",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "ebookbay.yml",
+      "id": "ebookbay",
+      "language": "en-us",
+      "name": "EBookBay",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "ebooks-shares.yml",
+      "id": "ebooks-shares",
+      "language": "en-us",
+      "name": "Ebooks-Shares",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "electro-torrent.yml",
+      "id": "electro-torrent",
+      "language": "pl-pl",
+      "name": "Electro-Torrent",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "empornium.yml",
+      "id": "empornium",
+      "language": "en-us",
+      "name": "Empornium",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "empornium2fa.yml",
+      "id": "empornium2fa",
+      "language": "en-us",
+      "name": "Empornium2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "emuwarez.yml",
+      "id": "emuwarez",
+      "language": "es-es",
+      "name": "eMuwarez (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "estone.yml",
+      "id": "estone",
+      "language": "hu-hu",
+      "name": "eStone",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ex-torrenty.yml",
+      "id": "ex-torrenty",
+      "language": "pl-pl",
+      "name": "Ex-torrenty",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "exitorrent-org.yml",
+      "id": "exitorrent-org",
+      "language": "pl-pl",
+      "name": "exitorrent.org",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "exkinoray.yml",
+      "id": "exkinoray",
+      "language": "ru-ru",
+      "name": "ExKinoRay",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "explosiv-world.yml",
+      "id": "explosiv-world",
+      "language": "de-de",
+      "name": "Explosiv-World",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "extremebits.yml",
+      "id": "extremebits",
+      "language": "en-us",
+      "name": "ExtremeBits",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "eztv.yml",
+      "id": "eztv",
+      "language": "en-us",
+      "name": "EZTV",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "eztvl.yml",
+      "id": "eztvl",
+      "language": "en-us",
+      "name": "EZTVL",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "f1carreras-api.yml",
+      "id": "f1carreras-api",
+      "language": "es-mx",
+      "name": "F1Carreras (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-mx"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "fanoin.yml",
+      "id": "fanoin",
+      "language": "lv-lv",
+      "name": "FANO.IN",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: lv-lv",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "fappaizuri.yml",
+      "id": "fappaizuri",
+      "language": "en-us",
+      "name": "Fappaizuri",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "fappaizuri2fa.yml",
+      "id": "fappaizuri2fa",
+      "language": "en-us",
+      "name": "Fappaizuri2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "femdomcult.yml",
+      "id": "femdomcult",
+      "language": "en-us",
+      "name": "Femdomcult",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "fenyarnyek-tracker.yml",
+      "id": "fenyarnyek-tracker",
+      "language": "hu-hu",
+      "name": "Fenyarnyek-Tracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "file-tracker.yml",
+      "id": "file-tracker",
+      "language": "ru-ru",
+      "name": "File-Tracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "filemood.yml",
+      "id": "filemood",
+      "language": "en-us",
+      "name": "FileMood",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "finelite.yml",
+      "id": "finelite",
+      "language": "fi-fi",
+      "name": "FinElite",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fi-fi",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "flood.yml",
+      "id": "flood",
+      "language": "en-us",
+      "name": "Flood",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "freefarm.yml",
+      "id": "freefarm",
+      "language": "zh-cn",
+      "name": "Free Farm (\u81ea\u7531\u519c\u573a)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "freejavtorrent.yml",
+      "id": "freejavtorrent",
+      "language": "en-us",
+      "name": "Free JAV Torrent",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "funfile.yml",
+      "id": "funfile",
+      "language": "en-us",
+      "name": "FunFile",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "funzone-api.yml",
+      "id": "funzone-api",
+      "language": "ro-ro",
+      "name": "funZone (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "futuretorrent.yml",
+      "id": "futuretorrent",
+      "language": "it-it",
+      "name": "FutureTorrent",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: it-it",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "fuzer.yml",
+      "id": "fuzer",
+      "language": "he-il",
+      "name": "Fuzer",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: he-il",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "g3minitr4ck3r-api.yml",
+      "id": "g3minitr4ck3r-api",
+      "language": "fr-fr",
+      "name": "G3MINI TR4CK3R (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "gamestorrents.yml",
+      "id": "gamestorrents",
+      "language": "es-es",
+      "name": "GamesTorrents",
+      "reasons": [
+        "not English: es-es",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "gay-torrents.yml",
+      "id": "gay-torrents",
+      "language": "en-us",
+      "name": "Gay-Torrents.net",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "gaytorrentru.yml",
+      "id": "gaytorrentru",
+      "language": "en-us",
+      "name": "GAYtorrent.ru",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "generationfree-api.yml",
+      "id": "generationfree-api",
+      "language": "fr-fr",
+      "name": "Generation-Free (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ggpt.yml",
+      "id": "ggpt",
+      "language": "zh-cn",
+      "name": "GGPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "gigatorrents.yml",
+      "id": "gigatorrents",
+      "language": "hu-hu",
+      "name": "GigaTorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "girotorrent.yml",
+      "id": "girotorrent",
+      "language": "it-it",
+      "name": "Girotorrent",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: it-it",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "haidan.yml",
+      "id": "haidan",
+      "language": "zh-cn",
+      "name": "HaiDan",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "haitang.yml",
+      "id": "haitang",
+      "language": "zh-cn",
+      "name": "H\u01ceit\u00e1ng (\u6d77\u68e0PT)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "happyfappy.yml",
+      "id": "happyfappy",
+      "language": "en-us",
+      "name": "HappyFappy",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "happyfappy2fa.yml",
+      "id": "happyfappy2fa",
+      "language": "en-us",
+      "name": "HappyFappy2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hawke-uno.yml",
+      "id": "hawke-uno",
+      "language": "en-us",
+      "name": "hawke-uno",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hd-club.yml",
+      "id": "hd-club",
+      "language": "cs-cz",
+      "name": "HD-CLUB",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: cs-cz",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hd-unit3d-api.yml",
+      "id": "hd-unit3d-api",
+      "language": "en-us",
+      "name": "HD-UNiT3D (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdarea.yml",
+      "id": "hdarea",
+      "language": "zh-cn",
+      "name": "HDArea",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdbao.yml",
+      "id": "hdbao",
+      "language": "zh-cn",
+      "name": "HDBao",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdc.yml",
+      "id": "hdc",
+      "language": "zh-cn",
+      "name": "HDCiTY",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdclone.yml",
+      "id": "hdclone",
+      "language": "zh-cn",
+      "name": "HDClone",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hddolby.yml",
+      "id": "hddolby",
+      "language": "zh-cn",
+      "name": "HD Dolby",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdfans.yml",
+      "id": "hdfans",
+      "language": "zh-cn",
+      "name": "HDFans",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdforever.yml",
+      "id": "hdforever",
+      "language": "fr-fr",
+      "name": "HD-Forever",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdforever2fa.yml",
+      "id": "hdforever2fa",
+      "language": "fr-fr",
+      "name": "HD-Forever2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdgalaktik.yml",
+      "id": "hdgalaktik",
+      "language": "ru-ru",
+      "name": "HDGalaKtik",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "hdhome.yml",
+      "id": "hdhome",
+      "language": "zh-cn",
+      "name": "HDHome",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdkylin.yml",
+      "id": "hdkylin",
+      "language": "zh-cn",
+      "name": "HDKylin (\u9e92\u9e9f)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdolimpo-api.yml",
+      "id": "hdolimpo-api",
+      "language": "es-es",
+      "name": "HD-Olimpo (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdonly-api.yml",
+      "id": "hdonly-api",
+      "language": "fr-fr",
+      "name": "HD-Only (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdroute.yml",
+      "id": "hdroute",
+      "language": "zh-cn",
+      "name": "HDRoute",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdsky.yml",
+      "id": "hdsky",
+      "language": "zh-cn",
+      "name": "HDSky",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdspace.yml",
+      "id": "hdspace",
+      "language": "en-us",
+      "name": "HD-Space",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdspacecookie.yml",
+      "id": "hdspacecookie",
+      "language": "en-us",
+      "name": "HD-SpaceCookie",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdtime.yml",
+      "id": "hdtime",
+      "language": "zh-cn",
+      "name": "HDtime",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdtorrents.yml",
+      "id": "hdtorrents",
+      "language": "en-us",
+      "name": "HD-Torrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdtorrentsit.yml",
+      "id": "hdtorrentsit",
+      "language": "it-it",
+      "name": "HDTorrents.it (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: it-it"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdturk.yml",
+      "id": "hdturk",
+      "language": "tr-tr",
+      "name": "HDTurk",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: tr-tr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdu.yml",
+      "id": "hdu",
+      "language": "zh-cn",
+      "name": "HDU",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdvideo.yml",
+      "id": "hdvideo",
+      "language": "zh-cn",
+      "name": "HDVideo",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdzero.yml",
+      "id": "hdzero-api",
+      "language": "es-es",
+      "name": "HDZero (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hebits.yml",
+      "id": "hebits",
+      "language": "he-il",
+      "name": "Hebits",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: he-il",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hellashut.yml",
+      "id": "hellashut",
+      "language": "el-gr",
+      "name": "HellasHut",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: el-gr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hellashut-api.yml",
+      "id": "hellashut-api",
+      "language": "el-gr",
+      "name": "HellasHut (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: el-gr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hellenic-hd-api.yml",
+      "id": "hellenic-hd-api",
+      "language": "el-gr",
+      "name": "HELLENIC-HD (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: el-gr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "helltorrents.yml",
+      "id": "helltorrents",
+      "language": "pl-pl",
+      "name": "HellTorrents",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "herobit.yml",
+      "id": "herobit",
+      "language": "hu-hu",
+      "name": "HeroBit",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hhanclub.yml",
+      "id": "hhanclub",
+      "language": "zh-cn",
+      "name": "HHanClub",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hhd-api.yml",
+      "id": "hhd-api",
+      "language": "en-us",
+      "name": "HHD (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "houseofdevil.yml",
+      "id": "houseofdevil",
+      "language": "de-de",
+      "name": "House of Devil",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hqmusic.yml",
+      "id": "hqmusic",
+      "language": "vi-vn",
+      "name": "HQMusic",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: vi-vn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hudbt.yml",
+      "id": "hudbt",
+      "language": "zh-cn",
+      "name": "HUDBT (\u8774\u8776)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "huntorrent.yml",
+      "id": "huntorrent",
+      "language": "hu-hu",
+      "name": "HunTorrent",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "hxpt.yml",
+      "id": "hxpt",
+      "language": "zh-cn",
+      "name": "HxPT (\u597d\u5b66)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ilcorsaroblu.yml",
+      "id": "ilcorsaroblu",
+      "language": "it-it",
+      "name": "Il Corsaro Blu",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: it-it",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "immortuos.yml",
+      "id": "immortuos",
+      "language": "de-de",
+      "name": "Immortuos",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "indietorrents.yml",
+      "id": "indietorrents",
+      "language": "en-gb",
+      "name": "Indietorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "infinityhd-api.yml",
+      "id": "infinityhd-api",
+      "language": "en-us",
+      "name": "InfinityHD (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "infire.yml",
+      "id": "infire",
+      "language": "sl-si",
+      "name": "Infire",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: sl-si",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "insanetracker.yml",
+      "id": "insanetracker",
+      "language": "hu-hu",
+      "name": "Insane Tracker",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "itatorrents.yml",
+      "id": "itatorrents",
+      "language": "it-it",
+      "name": "ItaTorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: it-it"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "jme-reunit3d-api.yml",
+      "id": "jme-reunit3d-api",
+      "language": "de-de",
+      "name": "JME-REUNIT3D (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "jpopsuki.yml",
+      "id": "jpopsuki",
+      "language": "en-us",
+      "name": "JPopsuki",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "jptv4us-api.yml",
+      "id": "jptv4us-api",
+      "language": "en-us",
+      "name": "JPTV4us (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "kamept.yml",
+      "id": "kamept",
+      "language": "zh-cn",
+      "name": "KamePT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "karagarga.yml",
+      "id": "karagarga",
+      "language": "en-us",
+      "name": "Karagarga",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "keepfriends.yml",
+      "id": "keepfriends",
+      "language": "zh-cn",
+      "name": "Keep Friends",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "kelu.yml",
+      "id": "kelu",
+      "language": "zh-cn",
+      "name": "Kelu",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "kinorun.yml",
+      "id": "kinorun",
+      "language": "ru-ru",
+      "name": "Kinorun",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "kinozal.yml",
+      "id": "kinozal",
+      "language": "ru-ru",
+      "name": "Kinozal",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "kinozal-magnet.yml",
+      "id": "kinozal-magnet",
+      "language": "ru-ru",
+      "name": "Kinozal (M)",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "korsar.yml",
+      "id": "korsar",
+      "language": "ru-ru",
+      "name": "Korsar",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "krazyzone.yml",
+      "id": "krazyzone",
+      "language": "en-us",
+      "name": "KrazyZone",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "kufei.yml",
+      "id": "kufei",
+      "language": "zh-cn",
+      "name": "Kufei (\u5e93\u975e)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "kufirc.yml",
+      "id": "kufirc",
+      "language": "hu-hu",
+      "name": "Kufirc",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "kufirc2fa.yml",
+      "id": "kufirc2fa",
+      "language": "hu-hu",
+      "name": "Kufirc2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lajidui.yml",
+      "id": "lajidui",
+      "language": "zh-cn",
+      "name": "lajidui",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lastdigitalunderground.yml",
+      "id": "lastdigitalunderground",
+      "language": "en-us",
+      "name": "Last Digital Underground",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lastfiles.yml",
+      "id": "lastfiles",
+      "language": "ro-ro",
+      "name": "LastFiles",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lat-team-api.yml",
+      "id": "lat-team-api",
+      "language": "es-mx",
+      "name": "Lat-Team (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-mx"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "learnflakes.yml",
+      "id": "learnflakes",
+      "language": "en-us",
+      "name": "LearnFlakes",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "leech24.yml",
+      "id": "leech24",
+      "language": "en-us",
+      "name": "leech24",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lemonhd-net.yml",
+      "id": "lemonhd-net",
+      "language": "zh-cn",
+      "name": "LemonHD.net",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lesaloon.yml",
+      "id": "lesaloon",
+      "language": "fr-fr",
+      "name": "LeSaloon",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "letseed.yml",
+      "id": "letseed",
+      "language": "tr-tr",
+      "name": "LetSeed",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: tr-tr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "libranet.yml",
+      "id": "libranet",
+      "language": "hu-hu",
+      "name": "LibraNet",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "linkomanija.yml",
+      "id": "linkomanija",
+      "language": "lt-lt",
+      "name": "LinkoManija",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: lt-lt",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "linuxtracker.yml",
+      "id": "linuxtracker",
+      "language": "en-us",
+      "name": "LinuxTracker",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "locadora.yml",
+      "id": "locadora",
+      "language": "pt-br",
+      "name": "Locadora (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "longpt.yml",
+      "id": "longpt",
+      "language": "zh-cn",
+      "name": "LongPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "losslessclub.yml",
+      "id": "losslessclub",
+      "language": "ru-ru",
+      "name": "LosslessClub",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lp-bits.yml",
+      "id": "lp-bits",
+      "language": "en-us",
+      "name": "LP-Bits 2.0",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lst.yml",
+      "id": "lst",
+      "language": "en-us",
+      "name": "LST",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "luckpt.yml",
+      "id": "luckpt",
+      "language": "zh-cn",
+      "name": "LuckPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "luminarr-api.yml",
+      "id": "luminarr-api",
+      "language": "en-us",
+      "name": "Luminarr (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mactorrentsdownload.yml",
+      "id": "mactorrentsdownload",
+      "language": "en-us",
+      "name": "Mac Torrents Download",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "madsrevolution.yml",
+      "id": "madsrevolution",
+      "language": "de-de",
+      "name": "MaDs Revolution",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "magico.yml",
+      "id": "magico",
+      "language": "el-gr",
+      "name": "Magico",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: el-gr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "magnetdownload.yml",
+      "id": "magnetdownload",
+      "language": "en-us",
+      "name": "MagnetDownload",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "majomparade.yml",
+      "id": "majomparade",
+      "language": "hu-hu",
+      "name": "Majompar\u00e1d\u00e9",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "malayabits-api.yml",
+      "id": "malayabits-api",
+      "language": "en-us",
+      "name": "Malayabits (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "march.yml",
+      "id": "march",
+      "language": "zh-cn",
+      "name": "March",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "marinetracker.yml",
+      "id": "marinetracker",
+      "language": "ru-ru",
+      "name": "Marine Tracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "matrix.yml",
+      "id": "matrix",
+      "language": "hu-hu",
+      "name": "Matrix",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mazepa.yml",
+      "id": "mazepa",
+      "language": "uk-ua",
+      "name": "Mazepa",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: uk-ua",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "mdan.yml",
+      "id": "mdan",
+      "language": "pt-br",
+      "name": "MDAN",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "megapeer.yml",
+      "id": "megapeer",
+      "language": "ru-ru",
+      "name": "MegaPeer",
+      "reasons": [
+        "not English: ru-ru"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "memphis.yml",
+      "id": "memphis",
+      "language": "fr-fr",
+      "name": "Memphis",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mesevilag.yml",
+      "id": "mesevilag",
+      "language": "hu-hu",
+      "name": "MeseVil\u00e1g",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "metalguru.yml",
+      "id": "metalguru",
+      "language": "en-us",
+      "name": "MetalGuru",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "metaltracker.yml",
+      "id": "metaltracker",
+      "language": "en-us",
+      "name": "Metal Tracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "midnightscene.yml",
+      "id": "midnightscene",
+      "language": "en-us",
+      "name": "MidnightScene",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mikan.yml",
+      "id": "mikan",
+      "language": "zh-cn",
+      "name": "Mikan",
+      "reasons": [
+        "not English: zh-cn"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "milkie.yml",
+      "id": "milkie",
+      "language": "en-us",
+      "name": "Milkie",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "milnueve-api.yml",
+      "id": "milnueve-api",
+      "language": "es-es",
+      "name": "Milnueve (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "miobt.yml",
+      "id": "miobt",
+      "language": "zh-cn",
+      "name": "MioBT",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "mixtapetorrent.yml",
+      "id": "mixtapetorrent",
+      "language": "en-us",
+      "name": "MixtapeTorrent",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "mma-torrents.yml",
+      "id": "mma-torrents",
+      "language": "en-us",
+      "name": "MMA-torrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mnv.yml",
+      "id": "mnv",
+      "language": "de-de",
+      "name": "MNV",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mojblink.yml",
+      "id": "mojblink",
+      "language": "sl-si",
+      "name": "MOJBLiNK",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: sl-si",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "momentpt.yml",
+      "id": "momentpt",
+      "language": "zh-cn",
+      "name": "MomentPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "monikadesign-api.yml",
+      "id": "monikadesign-api",
+      "language": "zh-cn",
+      "name": "MonikaDesign (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mousebits.yml",
+      "id": "mousebits",
+      "language": "en-us",
+      "name": "MouseBits",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "musebootlegs.yml",
+      "id": "musebootlegs",
+      "language": "en-us",
+      "name": "MuseBootlegs",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "musopia.yml",
+      "id": "musopia",
+      "language": "zh-cn",
+      "name": "Musopia (\u97f3\u4e50\u4e4c\u6258\u90a6)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "muxuege.yml",
+      "id": "muxuege",
+      "language": "zh-cn",
+      "name": "Muxuege",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "mvgroupforum.yml",
+      "id": "mvgroupforum",
+      "language": "en-us",
+      "name": "MVGroup Forum",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "mvgroupmain.yml",
+      "id": "mvgroupmain",
+      "language": "en-us",
+      "name": "MVGroup Main",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "mypornclub.yml",
+      "id": "mypornclub",
+      "language": "en-us",
+      "name": "MyPornClub",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "myspleen.yml",
+      "id": "myspleen",
+      "language": "en-us",
+      "name": "MySpleen",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "nanyangpt.yml",
+      "id": "nanyangpt",
+      "language": "zh-cn",
+      "name": "NanyangPT (\u5357\u6d0b)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ncore.yml",
+      "id": "ncore",
+      "language": "hu-hu",
+      "name": "nCore",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "nethd.yml",
+      "id": "nethd",
+      "language": "vi-vn",
+      "name": "NetHD",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: vi-vn",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "new-team.yml",
+      "id": "new-team",
+      "language": "ru-ru",
+      "name": "New-Team",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "newheaven.yml",
+      "id": "newheaven",
+      "language": "de-de",
+      "name": "New Heaven",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "newretro.yml",
+      "id": "newretro",
+      "language": "de-de",
+      "name": "The New Retro",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "newstudio.yml",
+      "id": "newstudio",
+      "language": "ru-ru",
+      "name": "NewStudio",
+      "reasons": [
+        "not English: ru-ru"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "newstudiol.yml",
+      "id": "newstudiol",
+      "language": "ru-ru",
+      "name": "NewStudioL",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "nicept.yml",
+      "id": "nicept",
+      "language": "zh-cn",
+      "name": "NicePT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "nipponsei.yml",
+      "id": "nipponsei",
+      "language": "en-us",
+      "name": "Nipponsei",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "nirvana.yml",
+      "id": "nirvana",
+      "language": "ru-ru",
+      "name": "Nirvana (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "njtupt.yml",
+      "id": "njtupt",
+      "language": "zh-cn",
+      "name": "njtupt (\u6d66\u56ed)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "nobs.yml",
+      "id": "nobs",
+      "language": "es-es",
+      "name": "NOBS",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "noname-club.yml",
+      "id": "noname-club",
+      "language": "ru-ru",
+      "name": "NoNaMe Club",
+      "reasons": [
+        "not English: ru-ru"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "noname-clubl.yml",
+      "id": "noname-clubl",
+      "language": "ru-ru",
+      "name": "NoNaMe ClubL",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "nordicbytes.yml",
+      "id": "nordicbytes",
+      "language": "en-us",
+      "name": "NordicBytes",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "nordicquality.yml",
+      "id": "nordicquality-api",
+      "language": "en-us",
+      "name": "NordicQuality (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "nostradamus.yml",
+      "id": "nostradamus",
+      "language": "fr-fr",
+      "name": "Nostradamus",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "novahd.yml",
+      "id": "novahd",
+      "language": "zh-cn",
+      "name": "NovaHD",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "okpt.yml",
+      "id": "okpt",
+      "language": "zh-cn",
+      "name": "OKPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "oldgreektracker.yml",
+      "id": "oldgreektracker",
+      "language": "el-gr",
+      "name": "Old Greek Tracker (OGT)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: el-gr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "oldtoonsworld.yml",
+      "id": "oldtoonsworld",
+      "language": "en-us",
+      "name": "OldToonsWorld (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "onejav.yml",
+      "id": "onejav",
+      "language": "en-us",
+      "name": "OneJAV",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "onlyencodes-api.yml",
+      "id": "onlyencodes-api",
+      "language": "en-us",
+      "name": "OnlyEncodes+ (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "opencd.yml",
+      "id": "opencd",
+      "language": "zh-cn",
+      "name": "OpenCD",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "opensharing.yml",
+      "id": "opensharing",
+      "language": "ru-ru",
+      "name": "OpenSharing",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "order66.yml",
+      "id": "order66",
+      "language": "en-us",
+      "name": "Order66",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "oshenpt.yml",
+      "id": "oshenpt",
+      "language": "zh-cn",
+      "name": "OshenPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ourbits.yml",
+      "id": "ourbits",
+      "language": "zh-cn",
+      "name": "OurBits",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "p2pbg.yml",
+      "id": "p2pbg",
+      "language": "bg-bg",
+      "name": "P2PBG",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: bg-bg",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "panda.yml",
+      "id": "panda",
+      "language": "zh-cn",
+      "name": "Panda",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pandacd.yml",
+      "id": "pandacd",
+      "language": "en-us",
+      "name": "PandaCD",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "parabellumhd-api.yml",
+      "id": "parabellumhd-api",
+      "language": "es-es",
+      "name": "ParabellumHD (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "party-tracker.yml",
+      "id": "party-tracker",
+      "language": "hu-hu",
+      "name": "Party-Tracker",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pctorrent.yml",
+      "id": "pctorrent",
+      "language": "ru-ru",
+      "name": "PC-torrent",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "peeratiko.yml",
+      "id": "peeratiko",
+      "language": "el-gr",
+      "name": "Peeratiko",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: el-gr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "peergarden.yml",
+      "id": "peergarden",
+      "language": "en-us",
+      "name": "PeerGarden",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "peersfm.yml",
+      "id": "peersfm",
+      "language": "ru-ru",
+      "name": "Peers.FM",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "phoenixproject.yml",
+      "id": "phoenixproject",
+      "language": "en-us",
+      "name": "Phoenix Project",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pier720.yml",
+      "id": "pier720",
+      "language": "ru-ru",
+      "name": "720pier",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pignetwork.yml",
+      "id": "pignetwork",
+      "language": "zh-cn",
+      "name": "PigNetwork (\u732a\u732a\u7f51)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pixelcove.yml",
+      "id": "pixelcove",
+      "language": "en-us",
+      "name": "PixelCove",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pixelcove2fa.yml",
+      "id": "pixelcove2fa",
+      "language": "en-us",
+      "name": "PixelCove2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "playletpt.yml",
+      "id": "playletpt",
+      "language": "zh-cn",
+      "name": "PlayletPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "plugintorrent.yml",
+      "id": "plugintorrent",
+      "language": "en-us",
+      "name": "plugintorrent",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "podzemlje.yml",
+      "id": "podzemlje",
+      "language": "en-us",
+      "name": "Podzemlje",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "polishtorrent.yml",
+      "id": "polishtorrent",
+      "language": "pl-pl",
+      "name": "Polish Torrent (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pl-pl"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "polishtracker-api.yml",
+      "id": "polishtracker-api",
+      "language": "pl-pl",
+      "name": "PolishTracker (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pl-pl"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "polskie-torrenty.yml",
+      "id": "polskie-torrenty",
+      "language": "pl-pl",
+      "name": "Polskie-Torrenty",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "pornolab.yml",
+      "id": "pornolab",
+      "language": "ru-ru",
+      "name": "PornoLab",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "pornotorrent.yml",
+      "id": "pornotorrent",
+      "language": "pt-br",
+      "name": "PornoTorrent",
+      "reasons": [
+        "not English: pt-br",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "pornrips.yml",
+      "id": "pornrips",
+      "language": "en-us",
+      "name": "PornRips",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "pornxlab.yml",
+      "id": "pornxlab",
+      "language": "en-us",
+      "name": "PornXLab",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "portugas-api.yml",
+      "id": "portugas-api",
+      "language": "pt-pt",
+      "name": "Portugas (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-pt"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "postman.yml",
+      "id": "postman",
+      "language": "en-us",
+      "name": "Postman",
+      "reasons": [
+        "requires account/authentication"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "postman-api.yml",
+      "id": "postman-api",
+      "language": "en-us",
+      "name": "Postman (API)",
+      "reasons": [
+        "not a public indexer type: semi-private"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "proaudiotorrents.yml",
+      "id": "proaudiotorrents",
+      "language": "en-us",
+      "name": "ProAudioTorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "proporno.yml",
+      "id": "proporno",
+      "language": "ru-ru",
+      "name": "ProPorno",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "ptcafe.yml",
+      "id": "ptcafe",
+      "language": "zh-cn",
+      "name": "PTCafe (\u5496\u5561)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptcc.yml",
+      "id": "ptcc",
+      "language": "zh-cn",
+      "name": "PTCC (\u6211\u7684PT)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pterclub.yml",
+      "id": "pterclub",
+      "language": "zh-cn",
+      "name": "PTerClub (PT\u4e4b\u53cb\u4ff1\u4e50\u90e8)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptfans.yml",
+      "id": "ptfans",
+      "language": "zh-cn",
+      "name": "PTFans",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptfiles.yml",
+      "id": "ptfiles",
+      "language": "en-us",
+      "name": "PTFiles",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptgtk.yml",
+      "id": "ptgtk",
+      "language": "zh-cn",
+      "name": "PT GTK",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pthome.yml",
+      "id": "pthome",
+      "language": "zh-cn",
+      "name": "PThome",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptitzmx.yml",
+      "id": "ptitzmx",
+      "language": "zh-cn",
+      "name": "PT\u5206\u4eab\u7ad9 (itzmx)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptlao.yml",
+      "id": "ptlao",
+      "language": "zh-cn",
+      "name": "PTLAO",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptlgs.yml",
+      "id": "ptlgs",
+      "language": "zh-cn",
+      "name": "PTLGS",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptsbao.yml",
+      "id": "ptsbao",
+      "language": "zh-cn",
+      "name": "PTSBAO (\u70e7\u5305)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptskit.yml",
+      "id": "ptskit",
+      "language": "zh-cn",
+      "name": "PTSKIT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pttey.yml",
+      "id": "pttey",
+      "language": "zh-cn",
+      "name": "PTTey",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pttime.yml",
+      "id": "pttime",
+      "language": "zh-cn",
+      "name": "PTTime",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptying.yml",
+      "id": "ptying",
+      "language": "zh-cn",
+      "name": "PTYING (\u6a31\u82b1)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptzone.yml",
+      "id": "ptzone",
+      "language": "zh-cn",
+      "name": "PTzone",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "punkshorror.yml",
+      "id": "punkshorror",
+      "language": "hu-hu",
+      "name": "Punk's Horror Tracker",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "puntotorrent.yml",
+      "id": "puntotorrent",
+      "language": "es-es",
+      "name": "PuntoTorrent",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pussytorrents.yml",
+      "id": "pussytorrents",
+      "language": "en-us",
+      "name": "PussyTorrents",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "putao.yml",
+      "id": "putao",
+      "language": "zh-cn",
+      "name": "PuTao (\u8461\u8404)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pwtorrents.yml",
+      "id": "pwtorrents",
+      "language": "en-us",
+      "name": "PWTorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "pwtorrents2fa.yml",
+      "id": "pwtorrents2fa",
+      "language": "en-us",
+      "name": "PWTorrents2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "qingwa.yml",
+      "id": "qingwa",
+      "language": "zh-cn",
+      "name": "Qingwa (\u9752\u86d9)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "r3vwtf.yml",
+      "id": "r3vwtf",
+      "language": "en-us",
+      "name": "R3V WTF!",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "racing4everyone-api.yml",
+      "id": "racing4everyone-api",
+      "language": "en-us",
+      "name": "Racing4Everyone (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "racingforme.yml",
+      "id": "racingforme",
+      "language": "en-us",
+      "name": "RacingForMe",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "railgunpt.yml",
+      "id": "railgunpt",
+      "language": "zh-cn",
+      "name": "RailgunPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "rainbowtracker.yml",
+      "id": "rainbowtracker",
+      "language": "ru-ru",
+      "name": "Rainbow Tracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "rastastugan-api.yml",
+      "id": "rastastugan-api",
+      "language": "en-us",
+      "name": "Rastastugan (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "redstartorrent.yml",
+      "id": "redstartorrent",
+      "language": "pl-pl",
+      "name": "Red Star Torrent",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "reelflix-api.yml",
+      "id": "reelflix-api",
+      "language": "en-us",
+      "name": "ReelFLiX (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "retromoviesclub-api.yml",
+      "id": "retromoviesclub-api",
+      "language": "en-us",
+      "name": "RetroMoviesClub (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "retrotoon.yml",
+      "id": "retrotoon",
+      "language": "en-us",
+      "name": "RetroToon",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "rgfootball.yml",
+      "id": "rgfootball",
+      "language": "ru-ru",
+      "name": "RGFootball",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "rintor.yml",
+      "id": "rintor",
+      "language": "ru-ru",
+      "name": "RinTor",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "rintornet.yml",
+      "id": "rintornet",
+      "language": "ru-ru",
+      "name": "RinTor.NeT",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "riperam.yml",
+      "id": "riperam",
+      "language": "ru-ru",
+      "name": "RiperAM",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "rockethd.yml",
+      "id": "rockethd",
+      "language": "de-de",
+      "name": "RocketHD (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "romanianmetaltorrents.yml",
+      "id": "romanianmetaltorrents",
+      "language": "en-us",
+      "name": "Romanian Metal Torrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "rousi-pro.yml",
+      "id": "rousi-pro",
+      "language": "zh-cn",
+      "name": "Rousi.pro",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "rudub.yml",
+      "id": "rudub",
+      "language": "ru-ru",
+      "name": "RUDUB",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "rustorka.yml",
+      "id": "rustorka",
+      "language": "ru-ru",
+      "name": "Rustorka",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "rutor.yml",
+      "id": "rutor",
+      "language": "ru-ru",
+      "name": "RuTor",
+      "reasons": [
+        "not English: ru-ru"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "samaritano.yml",
+      "id": "samaritano",
+      "language": "pt-br",
+      "name": "SAMARITANO (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sbpt.yml",
+      "id": "sbpt",
+      "language": "zh-cn",
+      "name": "SBPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "scenerush.yml",
+      "id": "scenerush",
+      "language": "pt-pt",
+      "name": "SceneRush",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-pt",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "scenetime-api.yml",
+      "id": "scenetime-api",
+      "language": "en-us",
+      "name": "SceneTime (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "seedcore-api.yml",
+      "id": "seedcore-api",
+      "language": "ro-ro",
+      "name": "SeedCore (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "seedfile.yml",
+      "id": "seedfile",
+      "language": "ro-ro",
+      "name": "SeedFile",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "seedpool-api.yml",
+      "id": "seedpool-api",
+      "language": "en-us",
+      "name": "seedpool (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "selezen.yml",
+      "id": "selezen",
+      "language": "ru-ru",
+      "name": "seleZen",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "sewerpt.yml",
+      "id": "sewerpt",
+      "language": "zh-cn",
+      "name": "SewerPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sextorrent-api.yml",
+      "id": "sextorrent-api",
+      "language": "en-us",
+      "name": "SexTorrent (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sexypics.yml",
+      "id": "sexypics",
+      "language": "en-us",
+      "name": "Sexy-Pics",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "shadowbit.yml",
+      "id": "shadowbit",
+      "language": "ro-ro",
+      "name": "Shadowbit",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "shakaw.yml",
+      "id": "shakaw",
+      "language": "pt-br",
+      "name": "ShaKaw",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-br",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "shareisland-api.yml",
+      "id": "shareisland-api",
+      "language": "it-it",
+      "name": "Shareisland (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: it-it"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "siambit.yml",
+      "id": "siambit",
+      "language": "th-th",
+      "name": "SiamBIT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: th-th",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "siqi.yml",
+      "id": "siqi",
+      "language": "zh-cn",
+      "name": "Siqi",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "skidrowrepack.yml",
+      "id": "skidrowrepack",
+      "language": "en-us",
+      "name": "SkidrowRepack",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "skipthecommercials-api.yml",
+      "id": "skipthecommercials-api",
+      "language": "en-us",
+      "name": "SkipTheCommercials (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sktorrent.yml",
+      "id": "sktorrent",
+      "language": "cs-cz",
+      "name": "Sk-CzTorrent",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: cs-cz",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "sktorrent-org.yml",
+      "id": "sktorrent-org",
+      "language": "en-us",
+      "name": "SkTorrent.org",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "slobitgames.yml",
+      "id": "slobitgames",
+      "language": "en-us",
+      "name": "Slobit Games",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "snowpt.yml",
+      "id": "snowpt",
+      "language": "zh-cn",
+      "name": "SnowPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sosulki.yml",
+      "id": "sosulki",
+      "language": "ru-ru",
+      "name": "sosulki",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "soulvoice.yml",
+      "id": "soulvoice",
+      "language": "zh-cn",
+      "name": "SoulVoice (\u8046\u97f3Club)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "speedmasterhd.yml",
+      "id": "speedmasterhd",
+      "language": "de-de",
+      "name": "Speedmaster HD",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "spiritofrevolution.yml",
+      "id": "spiritofrevolution",
+      "language": "de-de",
+      "name": "Spirit of Revolution",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sportscora.yml",
+      "id": "sportscora",
+      "language": "en-us",
+      "name": "SportsCora (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sportscult.yml",
+      "id": "sportscult",
+      "language": "en-us",
+      "name": "SportsCult",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sportz247.yml",
+      "id": "sportz247",
+      "language": "en-us",
+      "name": "Sportz247",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "springsunday.yml",
+      "id": "springsunday",
+      "language": "zh-cn",
+      "name": "SpringSunday",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "sukebeinyaasi.yml",
+      "id": "sukebeinyaasi",
+      "language": "en-us",
+      "name": "sukebei.nyaa.si",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "superbits.yml",
+      "id": "superbits",
+      "language": "sv-se",
+      "name": "Superbits",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: sv-se",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "swarmazon-api.yml",
+      "id": "swarmazon-api",
+      "language": "en-us",
+      "name": "Swarmazon (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tangpt.yml",
+      "id": "tangpt",
+      "language": "zh-cn",
+      "name": "TangPT (\u8eba\u5e73)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tapochek.yml",
+      "id": "tapochek",
+      "language": "ru-ru",
+      "name": "Tapochek",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tasmanit.yml",
+      "id": "tasmanit",
+      "language": "en-au",
+      "name": "Tasmanit",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "teamctgame.yml",
+      "id": "teamctgame",
+      "language": "fr-fr",
+      "name": "Team CT Game",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "teamflix.yml",
+      "id": "teamflix",
+      "language": "fr-fr",
+      "name": "TeamFlix",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "teamhd.yml",
+      "id": "teamhd",
+      "language": "ru-ru",
+      "name": "TeamHD",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "teamos.yml",
+      "id": "teamos",
+      "language": "en-us",
+      "name": "TeamOS",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thebrothers.yml",
+      "id": "thebrothers",
+      "language": "de-de",
+      "name": "The Brothers",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thecrazyones.yml",
+      "id": "thecrazyones",
+      "language": "de-de",
+      "name": "The Crazy Ones",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "theempire.yml",
+      "id": "theempire",
+      "language": "en-us",
+      "name": "The Empire",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thefallingangels.yml",
+      "id": "thefallingangels",
+      "language": "de-de",
+      "name": "The Falling Angels",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thegeeks.yml",
+      "id": "thegeeks",
+      "language": "en-us",
+      "name": "The Geeks",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thekitchen.yml",
+      "id": "thekitchen",
+      "language": "en-us",
+      "name": "The Kitchen",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "theleachzone-api.yml",
+      "id": "theleachzone-api",
+      "language": "en-us",
+      "name": "TheLeachZone (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "themixingbowl.yml",
+      "id": "themixingbowl",
+      "language": "en-us",
+      "name": "themixingbowl",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "thenewfun.yml",
+      "id": "thenewfun",
+      "language": "de-de",
+      "name": "The-New-Fun",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "theoccult.yml",
+      "id": "theoccult",
+      "language": "en-us",
+      "name": "The Occult",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "theoldschool-api.yml",
+      "id": "theoldschool-api",
+      "language": "fr-fr",
+      "name": "The Old School (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "theparadiese.yml",
+      "id": "theparadiese",
+      "language": "de-de",
+      "name": "The Paradiese",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "theplace.yml",
+      "id": "theplace",
+      "language": "en-us",
+      "name": "The Place",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "theshow.yml",
+      "id": "theshow",
+      "language": "en-us",
+      "name": "The Show",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thevault.yml",
+      "id": "thevault",
+      "language": "en-us",
+      "name": "The Vault",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thorhub-api.yml",
+      "id": "thorhub-api",
+      "language": "en-us",
+      "name": "Thor HUB (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tjupt.yml",
+      "id": "tjupt",
+      "language": "zh-cn",
+      "name": "TJUPT (\u5317\u6d0b\u56edPT)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tlfbits.yml",
+      "id": "tlfbits",
+      "language": "zh-cn",
+      "name": "TLFBits",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tmghub.yml",
+      "id": "tmghub",
+      "language": "en-us",
+      "name": "TmGHuB",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tocashare.yml",
+      "id": "tocashare",
+      "language": "pt-pt",
+      "name": "Toca Share (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-pt"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tormac.yml",
+      "id": "tormac",
+      "language": "ru-ru",
+      "name": "Tormac",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tornado.yml",
+      "id": "tornado",
+      "language": "sl-si",
+      "name": "Tornado",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: sl-si",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrent-heaven.yml",
+      "id": "torrent-heaven",
+      "language": "nl-nl",
+      "name": "Torrent Heaven",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: nl-nl",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrent-pirat.yml",
+      "id": "torrent-pirat",
+      "language": "ru-ru",
+      "name": "torrent-pirat",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrent-turk.yml",
+      "id": "torrent-turk",
+      "language": "tr-tr",
+      "name": "TOrrent-tuRK",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: tr-tr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrent9.yml",
+      "id": "torrent9",
+      "language": "fr-fr",
+      "name": "Torrent9",
+      "reasons": [
+        "not English: fr-fr"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrentbd.yml",
+      "id": "torrentbd",
+      "language": "en-us",
+      "name": "TorrentBD",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrentby.yml",
+      "id": "torrentby",
+      "language": "ru-ru",
+      "name": "torrent.by",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrentccf.yml",
+      "id": "torrentccf",
+      "language": "zh-cn",
+      "name": "TorrentCCF",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrentclaw.yml",
+      "id": "torrentclaw",
+      "language": "en-us",
+      "name": "TorrentClaw",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrentdd.yml",
+      "id": "torrentdd",
+      "language": "th-th",
+      "name": "TorrentDD",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: th-th",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrenteros-api.yml",
+      "id": "torrenteros-api",
+      "language": "es-es",
+      "name": "Torrenteros (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: es-es"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrenthaven-api.yml",
+      "id": "torrenthaven-api",
+      "language": "en-us",
+      "name": "TorrentHaven (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrenthr-api.yml",
+      "id": "torrenthr-api",
+      "language": "hr-hr",
+      "name": "TorrentHR (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hr-hr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrenting.yml",
+      "id": "torrenting",
+      "language": "en-us",
+      "name": "Torrenting",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrentkitty.yml",
+      "id": "torrentkitty",
+      "language": "en-us",
+      "name": "TorrentKitty",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrentleech.yml",
+      "id": "torrentleech",
+      "language": "en-us",
+      "name": "TorrentLeech",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrentlt.yml",
+      "id": "torrentlt",
+      "language": "lt-lt",
+      "name": "Torrent.LT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: lt-lt",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "torrentmasters.yml",
+      "id": "torrentmasters",
+      "language": "hu-hu",
+      "name": "TorrentMasters",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "torrentoyunindir.yml",
+      "id": "torrentoyunindir",
+      "language": "tr-tr",
+      "name": "Torrent Oyun indir",
+      "reasons": [
+        "not English: tr-tr",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrentproject2.yml",
+      "id": "torrentproject2",
+      "language": "en-us",
+      "name": "TorrentProject2",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrentsome.yml",
+      "id": "torrentsome",
+      "language": "ko-kr",
+      "name": "Torrentsome",
+      "reasons": [
+        "not English: ko-kr"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrenttip.yml",
+      "id": "torrenttip",
+      "language": "ko-kr",
+      "name": "Torrenttip",
+      "reasons": [
+        "not English: ko-kr"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "torrenttrader.yml",
+      "id": "torrenttrader",
+      "language": "de-de",
+      "name": "Torrent Trader",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "totheglory.yml",
+      "id": "totheglory",
+      "language": "zh-cn",
+      "name": "ToTheGlory",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "totheglory2fa.yml",
+      "id": "totheglory2fa",
+      "language": "zh-cn",
+      "name": "ToTheGlory2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tr4ker.yml",
+      "id": "tr4ker",
+      "language": "fr-fr",
+      "name": "TR4KER",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "trackermk.yml",
+      "id": "trackermk",
+      "language": "mk-mk",
+      "name": "TrackerMK",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: mk-mk",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "trackerzero.yml",
+      "id": "trackerzero",
+      "language": "it-it",
+      "name": "TrackerZero",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: it-it"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "traht.yml",
+      "id": "traht",
+      "language": "ru-ru",
+      "name": "TrahT",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "trancetraffic.yml",
+      "id": "trancetraffic",
+      "language": "en-us",
+      "name": "TranceTraffic",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "trezzor.yml",
+      "id": "trezzor",
+      "language": "cs-cz",
+      "name": "TreZzoR",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: cs-cz",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "trezzorcookie.yml",
+      "id": "trezzorcookie",
+      "language": "cs-cz",
+      "name": "TreZzoRCookie",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: cs-cz",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "tribalmixes.yml",
+      "id": "tribalmixes",
+      "language": "en-gb",
+      "name": "TribalMixes",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "turkseed-api.yml",
+      "id": "turkseed-api",
+      "language": "tr-tr",
+      "name": "TurkSeed (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: tr-tr"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "turktorrent.yml",
+      "id": "turktorrent",
+      "language": "tr-tr",
+      "name": "TurkTorrent",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: tr-tr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "u2.yml",
+      "id": "u2",
+      "language": "zh-cn",
+      "name": "U2",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "u3c3.yml",
+      "id": "u3c3",
+      "language": "zh-cn",
+      "name": "U3C3",
+      "reasons": [
+        "not English: zh-cn",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "ubits.yml",
+      "id": "ubits",
+      "language": "zh-cn",
+      "name": "UBits",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ultrabits-api.yml",
+      "id": "ultrabits-api",
+      "language": "sv-se",
+      "name": "Ultrabits (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: sv-se",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ultrahd.yml",
+      "id": "ultrahd",
+      "language": "zh-cn",
+      "name": "UltraHD",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "unbreakable.yml",
+      "id": "unbreakable",
+      "language": "de-de",
+      "name": "Unbreakable",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "unionfansub.yml",
+      "id": "unionfansub",
+      "language": "es-es",
+      "name": "Union Fansub",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: es-es",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "unlimitz.yml",
+      "id": "unlimitz",
+      "language": "th-th",
+      "name": "Unlimitz",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: th-th",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "uploadcx.yml",
+      "id": "uploadcx",
+      "language": "en-us",
+      "name": "upload.cx (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "upscalevault.yml",
+      "id": "upscalevault-api",
+      "language": "en-us",
+      "name": "Upscale Vault (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "utopia.yml",
+      "id": "utopia",
+      "language": "uk-ua",
+      "name": "UTOPIA (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: uk-ua"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "uztracker.yml",
+      "id": "uztracker",
+      "language": "ru-ru",
+      "name": "UzTracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: ru-ru",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
+      "file": "v3x.yml",
+      "id": "v3x",
+      "language": "fr-fr",
+      "name": "V3X",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "vault-network.yml",
+      "id": "vault-network",
+      "language": "en-us",
+      "name": "Vault network",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "vc-lib.yml",
+      "id": "vc-lib",
+      "language": "zh-cn",
+      "name": "VC-Lib",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "vietmediaf.yml",
+      "id": "vietmediaf",
+      "language": "vi-vn",
+      "name": "VietMediaF",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: vi-vn"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "vsthouse.yml",
+      "id": "vsthouse",
+      "language": "ru-ru",
+      "name": "VSTHouse",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "vstorrent.yml",
+      "id": "vstorrent",
+      "language": "en-us",
+      "name": "VSTorrent",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "vsttorrents.yml",
+      "id": "vsttorrents",
+      "language": "en-us",
+      "name": "VST Torrentz",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "whiteangel.yml",
+      "id": "whiteangel",
+      "language": "hu-hu",
+      "name": "White Angel",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "wihd.yml",
+      "id": "wihd",
+      "language": "fr-fr",
+      "name": "World-In-HD",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "wintersakura.yml",
+      "id": "wintersakura",
+      "language": "zh-cn",
+      "name": "WinterSakura",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "world-of-tomorrow.yml",
+      "id": "world-of-tomorrow",
+      "language": "de-de",
+      "name": "World-of-Tomorrow",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "world-torrent.yml",
+      "id": "world-torrent",
+      "language": "fr-fr",
+      "name": "World-torrent",
+      "reasons": [
+        "not English: fr-fr"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "xdy.yml",
+      "id": "xdy",
+      "language": "zh-cn",
+      "name": "XDY (\u4fee\u9053\u9662)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xingtan.yml",
+      "id": "xingtan",
+      "language": "zh-cn",
+      "name": "Xingtan (\u674f\u575b)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xingwan.yml",
+      "id": "xingwan",
+      "language": "zh-cn",
+      "name": "Xingwan (\u661f\u6e7e)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xingyung.yml",
+      "id": "xingyung",
+      "language": "zh-cn",
+      "name": "Xingyung (\u661f\u9668\u9601)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xloli.yml",
+      "id": "xloli",
+      "language": "zh-cn",
+      "name": "xloli",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xtorrenty.yml",
+      "id": "xtorrenty",
+      "language": "pl-pl",
+      "name": "xTorrenty",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pl-pl",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xtremebytes.yml",
+      "id": "xtremebytes",
+      "language": "en-us",
+      "name": "Xtreme Bytes",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xwtclassics.yml",
+      "id": "xwtclassics",
+      "language": "en-us",
+      "name": "XWT-Classics",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xwtclassics2fa.yml",
+      "id": "xwtclassics2fa",
+      "language": "en-us",
+      "name": "XWT-Classics2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xwtorrents.yml",
+      "id": "xwtorrents",
+      "language": "en-us",
+      "name": "XWtorrents",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xwtorrents2fa.yml",
+      "id": "xwtorrents2fa",
+      "language": "en-us",
+      "name": "XWtorrents2FA",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xxxclub.yml",
+      "id": "xxxclub",
+      "language": "en-us",
+      "name": "XXXClub",
+      "reasons": [
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "xxxtor.yml",
+      "id": "xxxtor",
+      "language": "ru-ru",
+      "name": "xxxtor",
+      "reasons": [
+        "not English: ru-ru",
+        "no movie/TV capability"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "yggreborn-api.yml",
+      "id": "yggreborn-api",
+      "language": "fr-fr",
+      "name": "YggReborn (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "yuscene-api.yml",
+      "id": "yuscene-api",
+      "language": "en-us",
+      "name": "YUSCENE (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "zamundarip.yml",
+      "id": "zamundarip",
+      "language": "bg-bg",
+      "name": "Zamunda RIP",
+      "reasons": [
+        "not English: bg-bg"
+      ],
+      "type": "public"
+    },
+    {
+      "file": "zappateers.yml",
+      "id": "zappateers",
+      "language": "en-us",
+      "name": "Zappateers",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "zenith.yml",
+      "id": "zenith",
+      "language": "en-us",
+      "name": "Zenith",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "zmpt.yml",
+      "id": "zmpt",
+      "language": "zh-cn",
+      "name": "ZmPT (\u7ec7\u68a6)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "zrpt.yml",
+      "id": "zrpt",
+      "language": "zh-cn",
+      "name": "ZRPT (\u81ea\u7136)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ztracker.yml",
+      "id": "ztracker",
+      "language": "hu-hu",
+      "name": "Ztracker",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    }
+  ],
+  "rejected_count": 525,
+  "source": "Prowlarr/Indexers definitions/v11"
+}
