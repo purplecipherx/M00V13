@@ -71,6 +71,7 @@ public final class MainActivity extends Activity {
         nav.addView(navButton("Downloads", v -> startActivity(new Intent(this, DownloadsActivity.class))));
         nav.addView(navButton("Search", v -> startActivity(new Intent(this, SearchActivity.class))));
         nav.addView(navButton("Debrid", v -> startActivity(new Intent(this, DebridActivity.class))));
+        nav.addView(navButton("Metadata", v -> startActivity(new Intent(this, MetadataActivity.class))));
         nav.addView(navButton("System", v -> startActivity(new Intent(Settings.ACTION_SETTINGS))));
         root.addView(nav);
 
@@ -142,7 +143,6 @@ public final class MainActivity extends Activity {
             root.addView(empty);
             return;
         }
-
         HorizontalScrollView hsv = new HorizontalScrollView(this);
         hsv.setHorizontalScrollBarEnabled(false);
         LinearLayout row = new LinearLayout(this);
@@ -158,20 +158,13 @@ public final class MainActivity extends Activity {
         long p = profiles.progressMs(item.id), d = profiles.durationMs(item.id);
         String progress = p > 0 && d > 0 ? "\n" + Math.min(99, (p * 100 / d)) + "% watched" : "";
         b.setText(item.title + sub + progress);
-        b.setTextColor(WHITE);
-        b.setTextSize(16);
-        b.setAllCaps(false);
-        b.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-        b.setFocusable(true);
+        b.setTextColor(WHITE); b.setTextSize(16); b.setAllCaps(false);
+        b.setGravity(Gravity.START | Gravity.CENTER_VERTICAL); b.setFocusable(true);
         b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(CARD));
         LinearLayout.LayoutParams pms = new LinearLayout.LayoutParams(dp(250), dp(112));
-        pms.setMarginEnd(dp(12));
-        b.setLayoutParams(pms);
+        pms.setMarginEnd(dp(12)); b.setLayoutParams(pms);
         b.setOnClickListener(v -> openMedia(item));
-        b.setOnLongClickListener(v -> {
-            profiles.setWatchlist(item.id, !profiles.isInWatchlist(item.id));
-            return true;
-        });
+        b.setOnLongClickListener(v -> { profiles.setWatchlist(item.id, !profiles.isInWatchlist(item.id)); return true; });
         return b;
     }
 
@@ -181,8 +174,7 @@ public final class MainActivity extends Activity {
             Intent choose = new Intent(this, SourceSelectionActivity.class);
             choose.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID, item.id);
             choose.putExtra(SourceSelectionActivity.EXTRA_TITLE, item.title);
-            startActivity(choose);
-            return;
+            startActivity(choose); return;
         }
         if (item.streamUri == null || item.streamUri.isEmpty()) return;
         Intent play = new Intent(this, PlayerActivity.class);
@@ -194,33 +186,23 @@ public final class MainActivity extends Activity {
     private String storageSummary() {
         long free = StoragePolicy.availableBytes(getFilesDir());
         String debrid = new DebridStore(this).isConnected() ? " • debrid connected" : " • debrid not connected";
+        String metadata = new MetadataStore(this).isConfigured() ? " • metadata connected" : " • metadata not connected";
         return "Free " + (free / StoragePolicy.MIB) + " MiB  •  protected system reserve " +
-            (StoragePolicy.SYSTEM_RESERVE_BYTES / StoragePolicy.MIB) + " MiB" + debrid;
+            (StoragePolicy.SYSTEM_RESERVE_BYTES / StoragePolicy.MIB) + " MiB" + debrid + metadata;
     }
 
     private Button navButton(String label, View.OnClickListener click) {
         Button b = new Button(this);
-        b.setText(label);
-        b.setTextColor(WHITE);
-        b.setTextSize(15);
-        b.setAllCaps(false);
-        b.setFocusable(true);
+        b.setText(label); b.setTextColor(WHITE); b.setTextSize(15); b.setAllCaps(false); b.setFocusable(true);
         b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PURPLE));
         if (click != null) b.setOnClickListener(click);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, dp(54), 1f);
-        p.setMarginEnd(dp(9));
-        b.setLayoutParams(p);
-        return b;
+        p.setMarginEnd(dp(9)); b.setLayoutParams(p); return b;
     }
 
     private TextView text(String value, int sp, boolean bold) {
-        TextView v = new TextView(this);
-        v.setText(value);
-        v.setTextColor(WHITE);
-        v.setTextSize(sp);
-        v.setGravity(Gravity.CENTER_VERTICAL);
-        if (bold) v.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        return v;
+        TextView v = new TextView(this); v.setText(value); v.setTextColor(WHITE); v.setTextSize(sp); v.setGravity(Gravity.CENTER_VERTICAL);
+        if (bold) v.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); return v;
     }
 
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
