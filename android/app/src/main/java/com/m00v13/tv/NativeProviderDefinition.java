@@ -1,10 +1,17 @@
 package com.m00v13.tv;
 
-import java.util.Arrays;
+import android.content.Context;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public final class NativeProviderDefinition {
+    public final String id;
     public final String name;
     public final List<String> mirrors;
     public final String searchPath;
@@ -16,43 +23,43 @@ public final class NativeProviderDefinition {
     public final String magnetSelector;
     public final int maxResults;
 
-    public NativeProviderDefinition(String name, List<String> mirrors, String searchPath,
+    public NativeProviderDefinition(String id, String name, List<String> mirrors, String searchPath,
                                     String rowSelector, String titleSelector, String detailsAttribute,
                                     String seedersSelector, String sizeSelector, String magnetSelector,
                                     int maxResults) {
-        this.name = name;
-        this.mirrors = mirrors == null ? Collections.emptyList() : Collections.unmodifiableList(mirrors);
-        this.searchPath = searchPath;
-        this.rowSelector = rowSelector;
-        this.titleSelector = titleSelector;
-        this.detailsAttribute = detailsAttribute;
-        this.seedersSelector = seedersSelector;
-        this.sizeSelector = sizeSelector;
-        this.magnetSelector = magnetSelector;
+        this.id = id == null || id.isEmpty() ? "unknown" : id;
+        this.name = name == null || name.isEmpty() ? this.id : name;
+        this.mirrors = mirrors == null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(mirrors));
+        this.searchPath = searchPath; this.rowSelector = rowSelector; this.titleSelector = titleSelector;
+        this.detailsAttribute = detailsAttribute; this.seedersSelector = seedersSelector;
+        this.sizeSelector = sizeSelector; this.magnetSelector = magnetSelector;
         this.maxResults = Math.max(1, maxResults);
     }
 
-    public static List<NativeProviderDefinition> builtIns() {
-        // Selectors and mirrors are intentionally data, not provider-specific code. The
-        // first built-in mirrors current Prowlarr/Cardigann v11 behavior for 1337x.
-        NativeProviderDefinition x1337 = new NativeProviderDefinition(
-            "1337x",
-            Arrays.asList(
-                "https://1337x.to/",
-                "https://1337x.st/",
-                "https://x1337x.ws/",
-                "https://x1337x.eu/",
-                "https://x1337x.cc/"
-            ),
-            "search/{query}/1/",
-            "tr:has(a[href^=/torrent/])",
-            "td[class^=coll-1] a[href^=/torrent/]",
-            "href",
-            "td[class^=coll-2]",
-            "td[class^=coll-4]",
-            "ul li a[href^=magnet:]",
-            16
-        );
-        return Collections.singletonList(x1337);
+    public static List<NativeProviderDefinition> load(Context context) {
+        ArrayList<NativeProviderDefinition> out = new ArrayList<>();
+        try (InputStream in = context.getAssets().open("cardigann_providers.json")) {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream(); byte[] b = new byte[8192]; int n;
+            while ((n = in.read(b)) >= 0) bytes.write(b, 0, n);
+            JSONObject root = new JSONObject(new String(bytes.toByteArray(), StandardCharsets.UTF_8));
+            JSONArray providers = root.optJSONArray("providers");
+            if (providers != null) for (int i = 0; i < providers.length(); i++) {
+                JSONObject o = providers.optJSONObject(i); if (o == null) continue;
+                NativeProviderDefinition d = new NativeProviderDefinition(
+                    o.optString("id"), o.optString("name"), strings(o.optJSONArray("mirrors")),
+                    o.optString("searchPath"), o.optString("rowSelector"), o.optString("titleSelector"),
+                    o.optString("detailsAttribute", "href"), o.optString("seedersSelector"),
+                    o.optString("sizeSelector"), o.optString("magnetSelector"), o.optInt("maxResults", 16));
+                if (!d.mirrors.isEmpty() && !d.searchPath.isEmpty() && !d.rowSelector.isEmpty() && !d.titleSelector.isEmpty()) out.add(d);
+            }
+        } catch (Exception ignored) {}
+        return Collections.unmodifiableList(out);
+    }
+
+    private static List<String> strings(JSONArray a) {
+        if (a == null) return Collections.emptyList();
+        ArrayList<String> out = new ArrayList<>();
+        for (int i=0; i<a.length(); i++) { String s=a.optString(i, ""); if(!s.isEmpty()) out.add(s); }
+        return out;
     }
 }
