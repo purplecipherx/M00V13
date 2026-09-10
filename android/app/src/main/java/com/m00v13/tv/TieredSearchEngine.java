@@ -9,57 +9,75 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Tier 1 -> Tier 2 -> Tier 3 waterfall. Providers run concurrently inside each tier.
- * We stop early only when the accumulated result set is actually useful, and when
- * Real-Debrid is connected we preferentially continue until cached sources are found.
- */
+/** Tier 1 -> Tier 2 -> Tier 3 waterfall with user-configurable provider tiers. */
 public final class TieredSearchEngine {
     private static final int MIN_USABLE = 5;
     private static final int MIN_CACHED = 2;
     private static final int MIN_WITHOUT_DEBRID = 8;
     private static final int MAX_CACHE_PROBES_PER_PASS = 8;
     private static final int MAX_RETURNED = 40;
-
     private final Context context;
 
-    public TieredSearchEngine(Context context) {
-        this.context = context.getApplicationContext();
-    }
+    public TieredSearchEngine(Context context) { this.context = context.getApplicationContext(); }
 
     public NativeScraperEngine.SearchResult search(String query) {
         ArrayList<SourceOption> collected = new ArrayList<>();
         ArrayList<String> errors = new ArrayList<>();
         boolean debridConnected = new DebridStore(context).isConnected();
+        AppSettingsStore settings = new AppSettingsStore(context);
 
         for (int tier = 1; tier <= 3; tier++) {
+            if (!tierEnabled(settings, tier)) continue;
+            long started = System.currentTimeMillis();
             NativeScraperEngine.SearchResult pass = new NativeScraperEngine(context, tier).search(query);
+            DebugLog.append(context, "SEARCH", "tier=" + tier + " query='" + query + "' sources=" + pass.sources.size() + " ms=" + (System.currentTimeMillis()-started));
             collected.addAll(pass.sources);
             errors.addAll(pass.providerErrors);
-            collected = dedupe(collected);
+            collected = filterBySettings(dedupe(collected), settings);
             collected = rank(collected);
 
             if (debridConnected && !collected.isEmpty()) {
-                try {
-                    collected = new ArrayList<>(new RealDebridClient(context).probeCache(collected, MAX_CACHE_PROBES_PER_PASS));
-                } catch (Exception e) {
-                    errors.add("debrid cache probe: " + shortMessage(e));
-                }
+                try { collected = new ArrayList<>(new RealDebridClient(context).probeCache(collected, MAX_CACHE_PROBES_PER_PASS)); }
+                catch (Exception e) { errors.add("debrid cache probe: " + shortMessage(e)); }
             }
-
             if (satisfied(collected, debridConnected)) break;
         }
 
-        collected = rank(dedupe(collected));
+        collected = rank(filterBySettings(dedupe(collected), settings));
         if (collected.size() > MAX_RETURNED) collected = new ArrayList<>(collected.subList(0, MAX_RETURNED));
         return new NativeScraperEngine.SearchResult(Collections.unmodifiableList(collected), Collections.unmodifiableList(errors));
+    }
+
+    private static boolean tierEnabled(AppSettingsStore s, int tier) {
+        return tier == 1 ? s.providerTier1() : tier == 2 ? s.providerTier2() : s.providerTier3();
+    }
+
+    private static ArrayList<SourceOption> filterBySettings(List<SourceOption> input, AppSettingsStore settings) {
+        ArrayList<SourceOption> out = new ArrayList<>();
+        int max = qualityRank(settings.maxQuality());
+        for (SourceOption s : input) {
+            int q = qualityRank(s.quality);
+            if (q > max && q > 0) continue;
+            if (s.sizeBytes > 0 && s.sizeBytes > settings.maxDownloadGiB() * 1073741824L) continue;
+            out.add(s);
+        }
+        return out;
+    }
+
+    private static int qualityRank(String q) {
+        if (q == null) return 0;
+        String v = q.toLowerCase(Locale.US);
+        if (v.contains("2160") || v.contains("4k")) return 4;
+        if (v.contains("1080")) return 3;
+        if (v.contains("720")) return 2;
+        if (v.contains("480") || v.contains("sd")) return 1;
+        return 0;
     }
 
     private static boolean satisfied(List<SourceOption> sources, boolean debridConnected) {
         if (sources.size() < MIN_USABLE) return false;
         if (!debridConnected) return sources.size() >= MIN_WITHOUT_DEBRID;
-        int cached = 0;
-        for (SourceOption source : sources) if (Boolean.TRUE.equals(source.cached)) cached++;
+        int cached = 0; for (SourceOption source : sources) if (Boolean.TRUE.equals(source.cached)) cached++;
         return cached >= MIN_CACHED;
     }
 
@@ -67,8 +85,7 @@ public final class TieredSearchEngine {
         Map<String, SourceOption> unique = new LinkedHashMap<>();
         for (SourceOption source : input) {
             if (source == null || source.uri == null || source.uri.trim().isEmpty()) continue;
-            String key = dedupeKey(source.uri);
-            SourceOption current = unique.get(key);
+            String key = dedupeKey(source.uri); SourceOption current = unique.get(key);
             if (current == null || source.score > current.score) unique.put(key, source);
         }
         return new ArrayList<>(unique.values());
@@ -76,27 +93,20 @@ public final class TieredSearchEngine {
 
     private static ArrayList<SourceOption> rank(List<SourceOption> input) {
         ArrayList<SourceOption> out = new ArrayList<>(input);
-        out.sort(Comparator
-            .comparing((SourceOption s) -> Boolean.TRUE.equals(s.cached)).reversed()
+        out.sort(Comparator.comparing((SourceOption s) -> Boolean.TRUE.equals(s.cached)).reversed()
             .thenComparing(Comparator.comparingInt((SourceOption s) -> s.score).reversed())
             .thenComparing(Comparator.comparingInt((SourceOption s) -> s.seeders).reversed()));
         return out;
     }
 
     private static String dedupeKey(String uri) {
-        String lower = uri.toLowerCase(Locale.US);
-        int start = lower.indexOf("btih:");
-        if (start >= 0) {
-            int end = lower.indexOf('&', start);
-            return end < 0 ? lower.substring(start) : lower.substring(start, end);
-        }
+        String lower = uri.toLowerCase(Locale.US); int start = lower.indexOf("btih:");
+        if (start >= 0) { int end = lower.indexOf('&', start); return end < 0 ? lower.substring(start) : lower.substring(start, end); }
         return lower;
     }
 
     private static String shortMessage(Throwable t) {
-        Throwable x = t;
-        while (x.getCause() != null) x = x.getCause();
-        String m = x.getMessage();
-        return m == null || m.trim().isEmpty() ? x.getClass().getSimpleName() : m;
+        Throwable x=t; while(x.getCause()!=null)x=x.getCause(); String m=x.getMessage();
+        return m==null||m.trim().isEmpty()?x.getClass().getSimpleName():m;
     }
 }
