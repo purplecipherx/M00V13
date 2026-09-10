@@ -26,8 +26,8 @@ public final class NativeProviderDefinition {
         this.jsonRowsPath=nz(jsonRowsPath); this.jsonExpandArrayPath=nz(jsonExpandArrayPath); this.jsonTitlePath=nz(jsonTitlePath); this.jsonSeedersPath=nz(jsonSeedersPath); this.jsonSizePath=nz(jsonSizePath); this.jsonInfoHashPath=nz(jsonInfoHashPath); this.jsonQualityPath=nz(jsonQualityPath); this.jsonCodecPath=nz(jsonCodecPath); this.jsonAudioPath=nz(jsonAudioPath); this.jsonUrlPath=nz(jsonUrlPath); this.maxResults=Math.max(1,maxResults); this.tier=Math.max(1,Math.min(3,tier));
     }
     public boolean isJson(){return "json".equalsIgnoreCase(responseType);}
-
-    public static List<NativeProviderDefinition> load(Context context){
+    public static List<NativeProviderDefinition> load(Context context){return load(context,0);}
+    public static List<NativeProviderDefinition> load(Context context,int wantedTier){
         ArrayList<NativeProviderDefinition> out=new ArrayList<>();
         try(InputStream in=context.getAssets().open("cardigann_providers.json")){
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] b=new byte[8192];int n;while((n=in.read(b))>=0)bytes.write(b,0,n);
@@ -37,7 +37,7 @@ public final class NativeProviderDefinition {
                 NativeProviderDefinition d=new NativeProviderDefinition(o.optString("id"),o.optString("name"),strings(o.optJSONArray("mirrors")),o.optString("responseType","html"),o.optString("searchPath"),o.optString("queryParam"),o.optString("queryString"),o.optString("rowSelector"),o.optString("titleSelector"),o.optString("titleAttribute"),o.optString("detailsSelector"),o.optString("detailsAttribute","href"),o.optString("seedersSelector"),o.optString("sizeSelector"),o.optString("rowMagnetSelector"),o.optString("detailMagnetSelector",o.optString("magnetSelector")),o.optString("jsonRowsPath"),o.optString("jsonExpandArrayPath"),o.optString("jsonTitlePath"),o.optString("jsonSeedersPath"),o.optString("jsonSizePath"),o.optString("jsonInfoHashPath"),o.optString("jsonQualityPath"),o.optString("jsonCodecPath"),o.optString("jsonAudioPath"),o.optString("jsonUrlPath"),o.optInt("maxResults",16),o.optInt("tier",2));
                 boolean validJson=d.isJson()&&!d.jsonRowsPath.isEmpty()&&!d.jsonTitlePath.isEmpty()&&!d.jsonInfoHashPath.isEmpty();
                 boolean hasMagnet=!d.rowMagnetSelector.isEmpty()||!d.detailMagnetSelector.isEmpty();boolean validHtml=!d.isJson()&&!d.rowSelector.isEmpty()&&!d.titleSelector.isEmpty()&&hasMagnet;
-                if(!d.mirrors.isEmpty()&&!d.searchPath.isEmpty()&&(validJson||validHtml))out.add(d);
+                if(!d.mirrors.isEmpty()&&!d.searchPath.isEmpty()&&(validJson||validHtml)&&(wantedTier==0||d.tier==wantedTier))out.add(d);
             }
         }catch(Exception ignored){}
         return Collections.unmodifiableList(out);
