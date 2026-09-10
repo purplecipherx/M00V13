@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote_plus
 import yaml
 
-COMPILER_SCHEMA = 6
+COMPILER_SCHEMA = 7
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
@@ -26,6 +26,9 @@ MANUAL = {
     "nyaasi": {"searchPath":"?q={query}&f=0&c=0_0&s=id&o=desc","rowSelector":"tr.default,tr.danger,tr.success","titleSelector":"td:nth-child(2) a:last-of-type","detailsSelector":"td:nth-child(2) a:last-of-type","detailsAttribute":"href","seedersSelector":"td:nth-child(6):not(:empty)","sizeSelector":"td:nth-child(4)","rowMagnetSelector":'td:nth-child(3) a[href^="magnet:?"]',"maxResults":16},
     "yts": {"responseType":"json","searchPath":"https://movies-api.accel.li/api/v2/list_movies.json?query_term={query}&limit=50&sort_by=date_added&order_by=desc","jsonRowsPath":"data.movies","jsonExpandArrayPath":"torrents","jsonTitlePath":"..title_long","jsonSeedersPath":"seeds","jsonSizePath":"size_bytes","jsonInfoHashPath":"hash","jsonQualityPath":"quality","jsonCodecPath":"video_codec","jsonAudioPath":"audio_channels","jsonUrlPath":"url","maxResults":20},
     "thepiratebay": {"responseType":"json","searchPath":"https://apibay.org/q.php?q={query}&cat=200","jsonRowsPath":"$","jsonTitlePath":"name","jsonSeedersPath":"seeders","jsonSizePath":"size","jsonInfoHashPath":"info_hash","maxResults":20},
+    "52bt": {"searchPath":"search-{query}-0-2-1.html?lang=en","rowSelector":"article.resource-card","titleSelector":'a[href^="/hash/"]',"detailsSelector":'a[href^="/hash/"]',"detailsAttribute":"href","rowInfoHashSelector":'a[href^="/hash/"]',"rowInfoHashAttribute":"href","sizeSelector":"div.meta span:nth-child(2)","maxResults":16},
+    "magnetcat": {"searchPath":"search-{query}-0-2-1.html","rowSelector":"article.zsky-result-row","titleSelector":'a[href^="/hash/"]',"detailsSelector":'a[href^="/hash/"]',"detailsAttribute":"href","rowInfoHashSelector":'a[href^="/hash/"]',"rowInfoHashAttribute":"href","sizeSelector":"div.zsky-result-meta span:nth-child(2)","maxResults":16},
+    "kickasstorrents-ws": {"searchPath":"usearch/{query}/?field=time_add&sorder=desc","rowSelector":"table.data tr[id]:has(a[data-download])","titleSelector":'a[class="cellMainLink"]',"detailsSelector":'a[class="cellMainLink"]',"detailsAttribute":"href","seedersSelector":"td:nth-child(4)","sizeSelector":"td:nth-child(2)","rowMagnetSelector":"td:nth-child(1) > div > a[data-download]","rowMagnetAttribute":"href","rowMagnetQueryParam":"url","maxResults":16},
 }
 
 CONFIG_RE = re.compile(r"\{\{\s*\.Config\.([A-Za-z0-9_-]+)\s*\}\}")
@@ -175,7 +178,7 @@ def compile_one(raw: Dict[str,Any]) -> Tuple[Optional[Dict[str,Any]],List[str]]:
     if not row_magnet and not info_sel and not detail_magnet and not detail_info: reasons.append("no supported magnet/infohash selector")
     if reasons: return None,reasons
 
-    record={"id":ident,"name":name,"mirrors":links[:8],"searchPath":path,"rowSelector":row_sel,"titleSelector":title_sel,"titleAttribute":title_attr,"detailsSelector":details_sel or title_sel or "","detailsAttribute":"href","seedersSelector":seed_sel,"sizeSelector":size_sel,"rowMagnetSelector":row_magnet or "","rowInfoHashSelector":info_sel,"rowInfoHashAttribute":info_attr,"detailMagnetSelector":detail_magnet,"detailInfoHashSelector":detail_info,"maxResults":16}
+    record={"id":ident,"name":name,"mirrors":links[:8],"searchPath":path,"rowSelector":row_sel,"titleSelector":title_sel,"titleAttribute":title_attr,"detailsSelector":details_sel or title_sel or "","detailsAttribute":"href","seedersSelector":seed_sel,"sizeSelector":size_sel,"rowMagnetSelector":row_magnet or "","rowMagnetAttribute":"href","rowMagnetQueryParam":"","rowInfoHashSelector":info_sel,"rowInfoHashAttribute":info_attr,"detailMagnetSelector":detail_magnet,"detailInfoHashSelector":detail_info,"maxResults":16}
     record["tier"]=provider_tier(ident,record)
     return record,[]
 
