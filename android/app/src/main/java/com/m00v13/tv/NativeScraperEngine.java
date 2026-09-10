@@ -32,7 +32,10 @@ public final class NativeScraperEngine {
     public NativeScraperEngine(Context context){ this.context=context.getApplicationContext(); }
 
     public static final class SearchResult { public final List<SourceOption> sources; public final List<String> providerErrors; SearchResult(List<SourceOption>s,List<String>e){sources=s;providerErrors=e;} }
-    private static final class Candidate { final NativeProviderDefinition provider; final String baseUrl,title,detailsUrl; final int seeders; final long sizeBytes; Candidate(NativeProviderDefinition p,String b,String t,String d,int s,long z){provider=p;baseUrl=b;title=t;detailsUrl=d;seeders=s;sizeBytes=z;} }
+    private static final class Candidate {
+        final NativeProviderDefinition provider; final String baseUrl,title,detailsUrl,rowMagnet; final int seeders; final long sizeBytes;
+        Candidate(NativeProviderDefinition p,String b,String t,String d,String m,int s,long z){provider=p;baseUrl=b;title=t;detailsUrl=d;rowMagnet=m;seeders=s;sizeBytes=z;}
+    }
 
     public SearchResult search(String rawQuery){
         String query=rawQuery==null?"":rawQuery.trim(); if(query.isEmpty())return new SearchResult(Collections.emptyList(),Collections.emptyList());
@@ -55,9 +58,45 @@ public final class NativeScraperEngine {
     }
 
     private List<Candidate> searchProvider(NativeProviderDefinition p,String query)throws Exception{
-        Exception last=null; for(String mirror:p.mirrors){try{String base=trailing(mirror),path=p.searchPath.replace("{query}",Uri.encode(query));String html=fetch(new URL(new URL(base),path).toString());Document doc=Jsoup.parse(html,base);Elements rows=doc.select(p.rowSelector);ArrayList<Candidate> out=new ArrayList<>();for(Element row:rows){Element te=row.selectFirst(p.titleSelector);if(te==null)continue;String title=te.text().trim(),href=te.attr(p.detailsAttribute);if(title.isEmpty()||href.isEmpty())continue;out.add(new Candidate(p,base,title,new URL(new URL(base),href).toString(),parseInt(textOf(row,p.seedersSelector),-1),ReleaseMetadataParser.parseSizeBytes(textOf(row,p.sizeSelector))));if(out.size()>=p.maxResults)break;}if(!out.isEmpty())return out;}catch(Exception e){last=e;}}if(last!=null)throw last;return Collections.emptyList();
+        Exception last=null;
+        for(String mirror:p.mirrors){
+            try{
+                String base=trailing(mirror), path=p.searchPath.replace("{query}",Uri.encode(query));
+                String html=fetch(new URL(new URL(base),path).toString());
+                Document doc=Jsoup.parse(html,base); Elements rows=doc.select(p.rowSelector); ArrayList<Candidate> out=new ArrayList<>();
+                for(Element row:rows){
+                    Element te=row.selectFirst(p.titleSelector); if(te==null)continue;
+                    String title=te.text().trim(); if(title.isEmpty())continue;
+                    String rowMagnet="";
+                    if(!p.rowMagnetSelector.isEmpty()){ Element me=row.selectFirst(p.rowMagnetSelector); if(me!=null)rowMagnet=me.attr("href"); }
+                    String detailsUrl="";
+                    if(rowMagnet==null||!rowMagnet.startsWith("magnet:")){
+                        Element de=row.selectFirst(p.detailsSelector); if(de==null)continue;
+                        String href=de.attr(p.detailsAttribute); if(href.isEmpty())continue;
+                        detailsUrl=new URL(new URL(base),href).toString();
+                    }
+                    out.add(new Candidate(p,base,title,detailsUrl,rowMagnet,
+                        parseInt(textOf(row,p.seedersSelector),0),ReleaseMetadataParser.parseSizeBytes(textOf(row,p.sizeSelector))));
+                    if(out.size()>=p.maxResults)break;
+                }
+                if(!out.isEmpty())return out;
+            }catch(Exception e){last=e;}
+        }
+        if(last!=null)throw last; return Collections.emptyList();
     }
-    private SourceOption resolveCandidate(Candidate c)throws Exception{Document doc=Jsoup.parse(fetch(c.detailsUrl),c.baseUrl);Element m=doc.selectFirst(c.provider.magnetSelector);if(m==null)return null;String uri=m.attr("href");if(uri==null||!uri.startsWith("magnet:"))return null;ReleaseMetadataParser.Parsed meta=ReleaseMetadataParser.parse(c.title);return new SourceOption(c.provider.name,uri,meta.quality,meta.videoCodec,meta.hdr,meta.audioCodec,meta.audioLayout,meta.audioLanguages,meta.subtitleLanguages,c.sizeBytes,c.seeders,null,score(meta,c.seeders,c.sizeBytes));}
+
+    private SourceOption resolveCandidate(Candidate c)throws Exception{
+        String uri=c.rowMagnet;
+        if(uri==null||!uri.startsWith("magnet:")){
+            if(c.detailsUrl==null||c.detailsUrl.isEmpty()||c.provider.detailMagnetSelector.isEmpty())return null;
+            Document doc=Jsoup.parse(fetch(c.detailsUrl),c.baseUrl); Element m=doc.selectFirst(c.provider.detailMagnetSelector); if(m==null)return null;
+            uri=m.attr("href");
+        }
+        if(uri==null||!uri.startsWith("magnet:"))return null;
+        ReleaseMetadataParser.Parsed meta=ReleaseMetadataParser.parse(c.title);
+        return new SourceOption(c.provider.name,uri,meta.quality,meta.videoCodec,meta.hdr,meta.audioCodec,meta.audioLayout,meta.audioLanguages,meta.subtitleLanguages,c.sizeBytes,c.seeders,null,score(meta,c.seeders,c.sizeBytes));
+    }
+
     private String fetch(String url)throws IOException{HttpURLConnection c=(HttpURLConnection)new URL(url).openConnection();c.setConnectTimeout(CONNECT_TIMEOUT_MS);c.setReadTimeout(READ_TIMEOUT_MS);c.setInstanceFollowRedirects(true);c.setRequestProperty("User-Agent",USER_AGENT);c.setRequestProperty("Accept","text/html,application/xhtml+xml");c.setRequestProperty("Accept-Language","en-US,en;q=0.8");int code=c.getResponseCode();InputStream raw=code>=400?c.getErrorStream():c.getInputStream();String body=raw==null?"":readLimited(raw,MAX_BODY_BYTES);c.disconnect();String lower=body.toLowerCase(Locale.US);if(code==403||code==503||lower.contains("cf-chl-")||lower.contains("cloudflare ray id")||lower.contains("just a moment..."))throw new IOException("challenge page detected; provider skipped");if(code<200||code>=300)throw new IOException("HTTP "+code);return body;}
     private static String readLimited(InputStream raw,int max)throws IOException{try(InputStream in=new BufferedInputStream(raw);ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[8192];int total=0;while(total<max){int n=in.read(b,0,Math.min(b.length,max-total));if(n<0)break;out.write(b,0,n);total+=n;}return new String(out.toByteArray(),StandardCharsets.UTF_8);}}
     private static String textOf(Element row,String selector){if(selector==null||selector.isEmpty())return"";Element e=row.selectFirst(selector);return e==null?"":e.text();}
