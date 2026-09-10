@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - "tools/sync_indexers.py"
+      - "tools/compile_cardigann_android.py"
       - "m00v13/indexers/**"
       - "requirements-dev.txt"
       - ".github/workflows/sync-indexers.yml"
@@ -25,15 +26,16 @@ jobs:
           python-version: "3.11"
       - run: python -m pip install -r requirements-dev.txt
       - run: python tools/sync_indexers.py
+      - run: python tools/compile_cardigann_android.py
       - name: Commit catalog changes
         shell: bash
         run: |
-          if git diff --quiet -- indexers; then
+          if git diff --quiet -- indexers android/app/src/main/assets/cardigann_providers.json; then
             echo "Indexer catalog already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add indexers
-          git commit -m "Sync public English Prowlarr indexers"
+          git add indexers android/app/src/main/assets/cardigann_providers.json
+          git commit -m "Sync and compile public English Prowlarr indexers"
           git push
