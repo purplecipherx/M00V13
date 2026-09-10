@@ -70,6 +70,7 @@ public final class MainActivity extends Activity {
         nav.addView(navButton("TV", v -> openBrowse(BrowseActivity.KIND_TV)));
         nav.addView(navButton("Downloads", v -> startActivity(new Intent(this, DownloadsActivity.class))));
         nav.addView(navButton("Search", v -> startActivity(new Intent(this, SearchActivity.class))));
+        nav.addView(navButton("Debrid", v -> startActivity(new Intent(this, DebridActivity.class))));
         nav.addView(navButton("System", v -> startActivity(new Intent(Settings.ACTION_SETTINGS))));
         root.addView(nav);
 
@@ -192,7 +193,9 @@ public final class MainActivity extends Activity {
 
     private String storageSummary() {
         long free = StoragePolicy.availableBytes(getFilesDir());
-        return "Free " + (free / StoragePolicy.MIB) + " MiB  •  protected system reserve " + (StoragePolicy.SYSTEM_RESERVE_BYTES / StoragePolicy.MIB) + " MiB";
+        String debrid = new DebridStore(this).isConnected() ? " • debrid connected" : " • debrid not connected";
+        return "Free " + (free / StoragePolicy.MIB) + " MiB  •  protected system reserve " +
+            (StoragePolicy.SYSTEM_RESERVE_BYTES / StoragePolicy.MIB) + " MiB" + debrid;
     }
 
     private Button navButton(String label, View.OnClickListener click) {
