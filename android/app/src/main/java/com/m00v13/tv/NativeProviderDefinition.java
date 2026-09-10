@@ -17,22 +17,30 @@ public final class NativeProviderDefinition {
     public final String searchPath;
     public final String rowSelector;
     public final String titleSelector;
+    public final String detailsSelector;
     public final String detailsAttribute;
     public final String seedersSelector;
     public final String sizeSelector;
-    public final String magnetSelector;
+    public final String rowMagnetSelector;
+    public final String detailMagnetSelector;
     public final int maxResults;
 
     public NativeProviderDefinition(String id, String name, List<String> mirrors, String searchPath,
-                                    String rowSelector, String titleSelector, String detailsAttribute,
-                                    String seedersSelector, String sizeSelector, String magnetSelector,
-                                    int maxResults) {
+                                    String rowSelector, String titleSelector, String detailsSelector,
+                                    String detailsAttribute, String seedersSelector, String sizeSelector,
+                                    String rowMagnetSelector, String detailMagnetSelector, int maxResults) {
         this.id = id == null || id.isEmpty() ? "unknown" : id;
         this.name = name == null || name.isEmpty() ? this.id : name;
         this.mirrors = mirrors == null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(mirrors));
-        this.searchPath = searchPath; this.rowSelector = rowSelector; this.titleSelector = titleSelector;
-        this.detailsAttribute = detailsAttribute; this.seedersSelector = seedersSelector;
-        this.sizeSelector = sizeSelector; this.magnetSelector = magnetSelector;
+        this.searchPath = searchPath;
+        this.rowSelector = rowSelector;
+        this.titleSelector = titleSelector;
+        this.detailsSelector = detailsSelector == null || detailsSelector.isEmpty() ? titleSelector : detailsSelector;
+        this.detailsAttribute = detailsAttribute == null || detailsAttribute.isEmpty() ? "href" : detailsAttribute;
+        this.seedersSelector = seedersSelector;
+        this.sizeSelector = sizeSelector;
+        this.rowMagnetSelector = rowMagnetSelector == null ? "" : rowMagnetSelector;
+        this.detailMagnetSelector = detailMagnetSelector == null ? "" : detailMagnetSelector;
         this.maxResults = Math.max(1, maxResults);
     }
 
@@ -48,9 +56,14 @@ public final class NativeProviderDefinition {
                 NativeProviderDefinition d = new NativeProviderDefinition(
                     o.optString("id"), o.optString("name"), strings(o.optJSONArray("mirrors")),
                     o.optString("searchPath"), o.optString("rowSelector"), o.optString("titleSelector"),
-                    o.optString("detailsAttribute", "href"), o.optString("seedersSelector"),
-                    o.optString("sizeSelector"), o.optString("magnetSelector"), o.optInt("maxResults", 16));
-                if (!d.mirrors.isEmpty() && !d.searchPath.isEmpty() && !d.rowSelector.isEmpty() && !d.titleSelector.isEmpty()) out.add(d);
+                    o.optString("detailsSelector"), o.optString("detailsAttribute", "href"),
+                    o.optString("seedersSelector"), o.optString("sizeSelector"),
+                    o.optString("rowMagnetSelector"),
+                    o.optString("detailMagnetSelector", o.optString("magnetSelector")),
+                    o.optInt("maxResults", 16));
+                boolean hasMagnet = !d.rowMagnetSelector.isEmpty() || !d.detailMagnetSelector.isEmpty();
+                if (!d.mirrors.isEmpty() && !d.searchPath.isEmpty() && !d.rowSelector.isEmpty() &&
+                    !d.titleSelector.isEmpty() && hasMagnet) out.add(d);
             }
         } catch (Exception ignored) {}
         return Collections.unmodifiableList(out);
