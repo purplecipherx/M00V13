@@ -6,8 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public final class CatalogStore {
@@ -35,7 +35,9 @@ public final class CatalogStore {
 
     public synchronized void upsert(MediaCard card) {
         List<MediaCard> items = new ArrayList<>(all());
-        items.removeIf(i -> i.id.equals(card.id));
+        for (Iterator<MediaCard> it = items.iterator(); it.hasNext();) {
+            if (it.next().id.equals(card.id)) it.remove();
+        }
         items.add(card);
         save(items);
     }
