@@ -105,9 +105,11 @@ public final class SearchActivity extends Activity {
         }
         onlineButton.setEnabled(false);
         onlineStatus.setText("Searching provider tiers…");
+        final LoadingOverlay loading = LoadingOverlay.show(this);
         searchExecutor.submit(() -> {
             NativeScraperEngine.SearchResult result = new NativeScraperEngine().search(query);
             runOnUiThread(() -> {
+                loading.hide();
                 if (isFinishing() || isDestroyed()) return;
                 onlineButton.setEnabled(true);
                 if (result.sources.isEmpty()) {
