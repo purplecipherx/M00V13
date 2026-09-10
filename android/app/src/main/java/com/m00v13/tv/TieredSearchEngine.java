@@ -52,13 +52,13 @@ public final class TieredSearchEngine {
         return tier == 1 ? s.providerTier1() : tier == 2 ? s.providerTier2() : s.providerTier3();
     }
 
+    /** Playback quality preferences filter streaming candidates; download-size policy is applied only by download planning. */
     private static ArrayList<SourceOption> filterBySettings(List<SourceOption> input, AppSettingsStore settings) {
         ArrayList<SourceOption> out = new ArrayList<>();
         int max = qualityRank(settings.maxQuality());
         for (SourceOption s : input) {
             int q = qualityRank(s.quality);
             if (q > max && q > 0) continue;
-            if (s.sizeBytes > 0 && s.sizeBytes > settings.maxDownloadGiB() * 1073741824L) continue;
             out.add(s);
         }
         return out;
