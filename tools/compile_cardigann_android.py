@@ -11,12 +11,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote_plus
 import yaml
 
-COMPILER_SCHEMA = 5
+COMPILER_SCHEMA = 6
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
 
-TIER1 = {"1337x", "yts", "torrentdownload", "limetorrents"}
+TIER1 = {"1337x", "yts", "torrentdownload", "limetorrents", "thepiratebay"}
 TIER2 = {"nyaasi", "uindex", "kickasstorrents-to", "extratorrent-st", "tokyotosho"}
 
 MANUAL = {
@@ -25,6 +25,7 @@ MANUAL = {
     "limetorrents": {"searchPath":"search/all/{query}/date/1/","rowSelector":".table2 > tbody > tr[bgcolor]","titleSelector":'div.tt-name > a[href^="/"]',"detailsSelector":'div.tt-name > a[href^="/"]',"detailsAttribute":"href","seedersSelector":".tdseed","sizeSelector":"td:nth-child(3)","detailMagnetSelector":'a.csprite_dltorrent[href^="magnet:"]',"maxResults":16},
     "nyaasi": {"searchPath":"?q={query}&f=0&c=0_0&s=id&o=desc","rowSelector":"tr.default,tr.danger,tr.success","titleSelector":"td:nth-child(2) a:last-of-type","detailsSelector":"td:nth-child(2) a:last-of-type","detailsAttribute":"href","seedersSelector":"td:nth-child(6):not(:empty)","sizeSelector":"td:nth-child(4)","rowMagnetSelector":'td:nth-child(3) a[href^="magnet:?"]',"maxResults":16},
     "yts": {"responseType":"json","searchPath":"https://movies-api.accel.li/api/v2/list_movies.json?query_term={query}&limit=50&sort_by=date_added&order_by=desc","jsonRowsPath":"data.movies","jsonExpandArrayPath":"torrents","jsonTitlePath":"..title_long","jsonSeedersPath":"seeds","jsonSizePath":"size_bytes","jsonInfoHashPath":"hash","jsonQualityPath":"quality","jsonCodecPath":"video_codec","jsonAudioPath":"audio_channels","jsonUrlPath":"url","maxResults":20},
+    "thepiratebay": {"responseType":"json","searchPath":"https://apibay.org/q.php?q={query}&cat=200","jsonRowsPath":"$","jsonTitlePath":"name","jsonSeedersPath":"seeders","jsonSizePath":"size","jsonInfoHashPath":"info_hash","maxResults":20},
 }
 
 CONFIG_RE = re.compile(r"\{\{\s*\.Config\.([A-Za-z0-9_-]+)\s*\}\}")
@@ -37,9 +38,9 @@ def provider_tier(ident: str, compiled: Dict[str, Any]) -> int:
         return 1
     if ident in TIER2:
         return 2
-    # Direct-magnet providers avoid an extra details-page request and are cheap enough
-    # for the normal fallback tier. Everything else remains the broad final tier.
-    return 2 if compiled.get("rowMagnetSelector") else 3
+    if compiled.get("rowMagnetSelector") or compiled.get("rowInfoHashSelector"):
+        return 2
+    return 3
 
 
 def config_defaults(raw: Dict[str, Any]) -> Dict[str, str]:
@@ -121,6 +122,13 @@ def download_magnet_selector(raw: Dict[str,Any], defaults: Dict[str,str]) -> Opt
     return None
 
 
+def download_infohash_selector(raw: Dict[str,Any], defaults: Dict[str,str]) -> Optional[str]:
+    download=raw.get("download") if isinstance(raw.get("download"),dict) else {}
+    info=download.get("infohash") if isinstance(download.get("infohash"),dict) else {}
+    h=info.get("hash") if isinstance(info.get("hash"),dict) else {}
+    return selector(h,defaults)
+
+
 def compile_one(raw: Dict[str,Any]) -> Tuple[Optional[Dict[str,Any]],List[str]]:
     reasons=[]; ident=str(raw.get("id") or "").strip(); name=str(raw.get("name") or ident).strip(); defaults=config_defaults(raw)
     links=[x for x in (raw.get("links") or []) if isinstance(x,str) and x.startswith("https://")]
@@ -139,28 +147,35 @@ def compile_one(raw: Dict[str,Any]) -> Tuple[Optional[Dict[str,Any]],List[str]]:
 
     path=choose_path(search,defaults); row_sel=static(rows.get("selector"),defaults)
     title_field=fields.get("title") if isinstance(fields.get("title"),dict) else None; details_field=fields.get("details") if isinstance(fields.get("details"),dict) else title_field
-    title_sel=selector(title_field,defaults); details_sel=selector(details_field,defaults); details_attr=details_field.get("attribute","href") if isinstance(details_field,dict) else "href"
+    title_sel=selector(title_field,defaults); title_attr=(title_field.get("attribute") if isinstance(title_field,dict) else "") or ""
+    details_sel=selector(details_field,defaults); details_attr=details_field.get("attribute","href") if isinstance(details_field,dict) else "href"
     seed_sel=selector(fields.get("seeders"),defaults) or ""; size_sel=selector(fields.get("size"),defaults) or ""
     magnet_field=fields.get("magnet") if isinstance(fields.get("magnet"),dict) else None
     download_field=fields.get("download") if isinstance(fields.get("download"),dict) else None
+    infohash_field=fields.get("infohash") if isinstance(fields.get("infohash"),dict) else None
     row_magnet=selector(magnet_field,defaults)
     if not row_magnet:
         ds=selector(download_field,defaults)
         if ds and "magnet" in ds.lower() and download_field.get("attribute","href")=="href": row_magnet=ds
-    detail_magnet=download_magnet_selector(raw,defaults)
+    info_sel=selector(infohash_field,defaults) or ""
+    info_attr=(infohash_field.get("attribute") if isinstance(infohash_field,dict) else "") or ""
+    if not row_magnet and info_sel and info_attr=="href" and "magnet" in info_sel.lower():
+        row_magnet=info_sel; info_sel=""; info_attr=""
+    detail_magnet=download_magnet_selector(raw,defaults) or ""
+    detail_info=download_infohash_selector(raw,defaults) or ""
 
     if not path: reasons.append("search path/inputs need unsupported template logic")
     if not row_sel: reasons.append("row selector is dynamic/missing")
     if not title_sel: reasons.append("title must be a direct static selector")
-    if isinstance(title_field,dict) and title_field.get("attribute") not in (None,""): reasons.append("title attribute/filter extraction unsupported")
-    # A details page is only needed if the result row does not already expose a magnet.
-    if not row_magnet:
+    if title_attr not in ("", "title"): reasons.append("title attribute/filter extraction unsupported")
+    row_direct=bool(row_magnet or info_sel)
+    if not row_direct:
         if not details_sel: reasons.append("details must be a direct static selector")
         if details_attr!="href": reasons.append("details attribute is not href")
-    if not row_magnet and not detail_magnet: reasons.append("no supported magnet selector")
+    if not row_magnet and not info_sel and not detail_magnet and not detail_info: reasons.append("no supported magnet/infohash selector")
     if reasons: return None,reasons
 
-    record={"id":ident,"name":name,"mirrors":links[:8],"searchPath":path,"rowSelector":row_sel,"titleSelector":title_sel,"detailsSelector":details_sel or title_sel or "","detailsAttribute":"href","seedersSelector":seed_sel,"sizeSelector":size_sel,"rowMagnetSelector":row_magnet or "","detailMagnetSelector":detail_magnet or "","maxResults":16}
+    record={"id":ident,"name":name,"mirrors":links[:8],"searchPath":path,"rowSelector":row_sel,"titleSelector":title_sel,"titleAttribute":title_attr,"detailsSelector":details_sel or title_sel or "","detailsAttribute":"href","seedersSelector":seed_sel,"sizeSelector":size_sel,"rowMagnetSelector":row_magnet or "","rowInfoHashSelector":info_sel,"rowInfoHashAttribute":info_attr,"detailMagnetSelector":detail_magnet,"detailInfoHashSelector":detail_info,"maxResults":16}
     record["tier"]=provider_tier(ident,record)
     return record,[]
 
