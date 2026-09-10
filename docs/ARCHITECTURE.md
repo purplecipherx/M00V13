@@ -86,31 +86,57 @@ Every provider returns a normalized mapping compatible with `m00v13.source.Norma
 
 ## Download storage policy
 
-Offline downloads must support two independent user controls:
+Offline downloads must enforce a built-in system safety floor in addition to optional user limits.
 
-- **Maximum M00V13 download space**: hard cap on bytes M00V13 may consume for offline media on the selected storage volume.
-- **Minimum free-space reserve**: amount of free space that must remain available on that volume after any download, expansion, remux, subtitle fetch, or artwork write.
+### Built-in Android safety reserve
 
-Both controls are enforced at the same time and the stricter one wins. Before accepting or starting a download, calculate:
+On internal Android/Google TV storage, M00V13 permanently protects **1536 MiB** of free space for Android, app updates, databases, thumbnails, logs, package installation, temporary files, and player scratch space. This system reserve is not disableable in normal settings.
+
+Additional thresholds:
+
+- **1536 MiB**: normal protected reserve; downloads may not intentionally cross it
+- **768 MiB**: critical free-space threshold; emergency cleanup is allowed
+- **1280 MiB**: emergency cleanup target; once critical, reclaim toward this level
+- **256 MiB**: per-download write headroom added to the estimated download size
+
+A user's `Always leave this much free` setting may raise the 1536 MiB floor but never lower it.
+
+### User quota
+
+Users may separately configure **Maximum M00V13 download space**. Both the quota and reserve apply simultaneously and the stricter one wins:
 
 ```text
+required_reserve   = max(1536 MiB, user_reserve)
 allowed_by_quota   = max_download_bytes - current_m00v13_download_bytes
-allowed_by_reserve = current_free_bytes - minimum_free_reserve_bytes
+allowed_by_reserve = current_free_bytes - required_reserve
 allowed_to_write   = max(0, min(allowed_by_quota, allowed_by_reserve))
 ```
 
-A download may start only when its estimated required space plus a configurable safety margin is less than or equal to `allowed_to_write`.
+A download may start only when its estimated size plus 256 MiB of headroom fits within `allowed_to_write`.
+
+### Automatic cleanup order
+
+M00V13 should automatically reclaim storage when necessary rather than allowing Android to become unusable.
+
+1. Pause queued/background automatic downloads.
+2. Delete **watched, unpinned downloads**, oldest/least-recently-accessed first.
+3. If free space is still below the emergency target and system operation is threatened, delete **oldest unpinned unwatched downloads**, oldest/least-recently-accessed first.
+4. Never automatically delete pinned downloads.
+5. Stop cleanup once the emergency target is restored or no eligible downloads remain.
+
+Automatic series/collection downloads are disposable cache-like media unless pinned. A watched episode is therefore normally the first storage candidate after its watched state is safely recorded.
 
 Required behavior:
 
-- check space again immediately before writing and periodically during long downloads
-- account for temporary/partial files when calculating M00V13 usage
-- never allow automatic series/collection downloads to consume the protected reserve
-- pause queued automatic downloads before deleting anything when space becomes constrained
-- optional cleanup policy may remove watched/expired auto-downloads, oldest eligible downloads, or user-approved cache files
-- manually pinned downloads are never auto-deleted unless the user explicitly enables that policy
-- show projected post-download free space before a manual download starts
-- expose storage controls per storage target, so internal storage and attached USB/storage can have different limits
+- check free space before a download and periodically while writing
+- account for `.part`/temporary downloads in M00V13 usage
+- stop/pause a writer before it crosses the safety floor
+- trigger emergency cleanup if another process causes storage to fall below the critical threshold
+- never delete the file currently being played
+- never delete an active partial download until its writer is stopped and state is committed
+- preserve watch/progress metadata even when the media file is removed
+- after cleanup, allow the series automation scheduler to re-download an episode later if it becomes part of the configured next-unwatched window
+- show the reason for automatic deletion in Download History
 
 Suggested UI:
 
@@ -118,7 +144,8 @@ Suggested UI:
 Downloads & Storage
 
 Maximum space M00V13 can use     [ 3.0 GB ]
-Always leave this much free      [ 1.5 GB ]
+Extra free-space reserve          [ 0 MB ]
+System safety reserve              1.5 GB  (protected)
 Download location                [ Internal storage > ]
 
 Currently used by M00V13          1.2 GB
@@ -126,7 +153,7 @@ Device free space                 3.4 GB
 Available for new downloads       1.8 GB
 ```
 
-For constrained devices such as an 8 GB streaming stick, the reserve should be enabled by default so Android, app updates, databases, thumbnails, and temporary files cannot be starved by automated downloads.
+The displayed `Extra free-space reserve` is added conceptually by taking the maximum of the user preference and the built-in 1536 MiB safety floor; setting it to zero does not disable the system floor.
 
 ## Repository integration
 
