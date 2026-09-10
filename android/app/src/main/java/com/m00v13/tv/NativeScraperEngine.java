@@ -84,6 +84,7 @@ public final class NativeScraperEngine {
 
         candidates.sort(Comparator.comparingInt((Candidate c) -> c.seeders).reversed());
         if (candidates.size() > MAX_TOTAL_RESULTS) candidates = new ArrayList<>(candidates.subList(0, MAX_TOTAL_RESULTS));
+        if (candidates.isEmpty()) return new SearchResult(Collections.emptyList(), Collections.unmodifiableList(errors));
 
         ExecutorService detailPool = Executors.newFixedThreadPool(Math.max(1, Math.min(5, candidates.size())));
         ArrayList<Future<SourceOption>> detailFutures = new ArrayList<>();
@@ -107,7 +108,7 @@ public final class NativeScraperEngine {
         detailPool.shutdownNow();
 
         sources.sort(Comparator.comparingInt((SourceOption s) -> s.score).reversed()
-            .thenComparingInt(s -> s.seeders).reversed());
+            .thenComparing(Comparator.comparingInt((SourceOption s) -> s.seeders).reversed()));
         return new SearchResult(Collections.unmodifiableList(sources), Collections.unmodifiableList(errors));
     }
 
