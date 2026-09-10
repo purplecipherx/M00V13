@@ -27,7 +27,9 @@ public final class CatalogStore {
                     o.optString("id"), o.optString("title"), o.optString("subtitle"),
                     o.optBoolean("series"), o.optString("genre"), jsonStrings(o.optJSONArray("tags")),
                     emptyToNull(o.optString("artworkUrl")), emptyToNull(o.optString("streamUri")),
-                    o.optLong("durationMs")));
+                    o.optLong("durationMs"), emptyToNull(o.optString("seriesKey")),
+                    o.optInt("seasonNumber"), o.optInt("episodeNumber"),
+                    emptyToNull(o.optString("collectionKey")), o.optInt("collectionOrder")));
             }
         } catch (JSONException ignored) {}
         return out;
@@ -57,6 +59,10 @@ public final class CatalogStore {
                 o.put("artworkUrl", c.artworkUrl == null ? "" : c.artworkUrl);
                 o.put("streamUri", c.streamUri == null ? "" : c.streamUri);
                 o.put("durationMs", c.durationMs);
+                o.put("seriesKey", c.seriesKey == null ? "" : c.seriesKey);
+                o.put("seasonNumber", c.seasonNumber); o.put("episodeNumber", c.episodeNumber);
+                o.put("collectionKey", c.collectionKey == null ? "" : c.collectionKey);
+                o.put("collectionOrder", c.collectionOrder);
                 a.put(o);
             } catch (JSONException ignored) {}
         }
