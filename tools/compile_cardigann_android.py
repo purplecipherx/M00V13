@@ -10,7 +10,7 @@ import argparse, json, pathlib, re
 from typing import Any, Dict, List, Optional, Tuple
 import yaml
 
-COMPILER_SCHEMA = 2
+COMPILER_SCHEMA = 3
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
@@ -60,6 +60,21 @@ MANUAL = {
         "rowMagnetSelector": 'td:nth-child(3) a[href^="magnet:?"]',
         "maxResults": 16,
     },
+    "yts": {
+        "responseType": "json",
+        "searchPath": "https://movies-api.accel.li/api/v2/list_movies.json?query_term={query}&limit=50&sort_by=date_added&order_by=desc",
+        "jsonRowsPath": "data.movies",
+        "jsonExpandArrayPath": "torrents",
+        "jsonTitlePath": "..title_long",
+        "jsonSeedersPath": "seeds",
+        "jsonSizePath": "size_bytes",
+        "jsonInfoHashPath": "hash",
+        "jsonQualityPath": "quality",
+        "jsonCodecPath": "video_codec",
+        "jsonAudioPath": "audio_channels",
+        "jsonUrlPath": "url",
+        "maxResults": 20,
+    },
 }
 
 
@@ -99,7 +114,8 @@ def compile_one(raw: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], List[str
     if not ident: reasons.append("missing id")
     if not links: reasons.append("no HTTPS links")
     if ident in MANUAL and not reasons:
-        return {"id": ident, "name": name, "mirrors": links[:8], **MANUAL[ident]}, []
+        provider = {"id": ident, "name": name, "mirrors": links[:8], **MANUAL[ident]}
+        return provider, []
 
     search = raw.get("search") if isinstance(raw.get("search"), dict) else {}
     fields = search.get("fields") if isinstance(search.get("fields"), dict) else {}
