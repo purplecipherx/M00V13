@@ -57,7 +57,9 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0, dp(82), 1f);
         tp.setMarginStart(dp(18));
         header.addView(title, tp);
-        header.addView(text(profiles.activeProfile() + "  •  " + profiles.preferredLanguage().toUpperCase(), 18, false));
+        Button profile = navButton(profiles.activeProfile() + " • " + profiles.preferredLanguage().toUpperCase(),
+            v -> startActivity(new Intent(this, ProfileActivity.class)));
+        header.addView(profile, new LinearLayout.LayoutParams(dp(230), dp(54)));
         root.addView(header);
 
         LinearLayout nav = new LinearLayout(this);
