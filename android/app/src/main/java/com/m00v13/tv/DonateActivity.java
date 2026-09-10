@@ -1,29 +1,28 @@
 package com.m00v13.tv;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 public final class DonateActivity extends Activity {
-    private static final int BG = Color.rgb(9, 5, 15);
-    private static final int PURPLE = Color.rgb(168, 85, 247);
-    private static final int WHITE = Color.WHITE;
-
-    // Donation destinations supplied by PurplecipherX. Keep these centralized so a future
-    // release can update them without touching the rest of the UI.
     private static final String ETH = "0x88675dB8404bBb447996f9aB51721763e136C808";
     private static final String BTC = "bc1qh2fmg2p5wlt3qw4sd8g8744skq8hyjap3c84cw";
-    private static final String XMR = "43g7EHA92cWX8jFe7rWjAJ7m7ZNUn5Mqoi58bzRj7DAEeHeufT1cccpbca36ngpGxubJmBeYptfCSLYVGWuE26RrSMyvZeT";
+    private static final String XMR = "43g7EHA92cWX8jFe7rWjAJ7m7ZNUn5Mqoi58bzRj7DAEeHeufT1ccCpbca36ngpGxubJmBeYptfcSLYVGwuE26RrSMyvZeT";
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
-        getWindow().getDecorView().setBackgroundColor(BG);
+        getWindow().getDecorView().setBackgroundColor(TvUi.BG);
         setContentView(build());
     }
 
@@ -31,56 +30,82 @@ public final class DonateActivity extends Activity {
         ScrollView scroll = new ScrollView(this);
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(72), dp(42), dp(72), dp(54));
-        root.setBackgroundColor(BG);
+        root.setPadding(dp(64), dp(36), dp(64), dp(48));
+        root.setBackgroundColor(TvUi.BG);
         scroll.addView(root);
 
-        root.addView(text("Support M00V13 💜", 32, true));
-        TextView intro = text("M00V13 is free. Donations are optional and never unlock features, improve search priority, or change playback behavior.", 18, false);
-        intro.setTextColor(Color.rgb(210, 195, 225));
-        intro.setPadding(0, dp(10), 0, dp(24));
+        root.addView(TvUi.text(this, "Support M00V13 💜", 32, true));
+        TextView intro = TvUi.text(this, "M00V13 is free. Donations are optional and never unlock features or change playback/search priority.", 17, false);
+        intro.setTextColor(TvUi.MUTED);
+        intro.setPadding(0, dp(8), 0, dp(18));
         root.addView(intro);
 
         addWallet(root, "Ethereum (ETH)", ETH);
         addWallet(root, "Bitcoin (BTC)", BTC);
         addWallet(root, "Monero (XMR)", XMR);
 
-        TextView warning = text("Always verify the full address on your sending device before confirming a transfer. Cryptocurrency transfers generally cannot be reversed.", 15, false);
-        warning.setTextColor(Color.rgb(190, 175, 205));
-        warning.setPadding(0, dp(24), 0, dp(10));
+        TextView warning = TvUi.text(this, "Verify the full address on your sending device before confirming. Crypto transfers are generally irreversible.", 14, false);
+        warning.setTextColor(TvUi.MUTED);
+        warning.setPadding(0, dp(18), 0, dp(12));
         root.addView(warning);
 
-        Button back = button("Back");
+        Button back = TvUi.button(this, "Back");
         back.setOnClickListener(v -> finish());
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(dp(220), dp(58));
+        back.setLayoutParams(bp);
         root.addView(back);
         return scroll;
     }
 
     private void addWallet(LinearLayout root, String name, String address) {
-        TextView h = text(name, 23, true);
-        h.setPadding(0, dp(18), 0, dp(6));
-        root.addView(h);
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setPadding(dp(18), dp(18), dp(18), dp(18));
+        card.setBackgroundColor(TvUi.PANEL);
+        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        cp.bottomMargin = dp(14);
+        root.addView(card, cp);
 
-        TextView a = text(address, 17, false);
+        ImageView qr = new ImageView(this);
+        qr.setImageBitmap(qr(address, 420));
+        qr.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        qr.setAdjustViewBounds(true);
+        card.addView(qr, new LinearLayout.LayoutParams(dp(250), dp(250)));
+
+        LinearLayout info = new LinearLayout(this);
+        info.setOrientation(LinearLayout.VERTICAL);
+        info.setPadding(dp(24), 0, 0, 0);
+        LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        card.addView(info, ip);
+
+        TextView heading = TvUi.text(this, name, 23, true);
+        heading.setTextColor(TvUi.BLUE);
+        info.addView(heading);
+
+        TextView a = TvUi.text(this, address, 16, false);
         a.setTextIsSelectable(true);
-        a.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        a.setPadding(dp(18), dp(14), dp(18), dp(14));
-        a.setBackgroundColor(Color.rgb(35, 20, 52));
-        root.addView(a, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        a.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        a.setSingleLine(false);
+        a.setHorizontallyScrolling(false);
+        a.setBreakStrategy(TextView.BREAK_STRATEGY_SIMPLE);
+        a.setTextColor(TvUi.WHITE);
+        a.setPadding(0, dp(10), 0, 0);
+        info.addView(a, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
     }
 
-    private Button button(String label) {
-        Button b = new Button(this);
-        b.setText(label); b.setTextColor(WHITE); b.setTextSize(17); b.setAllCaps(false); b.setFocusable(true);
-        b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PURPLE));
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(220), dp(58));
-        p.gravity = Gravity.START; b.setLayoutParams(p); return b;
+    private Bitmap qr(String payload, int pixels) {
+        try {
+            BitMatrix matrix = new QRCodeWriter().encode(payload, BarcodeFormat.QR_CODE, pixels, pixels);
+            Bitmap bitmap = Bitmap.createBitmap(pixels, pixels, Bitmap.Config.RGB_565);
+            for (int y = 0; y < pixels; y++) {
+                for (int x = 0; x < pixels; x++) bitmap.setPixel(x, y, matrix.get(x, y) ? Color.BLACK : Color.WHITE);
+            }
+            return bitmap;
+        } catch (Exception e) {
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
+        }
     }
 
-    private TextView text(String value, int sp, boolean bold) {
-        TextView v = new TextView(this); v.setText(value); v.setTextColor(WHITE); v.setTextSize(sp);
-        if (bold) v.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); return v;
-    }
-
-    private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
+    private int dp(int value) { return TvUi.dp(this, value); }
 }
