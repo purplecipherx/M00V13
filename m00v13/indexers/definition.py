@@ -4,8 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence, Tuple
 
 
-MOVIE_TV_CATEGORY_PREFIXES = ("2000", "5000")
-PUBLIC_TYPES = {"public", "semi-private"}
+PUBLIC_TYPES = {"public"}
 ENGLISH_CODES = {"en", "en-us", "en-gb", "en-ca", "en-au"}
 
 
@@ -60,13 +59,14 @@ class IndexerDefinition:
     def _requires_account_login(self) -> bool:
         if not self.login:
             return False
-        # Public definitions sometimes contain harmless test/cookie metadata. Treat
-        # explicit credential/captcha/login-submit mechanics as account-only.
+        # Public definitions can contain passive test/cookie metadata. Explicit
+        # credential, CAPTCHA, or login-submit mechanics are not auto-enabled.
         login = self.login
         return bool(
             login.get("captcha")
             or login.get("inputs")
             or login.get("selectorinputs")
+            or login.get("getselectorinputs")
             or login.get("submitpath")
             or str(login.get("method") or "").upper() == "POST"
         )
@@ -76,4 +76,12 @@ class IndexerDefinition:
         mappings: Sequence[Mapping[str, Any]] = self.caps.get("categorymappings") or ()
         values = [str(key) for key in categories.keys()]
         values.extend(str(item.get("cat") or "") for item in mappings)
-        return any(value.startswith(MOVIE_TV_CATEGORY_PREFIXES) for value in values)
+        values.extend(str(item.get("desc") or "") for item in mappings)
+        normalized = [value.strip().lower() for value in values]
+        return any(
+            value == "movies"
+            or value.startswith("movies/")
+            or value == "tv"
+            or value.startswith("tv/")
+            for value in normalized
+        )
