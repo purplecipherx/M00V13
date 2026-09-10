@@ -11,10 +11,13 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote_plus
 import yaml
 
-COMPILER_SCHEMA = 4
+COMPILER_SCHEMA = 5
 DEFAULT_INPUT = pathlib.Path("indexers/definitions/v11")
 DEFAULT_OUTPUT = pathlib.Path("android/app/src/main/assets/cardigann_providers.json")
 DEFAULT_REPORT = pathlib.Path("indexers/android_compile_manifest.json")
+
+TIER1 = {"1337x", "yts", "torrentdownload", "limetorrents"}
+TIER2 = {"nyaasi", "uindex", "kickasstorrents-to", "extratorrent-st", "tokyotosho"}
 
 MANUAL = {
     "1337x": {"searchPath":"search/{query}/1/","rowSelector":'tr:has(a[href^=/torrent/])',"titleSelector":'td[class^=coll-1] a[href^=/torrent/]','detailsSelector':'td[class^=coll-1] a[href^=/torrent/]','detailsAttribute':'href','seedersSelector':'td[class^=coll-2]','sizeSelector':'td[class^=coll-4]','detailMagnetSelector':'ul li a[href^=magnet:]','maxResults':16},
@@ -27,6 +30,16 @@ MANUAL = {
 CONFIG_RE = re.compile(r"\{\{\s*\.Config\.([A-Za-z0-9_-]+)\s*\}\}")
 KEYWORDS_RE = re.compile(r"\{\{\s*\.Keywords\s*\}\}")
 IF_KEYWORDS_RE = re.compile(r'^\s*\{\{\s*if\s+\.Keywords\s*\}\}(.*?)\{\{\s*else\s*\}\}(.*?)\{\{\s*end\s*\}\}\s*$', re.S)
+
+
+def provider_tier(ident: str, compiled: Dict[str, Any]) -> int:
+    if ident in TIER1:
+        return 1
+    if ident in TIER2:
+        return 2
+    # Direct-magnet providers avoid an extra details-page request and are cheap enough
+    # for the normal fallback tier. Everything else remains the broad final tier.
+    return 2 if compiled.get("rowMagnetSelector") else 3
 
 
 def config_defaults(raw: Dict[str, Any]) -> Dict[str, str]:
@@ -113,7 +126,10 @@ def compile_one(raw: Dict[str,Any]) -> Tuple[Optional[Dict[str,Any]],List[str]]:
     links=[x for x in (raw.get("links") or []) if isinstance(x,str) and x.startswith("https://")]
     if not ident: reasons.append("missing id")
     if not links: reasons.append("no HTTPS links")
-    if ident in MANUAL and not reasons: return {"id":ident,"name":name,"mirrors":links[:8],**MANUAL[ident]},[]
+    if ident in MANUAL and not reasons:
+        record={"id":ident,"name":name,"mirrors":links[:8],**MANUAL[ident]}
+        record["tier"]=provider_tier(ident,record)
+        return record,[]
 
     search=raw.get("search") if isinstance(raw.get("search"),dict) else {}; fields=search.get("fields") if isinstance(search.get("fields"),dict) else {}; rows=search.get("rows") if isinstance(search.get("rows"),dict) else {}
     response="html"
@@ -124,7 +140,7 @@ def compile_one(raw: Dict[str,Any]) -> Tuple[Optional[Dict[str,Any]],List[str]]:
     path=choose_path(search,defaults); row_sel=static(rows.get("selector"),defaults)
     title_field=fields.get("title") if isinstance(fields.get("title"),dict) else None; details_field=fields.get("details") if isinstance(fields.get("details"),dict) else title_field
     title_sel=selector(title_field,defaults); details_sel=selector(details_field,defaults); details_attr=details_field.get("attribute","href") if isinstance(details_field,dict) else "href"
-    seed_sel=selector(fields.get("seeders"),defaults); size_sel=selector(fields.get("size"),defaults)
+    seed_sel=selector(fields.get("seeders"),defaults) or ""; size_sel=selector(fields.get("size"),defaults) or ""
     magnet_field=fields.get("magnet") if isinstance(fields.get("magnet"),dict) else None
     download_field=fields.get("download") if isinstance(fields.get("download"),dict) else None
     row_magnet=selector(magnet_field,defaults)
@@ -137,14 +153,16 @@ def compile_one(raw: Dict[str,Any]) -> Tuple[Optional[Dict[str,Any]],List[str]]:
     if not row_sel: reasons.append("row selector is dynamic/missing")
     if not title_sel: reasons.append("title must be a direct static selector")
     if isinstance(title_field,dict) and title_field.get("attribute") not in (None,""): reasons.append("title attribute/filter extraction unsupported")
-    if not details_sel: reasons.append("details must be a direct static selector")
-    if details_attr!="href": reasons.append("details attribute is not href")
-    if not seed_sel: reasons.append("seeders must be a direct static selector")
-    if not size_sel: reasons.append("size must be a direct static selector")
+    # A details page is only needed if the result row does not already expose a magnet.
+    if not row_magnet:
+        if not details_sel: reasons.append("details must be a direct static selector")
+        if details_attr!="href": reasons.append("details attribute is not href")
     if not row_magnet and not detail_magnet: reasons.append("no supported magnet selector")
     if reasons: return None,reasons
 
-    return {"id":ident,"name":name,"mirrors":links[:8],"searchPath":path,"rowSelector":row_sel,"titleSelector":title_sel,"detailsSelector":details_sel,"detailsAttribute":"href","seedersSelector":seed_sel,"sizeSelector":size_sel,"rowMagnetSelector":row_magnet or "","detailMagnetSelector":detail_magnet or "","maxResults":16},[]
+    record={"id":ident,"name":name,"mirrors":links[:8],"searchPath":path,"rowSelector":row_sel,"titleSelector":title_sel,"detailsSelector":details_sel or title_sel or "","detailsAttribute":"href","seedersSelector":seed_sel,"sizeSelector":size_sel,"rowMagnetSelector":row_magnet or "","detailMagnetSelector":detail_magnet or "","maxResults":16}
+    record["tier"]=provider_tier(ident,record)
+    return record,[]
 
 
 def main()->None:
@@ -157,9 +175,10 @@ def main()->None:
             if compiled: providers.append(compiled)
             else: rejected.append({"file":path.name,"id":raw.get("id"),"reasons":reasons})
         except Exception as exc: rejected.append({"file":path.name,"reasons":[f"parse error: {exc}"]})
-    providers.sort(key=lambda x:x["id"]);a.output.parent.mkdir(parents=True,exist_ok=True);a.report.parent.mkdir(parents=True,exist_ok=True)
-    a.output.write_text(json.dumps({"schema":COMPILER_SCHEMA,"providers":providers},separators=(",",":"))+"\n",encoding="utf-8")
-    a.report.write_text(json.dumps({"compiler_schema":COMPILER_SCHEMA,"compiled_count":len(providers),"rejected_count":len(rejected),"compiled":[p["id"] for p in providers],"rejected":rejected},indent=2,sort_keys=True)+"\n",encoding="utf-8")
-    print(f"compiled {len(providers)} Android-native providers; rejected {len(rejected)}")
+    providers.sort(key=lambda x:(x["tier"],x["id"]));a.output.parent.mkdir(parents=True,exist_ok=True);a.report.parent.mkdir(parents=True,exist_ok=True)
+    tier_counts={str(t):sum(1 for item in providers if item["tier"]==t) for t in (1,2,3)}
+    a.output.write_text(json.dumps({"schema":COMPILER_SCHEMA,"tier_counts":tier_counts,"providers":providers},separators=(",",":"))+"\n",encoding="utf-8")
+    a.report.write_text(json.dumps({"compiler_schema":COMPILER_SCHEMA,"compiled_count":len(providers),"rejected_count":len(rejected),"tier_counts":tier_counts,"compiled":[{"id":x["id"],"tier":x["tier"]} for x in providers],"rejected":rejected},indent=2,sort_keys=True)+"\n",encoding="utf-8")
+    print(f"compiled {len(providers)} Android-native providers; tiers={tier_counts}; rejected {len(rejected)}")
 
 if __name__=="__main__": main()
