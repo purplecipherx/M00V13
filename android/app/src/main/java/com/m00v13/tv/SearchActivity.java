@@ -16,17 +16,28 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class SearchActivity extends Activity {
     private static final int BG = Color.rgb(9, 5, 15);
     private static final int PURPLE = Color.rgb(168, 85, 247);
     private LinearLayout results;
     private CatalogStore catalog;
+    private EditText input;
+    private Button onlineButton;
+    private TextView onlineStatus;
+    private final ExecutorService searchExecutor = Executors.newSingleThreadExecutor();
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         catalog = new CatalogStore(this);
         setContentView(build());
+    }
+
+    @Override protected void onDestroy() {
+        searchExecutor.shutdownNow();
+        super.onDestroy();
     }
 
     private ScrollView build() {
@@ -38,8 +49,8 @@ public final class SearchActivity extends Activity {
         scroll.addView(root);
 
         root.addView(text("Search", 30, true));
-        EditText input = new EditText(this);
-        input.setHint("Movie, show, actor, genre…");
+        input = new EditText(this);
+        input.setHint("Movie or show title…");
         input.setSingleLine(true);
         input.setTextColor(Color.WHITE);
         input.setHintTextColor(Color.rgb(180, 165, 195));
@@ -48,8 +59,23 @@ public final class SearchActivity extends Activity {
         input.setFocusable(true);
         input.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PURPLE));
         LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(62));
-        ip.topMargin = dp(12); ip.bottomMargin = dp(18);
+        ip.topMargin = dp(12); ip.bottomMargin = dp(12);
         root.addView(input, ip);
+
+        onlineButton = new Button(this);
+        onlineButton.setText("Search sources");
+        onlineButton.setTextColor(Color.WHITE);
+        onlineButton.setTextSize(17);
+        onlineButton.setAllCaps(false);
+        onlineButton.setFocusable(true);
+        onlineButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PURPLE));
+        onlineButton.setOnClickListener(v -> runOnlineSearch());
+        root.addView(onlineButton, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(58)));
+
+        onlineStatus = text("Local catalog results appear below. Press Search sources to scrape fresh provider results.", 15, false);
+        onlineStatus.setTextColor(Color.rgb(200, 185, 215));
+        onlineStatus.setPadding(0, dp(8), 0, dp(14));
+        root.addView(onlineStatus);
 
         results = new LinearLayout(this);
         results.setOrientation(LinearLayout.VERTICAL);
@@ -61,7 +87,43 @@ public final class SearchActivity extends Activity {
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) { render(s.toString()); }
             @Override public void afterTextChanged(Editable s) {}
         });
+        input.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                runOnlineSearch();
+                return true;
+            }
+            return false;
+        });
         return scroll;
+    }
+
+    private void runOnlineSearch() {
+        final String query = input.getText() == null ? "" : input.getText().toString().trim();
+        if (query.isEmpty()) {
+            onlineStatus.setText("Enter a movie or show title first.");
+            return;
+        }
+        onlineButton.setEnabled(false);
+        onlineStatus.setText("Searching provider tiers…");
+        searchExecutor.submit(() -> {
+            NativeScraperEngine.SearchResult result = new NativeScraperEngine().search(query);
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                onlineButton.setEnabled(true);
+                if (result.sources.isEmpty()) {
+                    if (result.providerErrors.isEmpty()) onlineStatus.setText("No usable sources found.");
+                    else onlineStatus.setText("No usable sources found • " + result.providerErrors.get(0));
+                    return;
+                }
+                String mediaId = searchMediaId(query);
+                new SourceStore(this).put(mediaId, result.sources);
+                onlineStatus.setText(result.sources.size() + " fresh sources found");
+                Intent choose = new Intent(this, SourceSelectionActivity.class);
+                choose.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID, mediaId);
+                choose.putExtra(SourceSelectionActivity.EXTRA_TITLE, query);
+                startActivity(choose);
+            });
+        });
     }
 
     private void render(String query) {
@@ -80,7 +142,7 @@ public final class SearchActivity extends Activity {
             if (matches.size() >= 30) break;
         }
         if (matches.isEmpty()) {
-            results.addView(text("No local catalog matches yet.", 18, false));
+            results.addView(text("No local catalog matches. Search sources will query the native scraper engine.", 18, false));
             return;
         }
         for (MediaCard item : matches) results.addView(card(item));
@@ -109,6 +171,10 @@ public final class SearchActivity extends Activity {
             startActivity(i);
         });
         return b;
+    }
+
+    private static String searchMediaId(String query) {
+        return "search_" + Integer.toHexString(query.trim().toLowerCase(Locale.US).hashCode());
     }
 
     private TextView text(String value, int sp, boolean bold) {
