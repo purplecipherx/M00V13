@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import java.util.ArrayList;
+import java.util.List;
 
 public final class SourceSelectionActivity extends Activity {
     public static final String EXTRA_MEDIA_ID = "media_id";
@@ -22,10 +23,24 @@ public final class SourceSelectionActivity extends Activity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
-        ArrayList<String> uris = getIntent().getStringArrayListExtra(EXTRA_URIS);
-        ArrayList<String> labels = getIntent().getStringArrayListExtra(EXTRA_LABELS);
         String title = getIntent().getStringExtra(EXTRA_TITLE);
         String mediaId = getIntent().getStringExtra(EXTRA_MEDIA_ID);
+        ArrayList<String> uris = getIntent().getStringArrayListExtra(EXTRA_URIS);
+        ArrayList<String> labels = getIntent().getStringArrayListExtra(EXTRA_LABELS);
+
+        if ((uris == null || uris.isEmpty()) && mediaId != null) {
+            List<SourceOption> cached = new SourceStore(this).getFresh(mediaId);
+            uris = new ArrayList<>();
+            labels = new ArrayList<>();
+            for (SourceOption source : cached) {
+                if (source.uri == null || source.uri.trim().isEmpty()) continue;
+                uris.add(source.uri);
+                labels.add(source.compactLabel() + "\n" + source.provider);
+            }
+        }
+
+        final ArrayList<String> finalUris = uris == null ? new ArrayList<>() : uris;
+        final ArrayList<String> finalLabels = labels == null ? new ArrayList<>() : labels;
 
         ScrollView scroll = new ScrollView(this);
         LinearLayout root = new LinearLayout(this);
@@ -41,12 +56,12 @@ public final class SourceSelectionActivity extends Activity {
         hint.setPadding(0, dp(8), 0, dp(22));
         root.addView(hint);
 
-        if (uris == null || uris.isEmpty()) {
-            root.addView(text("No playable sources were returned.", 20, false));
+        if (finalUris.isEmpty()) {
+            root.addView(text("No fresh playable sources are cached. A scrape will populate this screen.", 20, false));
         } else {
-            for (int i = 0; i < uris.size(); i++) {
+            for (int i = 0; i < finalUris.size(); i++) {
                 final int index = i;
-                String label = labels != null && i < labels.size() ? labels.get(i) : "Source " + (i + 1);
+                String label = i < finalLabels.size() ? finalLabels.get(i) : "Source " + (i + 1);
                 Button b = new Button(this);
                 b.setText(label);
                 b.setTextColor(Color.WHITE);
@@ -55,14 +70,14 @@ public final class SourceSelectionActivity extends Activity {
                 b.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
                 b.setFocusable(true);
                 b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PURPLE));
-                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(62));
+                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(76));
                 p.bottomMargin = dp(10);
                 b.setLayoutParams(p);
                 b.setOnClickListener(v -> {
                     Intent play = new Intent(this, PlayerActivity.class);
                     play.putExtra(PlayerActivity.EXTRA_MEDIA_ID, mediaId);
-                    play.putExtra(PlayerActivity.EXTRA_URI, uris.get(index));
-                    play.putStringArrayListExtra(PlayerActivity.EXTRA_FALLBACK_URIS, orderedFallbacks(uris, index));
+                    play.putExtra(PlayerActivity.EXTRA_URI, finalUris.get(index));
+                    play.putStringArrayListExtra(PlayerActivity.EXTRA_FALLBACK_URIS, orderedFallbacks(finalUris, index));
                     startActivity(play);
                 });
                 root.addView(b);
