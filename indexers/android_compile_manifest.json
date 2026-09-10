@@ -1,170 +1,141 @@
 {
   "compiled": [
     "1337x",
+    "extratorrent-st",
+    "kickasstorrents-to",
     "limetorrents",
     "nyaasi",
+    "tokyotosho",
     "torrentdownload",
+    "uindex",
     "yts"
   ],
-  "compiled_count": 5,
-  "compiler_schema": 3,
+  "compiled_count": 9,
+  "compiler_schema": 4,
   "rejected": [
     {
       "file": "52bt.yml",
       "id": "52bt",
       "reasons": [
-        "search path needs unsupported template logic",
+        "search path/inputs need unsupported template logic",
         "seeders must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "anisource.yml",
       "id": "anisource",
       "reasons": [
-        "search path needs unsupported template logic",
         "seeders must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "bangumi-moe.yml",
       "id": "bangumi-moe",
       "reasons": [
-        "search path needs unsupported template logic",
+        "generic JSON definition not yet representable",
         "details must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "ehentai.yml",
       "id": "ehentai",
       "reasons": [
-        "search path needs unsupported template logic",
-        "no direct row magnet selector"
-      ]
-    },
-    {
-      "file": "extratorrent-st.yml",
-      "id": "extratorrent-st",
-      "reasons": [
-        "search path needs unsupported template logic",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "internetarchive.yml",
       "id": "internetarchive",
       "reasons": [
-        "search path needs unsupported template logic",
+        "generic JSON definition not yet representable",
+        "search path/inputs need unsupported template logic",
         "details must be a direct static selector",
         "seeders must be a direct static selector",
-        "no direct row magnet selector"
-      ]
-    },
-    {
-      "file": "kickasstorrents-to.yml",
-      "id": "kickasstorrents-to",
-      "reasons": [
-        "search path needs unsupported template logic",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "kickasstorrents-ws.yml",
       "id": "kickasstorrents-ws",
       "reasons": [
-        "search path needs unsupported template logic",
-        "no direct row magnet selector"
+        "search path/inputs need unsupported template logic",
+        "no supported magnet selector"
       ]
     },
     {
       "file": "magnetcat.yml",
       "id": "magnetcat",
       "reasons": [
-        "search path needs unsupported template logic",
+        "search path/inputs need unsupported template logic",
         "seeders must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "nekobt.yml",
       "id": "nekobt",
       "reasons": [
-        "search path needs unsupported template logic"
+        "search path/inputs need unsupported template logic"
       ]
     },
     {
       "file": "shanaproject.yml",
       "id": "shanaproject",
       "reasons": [
-        "search path needs unsupported template logic",
         "seeders must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "showrss.yml",
       "id": "showrss-yml",
       "reasons": [
-        "search path needs unsupported template logic",
+        "search path/inputs need unsupported template logic",
         "details must be a direct static selector",
         "seeders must be a direct static selector",
         "size must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "thepiratebay.yml",
       "id": "thepiratebay",
       "reasons": [
-        "search path needs unsupported template logic",
+        "generic JSON definition not yet representable",
+        "search path/inputs need unsupported template logic",
         "row selector is dynamic/missing",
         "details must be a direct static selector",
-        "no direct row magnet selector"
-      ]
-    },
-    {
-      "file": "tokyotosho.yml",
-      "id": "tokyotosho",
-      "reasons": [
-        "search path needs unsupported template logic"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "torrentbyte.yml",
       "id": "torrentbyte",
       "reasons": [
-        "search path needs unsupported template logic",
+        "title attribute/filter extraction unsupported",
         "seeders must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "torrentcore.yml",
       "id": "torrentcore",
       "reasons": [
-        "search path needs unsupported template logic",
         "seeders must be a direct static selector",
-        "no direct row magnet selector"
+        "no supported magnet selector"
       ]
     },
     {
       "file": "torrentdownloads.yml",
       "id": "torrentdownloads",
       "reasons": [
-        "search path needs unsupported template logic",
-        "no direct row magnet selector"
-      ]
-    },
-    {
-      "file": "uindex.yml",
-      "id": "uindex",
-      "reasons": [
-        "search path needs unsupported template logic",
-        "no direct row magnet selector"
+        "search path/inputs need unsupported template logic",
+        "title attribute/filter extraction unsupported"
       ]
     }
   ],
-  "rejected_count": 18
+  "rejected_count": 14
 }
