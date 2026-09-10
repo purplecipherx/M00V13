@@ -43,12 +43,21 @@ public final class SourceOption {
         if (!hdr.isEmpty()) out.append(" • ").append(hdr);
         out.append(" • ").append(audioCodec);
         if (!audioLayout.isEmpty()) out.append(" ").append(audioLayout);
-        if (!audioLanguages.isEmpty()) out.append(" • ").append(String.join("/", audioLanguages).toUpperCase());
-        if (!subtitleLanguages.isEmpty()) out.append(" + ").append(String.join("/", subtitleLanguages).toUpperCase()).append(" SUBS");
+        if (!audioLanguages.isEmpty()) out.append(" • ").append(join(audioLanguages).toUpperCase(java.util.Locale.US));
+        if (!subtitleLanguages.isEmpty()) out.append(" + ").append(join(subtitleLanguages).toUpperCase(java.util.Locale.US)).append(" SUBS");
         if (Boolean.TRUE.equals(cached)) out.append(" • Cached");
         else if (Boolean.FALSE.equals(cached)) out.append(" • Uncached");
         if (sizeBytes > 0) out.append(" • ").append(String.format(java.util.Locale.US, "%.1f GB", sizeBytes / 1073741824.0));
         if (seeders >= 0) out.append(" • ").append(seeders).append(" seeds");
+        return out.toString();
+    }
+
+    private static String join(List<String> values) {
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < values.size(); i++) {
+            if (i > 0) out.append('/');
+            out.append(values.get(i));
+        }
         return out.toString();
     }
 }
