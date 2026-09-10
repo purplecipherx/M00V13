@@ -16,6 +16,9 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHONPATH: .
+
 jobs:
   sync:
     runs-on: ubuntu-latest
