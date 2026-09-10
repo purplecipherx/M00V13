@@ -67,7 +67,7 @@ public final class DonateActivity extends Activity {
         cp.bottomMargin = dp(14);
         root.addView(card, cp);
 
-        int qrDp = screen.mobile() ? Math.min(280, Math.max(180, screen.sidePaddingDp + 180)) : (screen.kind == ScreenProfile.Kind.TV_4K ? 290 : 250);
+        int qrDp = screen.mobile() ? 220 : (screen.kind == ScreenProfile.Kind.TV_4K ? 290 : 250);
         int qrPixels = Math.min(900, Math.max(420, screen.artworkWidthPx));
         ImageView qr = new ImageView(this);
         qr.setImageBitmap(qr(address, qrPixels));
@@ -94,7 +94,6 @@ public final class DonateActivity extends Activity {
         a.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         a.setSingleLine(false);
         a.setHorizontallyScrolling(false);
-        a.setBreakStrategy(TextView.BREAK_STRATEGY_SIMPLE);
         a.setTextColor(TvUi.WHITE);
         a.setPadding(0, dp(10), 0, 0);
         info.addView(a, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
