@@ -11,6 +11,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class SourceSelectionActivity extends Activity {
     public static final String EXTRA_MEDIA_ID = "media_id";
@@ -20,6 +22,8 @@ public final class SourceSelectionActivity extends Activity {
 
     private static final int BG = Color.rgb(9, 5, 15);
     private static final int PURPLE = Color.rgb(168, 85, 247);
+    private final ExecutorService resolverExecutor = Executors.newSingleThreadExecutor();
+    private TextView status;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -51,10 +55,14 @@ public final class SourceSelectionActivity extends Activity {
 
         TextView heading = text(title == null ? "Choose source" : title, 30, true);
         root.addView(heading);
-        TextView hint = text("Best source is first. Audio language is shown when known; actual media tracks are verified at playback.", 16, false);
+        TextView hint = text("Best source is first. Torrent sources are resolved through your connected debrid account before Media3 receives a playback URL.", 16, false);
         hint.setTextColor(Color.rgb(205, 190, 220));
-        hint.setPadding(0, dp(8), 0, dp(22));
+        hint.setPadding(0, dp(8), 0, dp(10));
         root.addView(hint);
+        status = text(new DebridStore(this).isConnected() ? "Debrid connected" : "Debrid not connected", 15, false);
+        status.setTextColor(Color.rgb(190, 175, 205));
+        status.setPadding(0, 0, 0, dp(18));
+        root.addView(status);
 
         if (finalUris.isEmpty()) {
             root.addView(text("No fresh playable sources are cached. A scrape will populate this screen.", 20, false));
@@ -73,24 +81,70 @@ public final class SourceSelectionActivity extends Activity {
                 LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(76));
                 p.bottomMargin = dp(10);
                 b.setLayoutParams(p);
-                b.setOnClickListener(v -> {
-                    Intent play = new Intent(this, PlayerActivity.class);
-                    play.putExtra(PlayerActivity.EXTRA_MEDIA_ID, mediaId);
-                    play.putExtra(PlayerActivity.EXTRA_URI, finalUris.get(index));
-                    play.putStringArrayListExtra(PlayerActivity.EXTRA_FALLBACK_URIS, orderedFallbacks(finalUris, index));
-                    startActivity(play);
-                });
+                b.setOnClickListener(v -> openSource(b, mediaId, finalUris, index));
                 root.addView(b);
             }
         }
         setContentView(scroll);
     }
 
-    private ArrayList<String> orderedFallbacks(ArrayList<String> all, int selected) {
+    @Override protected void onDestroy() {
+        resolverExecutor.shutdownNow();
+        super.onDestroy();
+    }
+
+    private void openSource(Button button, String mediaId, ArrayList<String> all, int selected) {
+        String uri = all.get(selected);
+        if (!uri.startsWith("magnet:")) {
+            startPlayer(mediaId, uri, directFallbacks(all, selected));
+            return;
+        }
+
+        if (!new DebridStore(this).isConnected()) {
+            status.setText("Connect Real-Debrid first.");
+            startActivity(new Intent(this, DebridActivity.class));
+            return;
+        }
+
+        button.setEnabled(false);
+        status.setText("Resolving selected source through Real-Debrid…");
+        resolverExecutor.submit(() -> {
+            try {
+                String resolved = new RealDebridClient(this).resolveMagnet(uri);
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    status.setText("Resolved ✓ starting playback");
+                    startPlayer(mediaId, resolved, new ArrayList<>());
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    button.setEnabled(true);
+                    status.setText("Resolve failed: " + message(e));
+                });
+            }
+        });
+    }
+
+    private void startPlayer(String mediaId, String uri, ArrayList<String> fallbackUris) {
+        Intent play = new Intent(this, PlayerActivity.class);
+        play.putExtra(PlayerActivity.EXTRA_MEDIA_ID, mediaId);
+        play.putExtra(PlayerActivity.EXTRA_URI, uri);
+        play.putStringArrayListExtra(PlayerActivity.EXTRA_FALLBACK_URIS, fallbackUris);
+        startActivity(play);
+    }
+
+    private ArrayList<String> directFallbacks(ArrayList<String> all, int selected) {
         ArrayList<String> out = new ArrayList<>();
-        for (int i = selected + 1; i < all.size(); i++) out.add(all.get(i));
-        for (int i = 0; i < selected; i++) out.add(all.get(i));
+        for (int i = selected + 1; i < all.size(); i++) if (!all.get(i).startsWith("magnet:")) out.add(all.get(i));
+        for (int i = 0; i < selected; i++) if (!all.get(i).startsWith("magnet:")) out.add(all.get(i));
         return out;
+    }
+
+    private static String message(Throwable t) {
+        Throwable x = t;
+        while (x.getCause() != null) x = x.getCause();
+        return x.getMessage() == null ? x.getClass().getSimpleName() : x.getMessage();
     }
 
     private TextView text(String value, int sp, boolean bold) {
