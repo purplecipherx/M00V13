@@ -71,7 +71,7 @@ public final class PlayerActivity extends Activity {
         player.addListener(new Player.Listener() {
             @Override public void onTracksChanged(Tracks tracks) { applyLanguagePolicy(tracks, preferred); logTracks(tracks); }
             @Override public void onPlayerError(PlaybackException error) {
-                DebugLog.append(PlayerActivity.this,"PLAYER","Error "+error.errorCodeName+": "+error.getMessage());
+                DebugLog.append(PlayerActivity.this,"PLAYER","Error code="+error.errorCode+": "+error.getMessage());
                 tryFallback();
             }
             @Override public void onPlaybackStateChanged(int state) {
