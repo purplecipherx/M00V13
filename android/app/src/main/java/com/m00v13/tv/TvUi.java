@@ -4,12 +4,13 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.SoundEffectConstants;
 import android.widget.Button;
 import android.widget.TextView;
 
-/** Lightweight reusable 10-foot UI primitives. */
+/** Lightweight reusable 10-foot UI primitives. No focus/transition animations. */
 public final class TvUi {
     public static final int BG = Color.rgb(7, 5, 12);
     public static final int PANEL = Color.rgb(18, 14, 25);
@@ -30,16 +31,29 @@ public final class TvUi {
         b.setGravity(Gravity.CENTER);
         b.setFocusable(true);
         b.setFocusableInTouchMode(false);
-        b.setBackgroundTintList(ColorStateList.valueOf(CARD));
         b.setPadding(dp(c, 18), 0, dp(c, 18), 0);
+        applyButtonBackground(c,b,false);
+        b.setStateListAnimator(null);
         b.setOnFocusChangeListener((v, focused) -> {
+            b.animate().cancel();
+            b.setScaleX(1f);
+            b.setScaleY(1f);
+            b.setTranslationX(0f);
+            b.setTranslationY(0f);
+            b.setElevation(0f);
             b.setTextColor(focused ? BLUE : WHITE);
-            b.setBackgroundTintList(ColorStateList.valueOf(focused ? Color.rgb(43, 34, 55) : CARD));
-            b.animate().scaleX(focused ? 1.055f : 1f).scaleY(focused ? 1.055f : 1f).setDuration(90).start();
-            b.setElevation(dp(c, focused ? 10 : 0));
+            applyButtonBackground(c,b,focused);
             if (focused && new AppSettingsStore(c).clickSounds()) b.playSoundEffect(SoundEffectConstants.CLICK);
         });
         return b;
+    }
+
+    public static void applyButtonBackground(Context c, Button b, boolean focused) {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(focused ? Color.rgb(37, 30, 50) : CARD);
+        g.setCornerRadius(dp(c,8));
+        g.setStroke(dp(c,focused ? 3 : 1), focused ? BLUE : Color.rgb(51,43,62));
+        b.setBackground(g);
     }
 
     public static TextView text(Context c, String value, int sp, boolean bold) {
@@ -50,6 +64,10 @@ public final class TvUi {
         v.setGravity(Gravity.CENTER_VERTICAL);
         if (bold) v.setTypeface(Typeface.DEFAULT_BOLD);
         return v;
+    }
+
+    public static void disableWindowAnimations(android.app.Activity activity) {
+        try { activity.getWindow().setWindowAnimations(0); } catch (Exception ignored) {}
     }
 
     public static int dp(Context c, int value) {
