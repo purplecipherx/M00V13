@@ -1,0 +1,27 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.m00v13.tv'
+    compileSdk 37
+
+    defaultConfig {
+        applicationId 'com.m00v13.tv'
+        minSdk 23
+        targetSdk 36
+        versionCode 1
+        versionName '0.1.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.media3:media3-exoplayer:1.11.0'
+    implementation 'androidx.media3:media3-ui:1.11.0'
+}
