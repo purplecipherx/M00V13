@@ -13,6 +13,7 @@
         android:theme="@style/AppTheme">
 
         <activity android:name=".PlayerActivity" />
+        <activity android:name=".WebAppActivity" />
         <activity android:name=".TitleDetailsActivity" />
         <activity android:name=".SourceSelectionActivity" />
         <activity android:name=".MediaOpenActivity" />
