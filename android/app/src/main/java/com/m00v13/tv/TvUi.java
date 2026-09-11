@@ -1,7 +1,6 @@
 package com.m00v13.tv;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -32,28 +31,24 @@ public final class TvUi {
         b.setFocusable(true);
         b.setFocusableInTouchMode(false);
         b.setPadding(dp(c, 18), 0, dp(c, 18), 0);
-        applyButtonBackground(c,b,false);
         b.setStateListAnimator(null);
+        b.setBackground(focusBackground(c,false,dp(c,8)));
         b.setOnFocusChangeListener((v, focused) -> {
             b.animate().cancel();
-            b.setScaleX(1f);
-            b.setScaleY(1f);
-            b.setTranslationX(0f);
-            b.setTranslationY(0f);
-            b.setElevation(0f);
+            b.setScaleX(1f); b.setScaleY(1f); b.setTranslationX(0f); b.setTranslationY(0f); b.setElevation(0f);
             b.setTextColor(focused ? BLUE : WHITE);
-            applyButtonBackground(c,b,focused);
+            b.setBackground(focusBackground(c,focused,dp(c,8)));
             if (focused && new AppSettingsStore(c).clickSounds()) b.playSoundEffect(SoundEffectConstants.CLICK);
         });
         return b;
     }
 
-    public static void applyButtonBackground(Context c, Button b, boolean focused) {
+    public static GradientDrawable focusBackground(Context c, boolean focused, int radiusPx) {
         GradientDrawable g = new GradientDrawable();
-        g.setColor(focused ? Color.rgb(37, 30, 50) : CARD);
-        g.setCornerRadius(dp(c,8));
-        g.setStroke(dp(c,focused ? 3 : 1), focused ? BLUE : Color.rgb(51,43,62));
-        b.setBackground(g);
+        g.setColor(focused ? Color.rgb(37,30,50) : CARD);
+        g.setCornerRadius(radiusPx);
+        g.setStroke(dp(c, focused ? 3 : 1), focused ? BLUE : Color.rgb(51,43,62));
+        return g;
     }
 
     public static TextView text(Context c, String value, int sp, boolean bold) {
@@ -67,7 +62,7 @@ public final class TvUi {
     }
 
     public static void disableWindowAnimations(android.app.Activity activity) {
-        try { activity.getWindow().setWindowAnimations(0); } catch (Exception ignored) {}
+        try { activity.getWindow().setWindowAnimations(0); activity.overridePendingTransition(0,0); } catch (Exception ignored) {}
     }
 
     public static int dp(Context c, int value) {
