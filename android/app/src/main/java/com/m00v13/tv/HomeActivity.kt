@@ -2,7 +2,6 @@ package com.m00v13.tv
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -27,6 +26,7 @@ class HomeActivity : Activity() {
     private lateinit var profiles: ProfileStore
     private lateinit var catalog: CatalogStore
     private lateinit var discovery: DiscoveryStore
+    private lateinit var artwork: ArtworkLoader
     private val pool = Executors.newFixedThreadPool(3)
     private val refreshPool = Executors.newSingleThreadExecutor()
     private val bg = Color.rgb(4,3,12)
@@ -38,15 +38,16 @@ class HomeActivity : Activity() {
     private var heroTitle: TextView? = null
     private var heroMeta: TextView? = null
     private var heroToken = 0
+    private var hasResumed = false
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
         TvUi.disableWindowAnimations(this)
-        profiles=ProfileStore(this); catalog=CatalogStore(this); discovery=DiscoveryStore(this)
+        profiles=ProfileStore(this); catalog=CatalogStore(this); discovery=DiscoveryStore(this); artwork=ArtworkLoader(this)
         setContentView(build())
         if(discovery.stale()) refreshPool.submit { try { discovery.refresh(); runOnUiThread { if(!isFinishing) setContentView(build()) } } catch(e:Exception){ DebugLog.append(this,"HOME","Discovery: ${e.message}") } }
     }
-    override fun onResume(){ super.onResume(); if(::catalog.isInitialized) setContentView(build()) }
+    override fun onResume(){ super.onResume(); if(hasResumed && ::catalog.isInitialized) setContentView(build()) else hasResumed=true }
     override fun onDestroy(){ pool.shutdownNow(); refreshPool.shutdownNow(); super.onDestroy() }
 
     private fun build():View {
@@ -130,8 +131,8 @@ class HomeActivity : Activity() {
     private fun mobile(w:Int,h:Int)=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(14,12,14,14);setBackgroundColor(bg);addView(txt("M00V13",25f,purple,true),LinearLayout.LayoutParams(-1,50));val m=discovery.get(DiscoveryStore.POPULAR_MOVIES);addView(hero(m.firstOrNull()?:catalog.all().firstOrNull(),w,(h*.36f).toInt()),LinearLayout.LayoutParams(-1,(h*.36f).toInt()));addView(section("Trending Movies",null),LinearLayout.LayoutParams(-1,40));addView(posterRail(m,(h*.40f).toInt()),LinearLayout.LayoutParams(-1,(h*.40f).toInt()))}
 
     private fun showHero(m:MediaCard){heroTitle?.text=m.title;heroMeta?.text=detail(m);heroArt?.setImageDrawable(null);loadHero(m)}
-    private fun loadHero(m:MediaCard){val v=heroArt?:return;val token=++heroToken;pool.submit{try{val wide=try{CinemetaClient().background(m)}catch(_:Exception){null};val url=wide?:m.artworkUrl?:return@submit;val f=ArtworkCache(this).fetch(url,88,min(resources.displayMetrics.widthPixels,1920))?:return@submit;val b=BitmapFactory.decodeFile(f.absolutePath)?:return@submit;runOnUiThread{if(!isFinishing&&token==heroToken&&heroArt===v)v.setImageBitmap(b)}}catch(e:Exception){DebugLog.append(this,"ART","Hero ${e.message}")}}}
-    private fun load(v:ImageView,url:String?,target:Int){if(url.isNullOrBlank())return;pool.submit{try{val f=ArtworkCache(this).fetch(url,86,min(target,resources.displayMetrics.widthPixels))?:return@submit;val b=BitmapFactory.decodeFile(f.absolutePath)?:return@submit;runOnUiThread{if(!isFinishing)v.setImageBitmap(b)}}catch(_:Exception){}}}
+    private fun loadHero(m:MediaCard){val v=heroArt?:return;val token=++heroToken;pool.submit{try{val wide=try{CinemetaClient().background(m)}catch(_:Exception){null};val url=wide?:m.artworkUrl?:return@submit;runOnUiThread{if(!isFinishing&&token==heroToken&&heroArt===v)artwork.load(v,url,min(resources.displayMetrics.widthPixels,1920),pool)}}catch(e:Exception){DebugLog.append(this,"ART","Hero ${e.message}")}}}
+    private fun load(v:ImageView,url:String?,target:Int){if(url.isNullOrBlank())return;artwork.load(v,url,min(target,resources.displayMetrics.widthPixels),pool)}
     private fun detail(m:MediaCard)=(if(m.series)"TV Series" else "Movie")+(if(m.subtitle.isNullOrBlank())"" else " • ${m.subtitle}")+(if(m.genre.isBlank())"" else " • ${m.genre}")
     private fun button(s:String,primary:Boolean)=txt(s,15f,white,true).apply{gravity=Gravity.CENTER;isFocusable=true;isClickable=true;background=if(primary)GradientDrawable().apply{setColor(Color.rgb(98,44,230));cornerRadius=7f;setStroke(2,blue)}else fill(Color.rgb(22,13,43),7);setOnFocusChangeListener{_,f->if(f){background=stroke(blue,3,7);setTextColor(blue)}else{background=if(primary)GradientDrawable().apply{setColor(Color.rgb(98,44,230));cornerRadius=7f;setStroke(2,blue)}else fill(Color.rgb(22,13,43),7);setTextColor(white)}}}
     private fun txt(s:String,size:Float,color:Int,bold:Boolean=false)=TextView(this).apply{text=s;textSize=size;setTextColor(color);includeFontPadding=false;if(bold)typeface=Typeface.DEFAULT_BOLD}
