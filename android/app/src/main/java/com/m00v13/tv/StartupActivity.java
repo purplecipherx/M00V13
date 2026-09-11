@@ -11,9 +11,10 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-/** Minimal branded five-second launcher. Startup must never depend on permissions or instrumentation. */
+/** Minimal branded launcher. Show the cow immediately, then hand off as soon as Home can start. */
 public final class StartupActivity extends Activity {
-    private static final long SPLASH_MS = 5000L;
+    private static final long MIN_SPLASH_MS = 350L;
+    private static final long MAX_SPLASH_MS = 5000L;
     private final Handler main = new Handler(Looper.getMainLooper());
     private boolean launched;
 
@@ -24,8 +25,14 @@ public final class StartupActivity extends Activity {
         try { getWindow().setStatusBarColor(Color.BLACK); } catch (Throwable ignored) {}
         try { getWindow().setNavigationBarColor(Color.BLACK); } catch (Throwable ignored) {}
         try { getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); } catch (Throwable ignored) {}
-        setContentView(splashView());
-        main.postDelayed(this::launchHome, SPLASH_MS);
+
+        FrameLayout splash = splashView();
+        setContentView(splash);
+
+        // Do not sit on a black screen for five seconds. Give the supplied artwork one frame,
+        // then open Home. MAX_SPLASH_MS is only a safety bound if the short handoff is delayed.
+        splash.postDelayed(this::launchHome, MIN_SPLASH_MS);
+        main.postDelayed(this::launchHome, MAX_SPLASH_MS);
     }
 
     private FrameLayout splashView() {
@@ -34,14 +41,14 @@ public final class StartupActivity extends Activity {
         ImageView image = new ImageView(this);
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image.setBackgroundColor(Color.BLACK);
-        try {
-            image.setImageResource(R.drawable.m00v13_loading);
-        } catch (Throwable first) {
+
+        if (!SplashArtwork.apply(image)) {
             try {
                 image.setImageResource(R.drawable.loading_cow_hd);
                 image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             } catch (Throwable ignored) {}
         }
+
         root.addView(image, new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         return root;
@@ -50,11 +57,16 @@ public final class StartupActivity extends Activity {
     private void launchHome() {
         if (launched || isFinishing() || isDestroyed()) return;
         launched = true;
-        Intent i = new Intent(this, MediaHubActivity.class);
-        i.putExtra(MediaHubActivity.EXTRA_MODE, MediaHubActivity.MODE_HOME);
-        startActivity(i);
-        finish();
-        try { overridePendingTransition(0, 0); } catch (Throwable ignored) {}
+        try {
+            Intent i = new Intent(this, MediaHubActivity.class);
+            i.putExtra(MediaHubActivity.EXTRA_MODE, MediaHubActivity.MODE_HOME);
+            startActivity(i);
+            finish();
+            try { overridePendingTransition(0, 0); } catch (Throwable ignored) {}
+        } catch (Throwable t) {
+            launched = false;
+            DebugLog.append(this, "STARTUP", "Home launch failed: " + t.getClass().getSimpleName());
+        }
     }
 
     @Override protected void onDestroy() {
