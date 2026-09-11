@@ -17,6 +17,8 @@ public final class AppSettingsStore {
     public void setStartupCowSound(boolean v){ p.edit().putBoolean("startup_cow_sound",v).apply(); }
     public boolean automaticPassthrough(){ return p.getBoolean("auto_passthrough",true); }
     public void setAutomaticPassthrough(boolean v){ p.edit().putBoolean("auto_passthrough",v).apply(); }
+    public boolean smartOneClickPlayback(){ return p.getBoolean("smart_one_click_playback",true); }
+    public void setSmartOneClickPlayback(boolean v){ p.edit().putBoolean("smart_one_click_playback",v).apply(); }
     public String maxQuality(){ return p.getString("max_quality","4K"); }
     public void setMaxQuality(String v){ p.edit().putString("max_quality",v).apply(); }
     public boolean exclude3d(){ return p.getBoolean("exclude_3d",true); }
