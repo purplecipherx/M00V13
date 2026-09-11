@@ -141,7 +141,7 @@ public final class ProfileStore {
         SharedPreferences.Editor e = prefs.edit();
         for (String tag : tags) {
             String key = root + "tag." + tag.toLowerCase(java.util.Locale.US);
-            e.putInt(key, Math.max(-20, Math.min(20, prefs.getInt(key, 0) + delta));
+            e.putInt(key, Math.max(-20, Math.min(20, prefs.getInt(key, 0) + delta)));
         }
         e.apply();
     }
