@@ -18,6 +18,15 @@ public final class SearchConcurrency {
     private SearchConcurrency() {}
 
     public static int recommended(Context context) {
+        try {
+            int override = new AppSettingsStore(context).searchWorkerOverride();
+            if (override > 0) {
+                int fixed = clamp(override);
+                DebugLog.append(context, "SEARCH", "Fixed concurrency=" + fixed);
+                return fixed;
+            }
+        } catch (Exception ignored) {}
+
         int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
         int memoryMb = 256;
         try {
