@@ -1,1 +1,0 @@
-M00V13 startup/loading artwork is the cow image supplied by PurplecipherX. If the binary resource is ever replaced, keep the resource name m00v13_loading so StartupActivity and LoadingOverlay continue to use it.
