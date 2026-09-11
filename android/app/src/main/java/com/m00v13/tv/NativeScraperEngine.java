@@ -47,11 +47,13 @@ public final class NativeScraperEngine {
     public SearchResult search(String rawQuery){
         String query=rawQuery==null?"":rawQuery.trim();if(query.isEmpty())return new SearchResult(Collections.emptyList(),Collections.emptyList());
         List<NativeProviderDefinition> providers=NativeProviderDefinition.load(context,providerTier);if(providers.isEmpty())return new SearchResult(Collections.emptyList(),Collections.singletonList(providerTier==0?"provider catalog is empty":"tier "+providerTier+" provider catalog is empty"));
-        ExecutorService providerPool=Executors.newFixedThreadPool(Math.max(1,Math.min(6,providers.size())));ArrayList<Future<List<Candidate>>> futures=new ArrayList<>();ArrayList<String> errors=new ArrayList<>();
+        int workers=SearchConcurrency.recommended(context);
+        ExecutorService providerPool=Executors.newFixedThreadPool(workers);ArrayList<Future<List<Candidate>>> futures=new ArrayList<>();ArrayList<String> errors=new ArrayList<>();
+        DebugLog.append(context,"SEARCH","provider fanout tier="+providerTier+" providers="+providers.size()+" workers="+workers);
         for(NativeProviderDefinition p:providers)futures.add(providerPool.submit(new Callable<List<Candidate>>(){public List<Candidate> call()throws Exception{return searchProvider(p,query);}}));
         ArrayList<Candidate> candidates=new ArrayList<>();for(int i=0;i<futures.size();i++){try{candidates.addAll(futures.get(i).get());}catch(Exception e){errors.add(providers.get(i).name+": "+shortMessage(e));}}providerPool.shutdownNow();candidates.sort(Comparator.comparingInt((Candidate c)->c.seeders).reversed());
         if(candidates.size()>MAX_TOTAL_RESULTS)candidates=new ArrayList<>(candidates.subList(0,MAX_TOTAL_RESULTS));if(candidates.isEmpty())return new SearchResult(Collections.emptyList(),Collections.unmodifiableList(errors));
-        ExecutorService detailPool=Executors.newFixedThreadPool(Math.max(1,Math.min(6,candidates.size())));ArrayList<Future<SourceOption>> dfs=new ArrayList<>();for(Candidate c:candidates)dfs.add(detailPool.submit(()->resolveCandidate(c)));
+        ExecutorService detailPool=Executors.newFixedThreadPool(workers);ArrayList<Future<SourceOption>> dfs=new ArrayList<>();for(Candidate c:candidates)dfs.add(detailPool.submit(()->resolveCandidate(c)));
         ArrayList<SourceOption> sources=new ArrayList<>();Set<String> seen=new HashSet<>();for(int i=0;i<dfs.size();i++){try{SourceOption s=dfs.get(i).get();if(s!=null&&s.uri!=null&&seen.add(dedupeKey(s.uri)))sources.add(s);}catch(Exception e){errors.add(candidates.get(i).provider.name+" detail: "+shortMessage(e));}}detailPool.shutdownNow();
         sources.sort(Comparator.comparingInt((SourceOption s)->s.score).reversed().thenComparing(Comparator.comparingInt((SourceOption s)->s.seeders).reversed()));return new SearchResult(Collections.unmodifiableList(sources),Collections.unmodifiableList(errors));
     }
