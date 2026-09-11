@@ -13,13 +13,16 @@ import java.util.concurrent.Executors;
 /** Opens a catalog item: cached sources first, then smart one-click playback or source picker. */
 public final class MediaOpenActivity extends Activity {
     public static final String EXTRA_MEDIA_ID="media_id";
+    public static final String EXTRA_FORCE_PICKER="force_picker";
     private final ExecutorService executor=Executors.newSingleThreadExecutor();
     private LoadingOverlay loading;
     private TextView status;
     private MediaCard card;
+    private boolean forcePicker;
 
     @Override protected void onCreate(Bundle state){
         super.onCreate(state); TvUi.disableWindowAnimations(this);
+        forcePicker=getIntent().getBooleanExtra(EXTRA_FORCE_PICKER,false);
         FrameLayout root=new FrameLayout(this); root.setBackgroundColor(TvUi.BG);
         status=TvUi.text(this,"Preparing title…",20,true); status.setGravity(android.view.Gravity.CENTER); root.addView(status,new FrameLayout.LayoutParams(-1,-1)); setContentView(root);
         String id=getIntent().getStringExtra(EXTRA_MEDIA_ID); card=id==null?null:new CatalogStore(this).find(id);
@@ -46,6 +49,7 @@ public final class MediaOpenActivity extends Activity {
     }
 
     private void route(MediaCard media,List<SourceOption> sources){
+        if(forcePicker){showSources(media);return;}
         AppSettingsStore settings=new AppSettingsStore(this);
         if(!settings.smartOneClickPlayback()){showSources(media);return;}
         PlayPlanner.Plan plan=new PlayPlanner(this).plan(sources);
