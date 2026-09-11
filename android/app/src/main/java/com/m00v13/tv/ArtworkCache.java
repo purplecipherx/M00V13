@@ -2,8 +2,6 @@ package com.m00v13.tv;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,11 +17,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/** Fast raw artwork disk cache. Decode/resize happens once in ArtworkLoader memory, not during download. */
 public final class ArtworkCache {
     private static final String PREFS = "m00v13_artwork";
-    private static final int JPEG_QUALITY = 90;
     private static final long TRIM_INTERVAL_MS = 60_000L;
     private static final long TOUCH_INTERVAL_MS = 10L * 60L * 1000L;
+    private static final long MAX_IMAGE_BYTES = 6L * StoragePolicy.MIB;
     private static final Map<String,Object> KEY_LOCKS = new ConcurrentHashMap<>();
     private static final Map<String,Long> LAST_TOUCH = new ConcurrentHashMap<>();
     private static final AtomicLong LAST_TRIM = new AtomicLong(0L);
@@ -39,81 +38,65 @@ public final class ArtworkCache {
     public File cached(String url) { return cached(url, 620); }
     public File cached(String url, int targetWidthPx) {
         if (url == null || url.isEmpty()) return null;
-        String cacheKey = cacheKey(url, targetWidthPx);
+        String cacheKey = cacheKey(url);
         File file = new File(dir, cacheKey + ".img");
-        if (!file.isFile()) return null;
+        if (!file.isFile() || file.length() <= 0) return null;
         touchThrottled(cacheKey);
         return file;
     }
 
     public File fetch(String url, int likelihoodScore) throws IOException { return fetch(url, likelihoodScore, 620); }
 
-    /**
-     * Fetches are synchronized per artwork key, not globally. Different thumbnails can download and
-     * decode in parallel; duplicate requests for the same poster still collapse into one operation.
-     */
     public File fetch(String url, int likelihoodScore, int targetWidthPx) throws IOException {
         if (url == null || url.isEmpty()) return null;
-        int target = bucket(targetWidthPx);
-        String cacheKey = cacheKey(url, target);
-        File existing = cached(url, target);
+        String cacheKey = cacheKey(url);
+        File existing = cached(url, targetWidthPx);
         if (existing != null) { setScore(cacheKey, likelihoodScore); return existing; }
 
         Object lock = KEY_LOCKS.computeIfAbsent(cacheKey, k -> new Object());
         try {
             synchronized (lock) {
-                existing = cached(url, target);
+                existing = cached(url, targetWidthPx);
                 if (existing != null) { setScore(cacheKey, likelihoodScore); return existing; }
                 if (StoragePolicy.availableBytes(dir) <= StoragePolicy.SYSTEM_RESERVE_BYTES + 32L * StoragePolicy.MIB) return null;
 
                 HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-                conn.setConnectTimeout(5000);
-                conn.setReadTimeout(8000);
+                conn.setConnectTimeout(3000);
+                conn.setReadTimeout(5000);
                 conn.setInstanceFollowRedirects(true);
                 conn.setUseCaches(true);
-                conn.setRequestProperty("Accept", "image/avif,image/webp,image/apng,image/*,*/*;q=0.8");
+                conn.setRequestProperty("Connection", "keep-alive");
+                conn.setRequestProperty("Accept", "image/webp,image/jpeg,image/png,image/*;q=0.8,*/*;q=0.2");
+                conn.setRequestProperty("User-Agent", "M00V13/0.1 AndroidTV");
                 conn.connect();
                 int code = conn.getResponseCode();
                 if (code < 200 || code >= 300) { conn.disconnect(); return null; }
                 long declared = conn.getContentLengthLong();
-                if (declared > 10L * StoragePolicy.MIB) { conn.disconnect(); return null; }
+                if (declared > MAX_IMAGE_BYTES) { conn.disconnect(); return null; }
 
-                File raw = new File(dir, cacheKey + ".part");
-                long total = 0L; byte[] buffer = new byte[64 * 1024];
+                File part = new File(dir, cacheKey + ".part");
+                long total = 0L;
+                byte[] buffer = new byte[64 * 1024];
                 try (BufferedInputStream in = new BufferedInputStream(conn.getInputStream(), buffer.length);
-                     FileOutputStream out = new FileOutputStream(raw, false)) {
+                     FileOutputStream out = new FileOutputStream(part, false)) {
                     int n;
                     while ((n = in.read(buffer)) >= 0) {
                         if (n == 0) continue;
                         total += n;
-                        if (total > 10L * StoragePolicy.MIB) { raw.delete(); return null; }
+                        if (total > MAX_IMAGE_BYTES) { part.delete(); return null; }
                         out.write(buffer, 0, n);
                     }
                 } finally { conn.disconnect(); }
+                if (total <= 0) { part.delete(); return null; }
 
-                BitmapFactory.Options bounds = new BitmapFactory.Options();
-                bounds.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(raw.getAbsolutePath(), bounds);
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.RGB_565;
-                options.inDither = true;
-                options.inSampleSize = sampleSize(bounds.outWidth, target);
-                Bitmap decoded = BitmapFactory.decodeFile(raw.getAbsolutePath(), options);
-                if (decoded == null) { raw.delete(); return null; }
-
-                Bitmap finalBitmap = decoded;
-                if (decoded.getWidth() > target) {
-                    int h = Math.max(1, Math.round(decoded.getHeight() * (target / (float) decoded.getWidth())));
-                    finalBitmap = Bitmap.createScaledBitmap(decoded, target, h, false);
-                }
                 File dst = new File(dir, cacheKey + ".img");
-                try (FileOutputStream out = new FileOutputStream(dst, false)) {
-                    if (!finalBitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, out))
-                        throw new IOException("Artwork compression failed");
-                } finally {
-                    if (finalBitmap != decoded) finalBitmap.recycle();
-                    decoded.recycle();
-                    raw.delete();
+                if (dst.exists()) dst.delete();
+                if (!part.renameTo(dst)) {
+                    try (BufferedInputStream in = new BufferedInputStream(new java.io.FileInputStream(part));
+                         FileOutputStream out = new FileOutputStream(dst, false)) {
+                        int n; while ((n = in.read(buffer)) >= 0) if (n > 0) out.write(buffer, 0, n);
+                    }
+                    part.delete();
                 }
 
                 long now = System.currentTimeMillis();
@@ -146,7 +129,7 @@ public final class ArtworkCache {
         SharedPreferences.Editor editor = prefs.edit();
         for (File f : ordered) {
             if (total <= PredictiveCachePolicy.ARTWORK_SOFT_BYTES) break;
-            long bytes=f.length(); String k=strip(f.getName());
+            long bytes = f.length(); String k = strip(f.getName());
             if (f.delete()) {
                 total -= bytes;
                 LAST_TOUCH.remove(k);
@@ -175,21 +158,16 @@ public final class ArtworkCache {
             prefs.edit().putInt("score." + key, score).apply();
     }
 
-    private static int sampleSize(int width, int target) {
-        if (width <= 0 || target <= 0) return 1;
-        int sample = 1;
-        while (width / (sample * 2) >= target) sample *= 2;
-        return Math.max(1, sample);
-    }
-
     private static String strip(String name) { return name.endsWith(".img") ? name.substring(0, name.length() - 4) : name; }
-    private static int bucket(int px) { if (px <= 400) return 360; if (px <= 540) return 500; if (px <= 700) return 620; return 780; }
-    private static String cacheKey(String url, int width) { return key(url) + "_" + bucket(width); }
+    private static String cacheKey(String url) { return key(url); }
 
     private static String key(String value) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256"); byte[] bytes = digest.digest(value.getBytes("UTF-8")); StringBuilder out = new StringBuilder();
-            for (int i = 0; i < 12; i++) out.append(String.format(java.util.Locale.US, "%02x", bytes[i] & 0xff)); return out.toString();
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest(value.getBytes("UTF-8"));
+            StringBuilder out = new StringBuilder();
+            for (int i = 0; i < 12; i++) out.append(String.format(java.util.Locale.US, "%02x", bytes[i] & 0xff));
+            return out.toString();
         } catch (Exception e) { return Integer.toHexString(value.hashCode()); }
     }
 }
