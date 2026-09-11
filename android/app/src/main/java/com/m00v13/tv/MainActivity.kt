@@ -4,43 +4,34 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.SoundEffectConstants
 import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
 
-/**
- * Native Kotlin 10-foot home shell.
- *
- * Design target: the approved M00V13 1920x1080 concept — black/purple chrome,
- * fixed left navigation rail, cinematic hero, right-side trending stack,
- * Continue Watching, poster rails, and electric-blue focus rings. There are no
- * positional/focus animations: selection snaps instantly for low-end TV sticks.
- */
+/** Native Kotlin UI matching the approved M00V13 TV concept. */
 class MainActivity : Activity() {
     private lateinit var profiles: ProfileStore
     private lateinit var catalog: CatalogStore
     private lateinit var discovery: DiscoveryStore
     private lateinit var screen: ScreenProfile
 
-    private val artExecutor: ExecutorService = Executors.newFixedThreadPool(3)
-    private val discoveryExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val artPool = Executors.newFixedThreadPool(3)
+    private val discoveryPool = Executors.newSingleThreadExecutor()
 
     private var heroTitle: TextView? = null
     private var heroMeta: TextView? = null
@@ -48,12 +39,11 @@ class MainActivity : Activity() {
     private var heroToken = 0
 
     private val bg = Color.rgb(4, 3, 12)
-    private val panel = Color.rgb(11, 7, 23)
-    private val panel2 = Color.rgb(17, 10, 34)
-    private val purple = Color.rgb(156, 69, 255)
-    private val blue = Color.rgb(42, 141, 255)
-    private val white = Color.rgb(245, 242, 248)
-    private val muted = Color.rgb(180, 169, 201)
+    private val panel = Color.rgb(12, 7, 25)
+    private val purple = Color.rgb(155, 66, 255)
+    private val blue = Color.rgb(35, 139, 255)
+    private val white = Color.rgb(246, 244, 249)
+    private val muted = Color.rgb(194, 178, 215)
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
@@ -64,673 +54,365 @@ class MainActivity : Activity() {
         discovery = DiscoveryStore(this)
         screen = ScreenProfile.detect(this)
         DebugLog.boot(this)
-        DebugLog.append(this, "UI", "Kotlin cinematic home ${screen.kind} ${screen.widthPx}x${screen.heightPx}")
-        setContentView(buildTvHome())
+        setContentView(buildHome())
         refreshDiscovery()
     }
 
     override fun onResume() {
         super.onResume()
-        if (::profiles.isInitialized) {
+        if (::catalog.isInitialized) {
             screen = ScreenProfile.detect(this)
-            setContentView(buildTvHome())
+            setContentView(buildHome())
         }
     }
 
     override fun onDestroy() {
-        artExecutor.shutdownNow()
-        discoveryExecutor.shutdownNow()
+        artPool.shutdownNow()
+        discoveryPool.shutdownNow()
         super.onDestroy()
     }
 
     private fun refreshDiscovery() {
-        if (!::discovery.isInitialized || !discovery.stale()) return
-        discoveryExecutor.submit {
+        if (!discovery.stale()) return
+        discoveryPool.submit {
             try {
                 discovery.refresh()
-                runOnUiThread {
-                    if (!isFinishing && !isDestroyed) {
-                        screen = ScreenProfile.detect(this)
-                        setContentView(buildTvHome())
-                    }
-                }
+                runOnUiThread { if (!isFinishing && !isDestroyed) setContentView(buildHome()) }
             } catch (e: Exception) {
                 DebugLog.append(this, "DISCOVERY", "Refresh failed: ${e.message}")
             }
         }
     }
 
-    private fun buildTvHome(): View {
-        val dm = resources.displayMetrics
-        val w = dm.widthPixels
-        val h = dm.heightPixels
-        val mobile = screen.mobile()
-
-        // Phones still get a native responsive shell, but the TV geometry is the
-        // primary visual target requested for this pass.
-        return if (mobile) buildCompactHome(w, h) else buildTenFootHome(w, h)
+    private fun buildHome(): View {
+        val w = resources.displayMetrics.widthPixels
+        val h = resources.displayMetrics.heightPixels
+        return if (screen.mobile()) buildMobile(w, h) else buildTv(w, h)
     }
 
-    private fun buildTenFootHome(w: Int, h: Int): View {
-        val root = FrameLayout(this)
-        root.setBackgroundColor(bg)
-
-        val railW = (w * 0.158f).toInt().coerceIn(px(220), px(320))
-        val topH = (h * 0.077f).toInt().coerceAtLeast(px(70))
+    private fun buildTv(w: Int, h: Int): View {
+        val root = FrameLayout(this).apply { setBackgroundColor(bg) }
+        val railW = (w * .158f).toInt().coerceIn(dp(230), dp(315))
+        val topH = (h * .077f).toInt().coerceAtLeast(dp(68))
         val contentW = w - railW
 
-        root.addView(buildSideRail(railW, h), FrameLayout.LayoutParams(railW, h, Gravity.START))
+        root.addView(sideRail(), FrameLayout.LayoutParams(railW, h))
 
-        val body = FrameLayout(this)
-        body.setBackgroundColor(bg)
-        val bodyLp = FrameLayout.LayoutParams(contentW, h)
-        bodyLp.leftMargin = railW
-        root.addView(body, bodyLp)
-
-        body.addView(buildTopBar(contentW, topH), FrameLayout.LayoutParams(contentW, topH, Gravity.TOP))
+        val body = FrameLayout(this).apply { setBackgroundColor(bg) }
+        root.addView(body, FrameLayout.LayoutParams(contentW, h).apply { leftMargin = railW })
+        body.addView(topBar(), FrameLayout.LayoutParams(contentW, topH))
 
         val popularMovies = discovery.get(DiscoveryStore.POPULAR_MOVIES)
         val popularTv = discovery.get(DiscoveryStore.POPULAR_TV)
         val all = catalog.all()
         val continuing = continueWatching(all)
-        val recommended = RecommendationEngine().rankOverall(all, profiles, 18)
+        val fallback = RecommendationEngine().rankOverall(all, profiles, 18)
+        val featuredItem = continuing.firstOrNull() ?: popularMovies.firstOrNull() ?: fallback.firstOrNull() ?: mostRecent(all)
 
-        val hero = when {
-            continuing.isNotEmpty() -> continuing.first()
-            popularMovies.isNotEmpty() -> popularMovies.first()
-            recommended.isNotEmpty() -> recommended.first()
-            else -> mostRecentlyTouched(all)
+        val heroH = (h * .36f).toInt()
+        val trendW = (contentW * .205f).toInt().coerceAtLeast(dp(245))
+        val heroW = contentW - trendW
+
+        val heroView = hero(featuredItem)
+        body.addView(heroView, FrameLayout.LayoutParams(heroW, heroH).apply { topMargin = topH })
+        body.addView(trendingStack((popularTv + popularMovies).distinctBy { it.id }.take(3)), FrameLayout.LayoutParams(trendW, heroH).apply {
+            leftMargin = heroW
+            topMargin = topH
+        })
+
+        val lower = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(26), dp(5), dp(22), dp(8))
+            setBackgroundColor(bg)
         }
-
-        val heroH = (h * 0.36f).toInt()
-        val trendingW = (contentW * 0.205f).toInt().coerceAtLeast(px(245))
-        val heroMainW = contentW - trendingW
-
-        val hero = buildHero(hero)
-        val heroLp = FrameLayout.LayoutParams(heroMainW, heroH)
-        heroLp.topMargin = topH
-        body.addView(hero, heroLp)
-
-        val trending = buildTrendingStack((popularTv + popularMovies).distinctBy { it.id }.take(3), trendingW, heroH)
-        val trendingLp = FrameLayout.LayoutParams(trendingW, heroH)
-        trendingLp.leftMargin = heroMainW
-        trendingLp.topMargin = topH
-        body.addView(trending, trendingLp)
-
-        val lower = LinearLayout(this)
-        lower.orientation = LinearLayout.VERTICAL
-        lower.setPadding(px(26), px(6), px(22), px(10))
-        lower.setBackgroundColor(bg)
-        val lowerLp = FrameLayout.LayoutParams(contentW, h - topH - heroH)
-        lowerLp.topMargin = topH + heroH
-        body.addView(lower, lowerLp)
+        body.addView(lower, FrameLayout.LayoutParams(contentW, h - topH - heroH).apply { topMargin = topH + heroH })
 
         val continueItems = if (continuing.isNotEmpty()) continuing else (popularTv + popularMovies).take(10)
-        addLandscapeRail(lower, "Continue Watching", continueItems, (h * 0.185f).toInt())
-
-        val trendMovies = when {
-            popularMovies.isNotEmpty() -> popularMovies
-            else -> recommended.filter { !it.series }
-        }
-        addPosterRail(lower, "Trending Movies", trendMovies, (h * 0.275f).toInt())
-
+        addLandscapeRail(lower, "Continue Watching", continueItems, (h * .185f).toInt())
+        val movieItems = if (popularMovies.isNotEmpty()) popularMovies else fallback.filter { !it.series }
+        addPosterRail(lower, "Trending Movies", movieItems, (h * .275f).toInt())
         return root
     }
 
-    private fun buildSideRail(width: Int, height: Int): View {
-        val rail = LinearLayout(this)
-        rail.orientation = LinearLayout.VERTICAL
-        rail.setPadding(px(28), px(22), px(20), px(24))
-        rail.setBackgroundColor(Color.rgb(3, 3, 11))
+    private fun sideRail(): View = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(28), dp(22), dp(19), dp(22))
+        setBackgroundColor(Color.rgb(3, 3, 11))
 
-        val logo = TextView(this)
-        logo.text = "M00V13"
-        logo.setTextColor(purple)
-        logo.textSize = 31f
-        logo.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        logo.letterSpacing = 0.05f
-        rail.addView(logo, LinearLayout.LayoutParams(-1, px(48)))
+        addView(text("M00V13", 31f, purple, true).apply { letterSpacing = .05f }, LinearLayout.LayoutParams(-1, dp(48)))
+        addView(text("STREAM BEYOND LIMITS", 8.5f, Color.rgb(194, 128, 255)).apply { letterSpacing = .28f }, LinearLayout.LayoutParams(-1, dp(35)))
+        addView(View(this@MainActivity), LinearLayout.LayoutParams(1, dp(16)))
 
-        val tag = TextView(this)
-        tag.text = "STREAM BEYOND LIMITS"
-        tag.setTextColor(Color.rgb(192, 126, 255))
-        tag.textSize = 8.5f
-        tag.letterSpacing = 0.28f
-        rail.addView(tag, LinearLayout.LayoutParams(-1, px(34)))
+        nav(this, "⌂", "Home", true) { }
+        nav(this, "▦", "Movies") { browse(BrowseActivity.KIND_MOVIES) }
+        nav(this, "▣", "TV Shows") { browse(BrowseActivity.KIND_TV) }
+        nav(this, "⌕", "Search") { open(SearchActivity::class.java) }
+        nav(this, "♡", "My Lists") { open(ProfileActivity::class.java) }
+        nav(this, "↗", "Real Debrid") { open(DebridActivity::class.java) }
+        nav(this, "◉", "Providers") { open(ProviderSettingsActivity::class.java) }
+        nav(this, "⚙", "Settings") { open(SettingsActivity::class.java) }
+        nav(this, "♬", "Support") { open(DonateActivity::class.java) }
 
-        val spacer = View(this)
-        rail.addView(spacer, LinearLayout.LayoutParams(1, px(18)))
-
-        navItem(rail, "⌂", "Home", true) { }
-        navItem(rail, "▦", "Movies") { openBrowse(BrowseActivity.KIND_MOVIES) }
-        navItem(rail, "▣", "TV Shows") { openBrowse(BrowseActivity.KIND_TV) }
-        navItem(rail, "⌕", "Search") { startActivity(Intent(this, SearchActivity::class.java)) }
-        navItem(rail, "♡", "My Lists") { startActivity(Intent(this, ProfileActivity::class.java)) }
-        navItem(rail, "↗", "Real Debrid") { startActivity(Intent(this, DebridActivity::class.java)) }
-        navItem(rail, "◉", "Providers") { startActivity(Intent(this, ProviderSettingsActivity::class.java)) }
-        navItem(rail, "⚙", "Settings") { startActivity(Intent(this, SettingsActivity::class.java)) }
-        navItem(rail, "♬", "Support") { startActivity(Intent(this, DonateActivity::class.java)) }
-
-        val filler = View(this)
-        rail.addView(filler, LinearLayout.LayoutParams(1, 0, 1f))
-
-        val slogan = TextView(this)
-        slogan.text = "YOUR\nCONTENT.\nYOUR WAY."
-        slogan.setTextColor(Color.rgb(176, 100, 255))
-        slogan.textSize = 13f
-        slogan.letterSpacing = 0.24f
-        slogan.setLineSpacing(0f, 1.25f)
-        rail.addView(slogan, LinearLayout.LayoutParams(-1, px(108)))
-        return rail
+        addView(View(this@MainActivity), LinearLayout.LayoutParams(1, 0, 1f))
+        addView(text("YOUR\nCONTENT.\nYOUR WAY.", 13f, Color.rgb(178, 102, 255)).apply {
+            letterSpacing = .22f
+            setLineSpacing(0f, 1.22f)
+        }, LinearLayout.LayoutParams(-1, dp(105)))
     }
 
-    private fun navItem(parent: LinearLayout, icon: String, label: String, selected: Boolean = false, click: () -> Unit) {
-        val row = LinearLayout(this)
-        row.orientation = LinearLayout.HORIZONTAL
-        row.gravity = Gravity.CENTER_VERTICAL
-        row.isFocusable = true
-        row.isClickable = true
-        row.stateListAnimator = null
-        row.setPadding(px(14), 0, px(12), 0)
-        row.background = navBackground(selected)
-
-        val i = TextView(this)
-        i.text = icon
-        i.gravity = Gravity.CENTER
-        i.setTextColor(if (selected) blue else Color.rgb(176, 99, 255))
-        i.textSize = 23f
-        row.addView(i, LinearLayout.LayoutParams(px(38), -1))
-
-        val t = TextView(this)
-        t.text = label
-        t.gravity = Gravity.CENTER_VERTICAL
-        t.setTextColor(if (selected) Color.rgb(124, 181, 255) else Color.rgb(211, 173, 255))
-        t.textSize = 16f
-        t.typeface = android.graphics.Typeface.DEFAULT_BOLD
+    private fun nav(parent: LinearLayout, icon: String, label: String, selected: Boolean = false, action: () -> Unit) {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            isFocusable = true
+            isClickable = true
+            stateListAnimator = null
+            setPadding(dp(12), 0, dp(10), 0)
+            background = navBg(selected)
+        }
+        val i = text(icon, 23f, if (selected) blue else Color.rgb(178, 100, 255)).apply { gravity = Gravity.CENTER }
+        val t = text(label, 16f, if (selected) Color.rgb(130, 188, 255) else Color.rgb(210, 174, 255), true).apply { gravity = Gravity.CENTER_VERTICAL }
+        row.addView(i, LinearLayout.LayoutParams(dp(38), -1))
         row.addView(t, LinearLayout.LayoutParams(0, -1, 1f))
-
-        row.setOnFocusChangeListener { _, focused ->
-            row.background = navBackground(focused || selected)
-            t.setTextColor(if (focused || selected) Color.rgb(126, 185, 255) else Color.rgb(211, 173, 255))
-            i.setTextColor(if (focused || selected) blue else Color.rgb(176, 99, 255))
-            if (focused && AppSettingsStore(this).clickSounds()) row.playSoundEffect(SoundEffectConstants.CLICK)
+        row.setOnFocusChangeListener { _, f ->
+            row.background = navBg(f || selected)
+            i.setTextColor(if (f || selected) blue else Color.rgb(178, 100, 255))
+            t.setTextColor(if (f || selected) Color.rgb(130, 188, 255) else Color.rgb(210, 174, 255))
+            if (f && AppSettingsStore(this).clickSounds()) row.playSoundEffect(SoundEffectConstants.CLICK)
         }
-        row.setOnClickListener { click() }
-        val lp = LinearLayout.LayoutParams(-1, px(57))
-        lp.bottomMargin = px(7)
-        parent.addView(row, lp)
+        row.setOnClickListener { action() }
+        parent.addView(row, LinearLayout.LayoutParams(-1, dp(57)).apply { bottomMargin = dp(7) })
     }
 
-    private fun buildTopBar(width: Int, height: Int): View {
-        val bar = LinearLayout(this)
-        bar.orientation = LinearLayout.HORIZONTAL
-        bar.gravity = Gravity.CENTER_VERTICAL or Gravity.END
-        bar.setPadding(px(18), 0, px(28), 0)
-        bar.setBackgroundColor(Color.rgb(5, 4, 16))
-
-        val spacer = View(this)
-        bar.addView(spacer, LinearLayout.LayoutParams(0, 1, 1f))
-
-        topAction(bar, "⌕  Search") { startActivity(Intent(this, SearchActivity::class.java)) }
-        val rd = if (DebridStore(this).isConnected) "↗  Real Debrid   ● Connected" else "↗  Real Debrid"
-        topAction(bar, rd) { startActivity(Intent(this, DebridActivity::class.java)) }
-        topAction(bar, "⚙  Settings") { startActivity(Intent(this, SettingsActivity::class.java)) }
-        topAction(bar, "♬  Support") { startActivity(Intent(this, DonateActivity::class.java)) }
-
-        val clock = TextView(this)
-        clock.text = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
-        clock.setTextColor(Color.rgb(207, 170, 255))
-        clock.textSize = 17f
-        clock.gravity = Gravity.CENTER
-        bar.addView(clock, LinearLayout.LayoutParams(px(118), height))
-        return bar
+    private fun topBar(): View = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL or Gravity.END
+        setPadding(dp(16), 0, dp(28), 0)
+        setBackgroundColor(Color.rgb(5, 4, 16))
+        addView(View(this@MainActivity), LinearLayout.LayoutParams(0, 1, 1f))
+        topAction(this, "⌕  Search") { open(SearchActivity::class.java) }
+        topAction(this, if (DebridStore(this@MainActivity).isConnected()) "↗  Real Debrid   ● Connected" else "↗  Real Debrid") { open(DebridActivity::class.java) }
+        topAction(this, "⚙  Settings") { open(SettingsActivity::class.java) }
+        topAction(this, "♬  Support") { open(DonateActivity::class.java) }
+        addView(text(SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date()), 17f, Color.rgb(208, 171, 255)).apply { gravity = Gravity.CENTER }, LinearLayout.LayoutParams(dp(115), dp(50)))
     }
 
-    private fun topAction(parent: LinearLayout, label: String, click: () -> Unit) {
-        val t = TextView(this)
-        t.text = label
-        t.gravity = Gravity.CENTER
-        t.setTextColor(Color.rgb(202, 164, 247))
-        t.textSize = 14f
-        t.isFocusable = true
-        t.isClickable = true
-        t.stateListAnimator = null
-        t.setPadding(px(12), 0, px(12), 0)
-        t.background = transparentFocusBackground()
-        t.setOnFocusChangeListener { _, f ->
-            t.setTextColor(if (f) blue else Color.rgb(202, 164, 247))
-            t.background = if (f) outlineDrawable(Color.TRANSPARENT, blue, px(2), px(7)) else transparentFocusBackground()
+    private fun topAction(parent: LinearLayout, label: String, action: () -> Unit) {
+        val v = text(label, 14f, Color.rgb(203, 165, 248)).apply {
+            gravity = Gravity.CENTER
+            isFocusable = true
+            isClickable = true
+            stateListAnimator = null
+            setPadding(dp(12), 0, dp(12), 0)
+            background = box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 7)
+            setOnFocusChangeListener { _, f ->
+                setTextColor(if (f) blue else Color.rgb(203, 165, 248))
+                background = box(Color.TRANSPARENT, if (f) blue else Color.TRANSPARENT, if (f) 2 else 0, 7)
+            }
+            setOnClickListener { action() }
         }
-        t.setOnClickListener { click() }
-        parent.addView(t, LinearLayout.LayoutParams(-2, px(48)))
+        parent.addView(v, LinearLayout.LayoutParams(-2, dp(48)))
     }
 
-    private fun buildHero(item: MediaCard?): View {
-        val hero = FrameLayout(this)
-        hero.setBackgroundColor(panel)
-
-        val art = ImageView(this)
-        art.scaleType = ImageView.ScaleType.CENTER_CROP
-        art.setBackgroundColor(Color.rgb(13, 8, 24))
-        hero.addView(art, FrameLayout.LayoutParams(-1, -1))
+    private fun hero(item: MediaCard?): View {
+        val root = FrameLayout(this).apply { setBackgroundColor(panel) }
+        val art = ImageView(this).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            setBackgroundColor(panel)
+        }
         heroArt = art
+        root.addView(art, FrameLayout.LayoutParams(-1, -1))
         if (item != null) loadHero(item)
+        root.addView(View(this).apply { background = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(Color.argb(245, 2, 2, 9), Color.argb(188, 4, 3, 12), Color.argb(25, 4, 3, 12))) }, FrameLayout.LayoutParams(-1, -1))
 
-        val shade = View(this)
-        shade.background = horizontalShade()
-        hero.addView(shade, FrameLayout.LayoutParams(-1, -1))
-
-        val info = LinearLayout(this)
-        info.orientation = LinearLayout.VERTICAL
-        info.gravity = Gravity.BOTTOM
-        info.setPadding(px(48), px(26), px(26), px(34))
-        val infoLp = FrameLayout.LayoutParams((screen.widthPx * 0.48f).toInt(), -1, Gravity.START)
-        hero.addView(info, infoLp)
-
-        val feature = TextView(this)
-        feature.text = "FEATURED"
-        feature.setTextColor(Color.rgb(214, 169, 255))
-        feature.textSize = 11f
-        feature.letterSpacing = 0.28f
-        info.addView(feature, LinearLayout.LayoutParams(-1, px(30)))
-
-        val title = TextView(this)
-        title.text = item?.title ?: "M00V13"
-        title.setTextColor(white)
-        title.textSize = 34f
-        title.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        title.maxLines = 2
-        title.ellipsize = TextUtils.TruncateAt.END
-        heroTitle = title
-        info.addView(title, LinearLayout.LayoutParams(-1, -2))
-
-        val meta = TextView(this)
-        meta.text = item?.let { heroDetail(it) } ?: "Search • stream • download"
-        meta.setTextColor(Color.rgb(233, 225, 242))
-        meta.textSize = 15f
-        meta.maxLines = 2
-        meta.setPadding(0, px(8), 0, px(13))
-        heroMeta = meta
-        info.addView(meta, LinearLayout.LayoutParams(-1, -2))
-
-        val chips = TextView(this)
-        chips.text = item?.let { chipLine(it) } ?: "4K   HDR   Dolby Vision   Atmos"
-        chips.setTextColor(Color.rgb(226, 217, 236))
-        chips.textSize = 12f
-        chips.setPadding(0, 0, 0, px(14))
-        info.addView(chips, LinearLayout.LayoutParams(-1, -2))
-
-        val actions = LinearLayout(this)
-        actions.orientation = LinearLayout.HORIZONTAL
-        val play = actionButton("▶  Play", true)
-        play.setOnClickListener {
-            if (item == null) startActivity(Intent(this, SearchActivity::class.java)) else openMedia(item)
+        val info = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.BOTTOM
+            setPadding(dp(46), dp(22), dp(18), dp(32))
         }
-        actions.addView(play, LinearLayout.LayoutParams(px(220), px(54)))
+        root.addView(info, FrameLayout.LayoutParams((resources.displayMetrics.widthPixels * .47f).toInt(), -1))
+        info.addView(text("FEATURED", 11f, Color.rgb(214, 169, 255)).apply { letterSpacing = .28f }, LinearLayout.LayoutParams(-1, dp(28)))
 
-        val more = actionButton("ⓘ  More Info", false)
-        more.setOnClickListener { if (item != null) openMedia(item) }
-        val mp = LinearLayout.LayoutParams(px(180), px(54)); mp.leftMargin = px(12)
-        actions.addView(more, mp)
+        heroTitle = text(item?.title ?: "M00V13", 34f, white, true).apply { maxLines = 2; ellipsize = TextUtils.TruncateAt.END }
+        info.addView(heroTitle, LinearLayout.LayoutParams(-1, -2))
+        heroMeta = text(item?.let { heroDetail(it) } ?: "Search • stream • download", 15f, Color.rgb(232, 224, 242)).apply { setPadding(0, dp(7), 0, dp(10)); maxLines = 2 }
+        info.addView(heroMeta, LinearLayout.LayoutParams(-1, -2))
+        info.addView(text(item?.let { chipLine(it) } ?: "4K   HDR   Dolby Vision   Atmos", 12f, Color.rgb(226, 217, 236)).apply { setPadding(0, 0, 0, dp(13)) })
 
-        val list = actionButton("＋  My List", false)
-        list.setOnClickListener { if (item != null) profiles.setWatchlist(item.id, !profiles.isInWatchlist(item.id)) }
-        val lp = LinearLayout.LayoutParams(px(165), px(54)); lp.leftMargin = px(12)
-        actions.addView(list, lp)
+        val actions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        val play = actionButton("▶  Play", true).apply { setOnClickListener { if (item == null) open(SearchActivity::class.java) else openMedia(item) } }
+        actions.addView(play, LinearLayout.LayoutParams(dp(220), dp(54)))
+        val more = actionButton("ⓘ  More Info", false).apply { setOnClickListener { if (item != null) openMedia(item) } }
+        actions.addView(more, LinearLayout.LayoutParams(dp(180), dp(54)).apply { leftMargin = dp(12) })
+        val list = actionButton("＋  My List", false).apply { setOnClickListener { if (item != null) profiles.setWatchlist(item.id, !profiles.isInWatchlist(item.id)) } }
+        actions.addView(list, LinearLayout.LayoutParams(dp(165), dp(54)).apply { leftMargin = dp(12) })
         info.addView(actions)
-        return hero
+        return root
     }
 
-    private fun buildTrendingStack(items: List<MediaCard>, width: Int, height: Int): View {
-        val wrap = LinearLayout(this)
-        wrap.orientation = LinearLayout.VERTICAL
-        wrap.setPadding(px(16), px(10), px(18), px(12))
-        wrap.setBackgroundColor(Color.rgb(7, 5, 17))
-
-        val title = TextView(this)
-        title.text = "Trending Now"
-        title.setTextColor(white)
-        title.textSize = 15f
-        title.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        wrap.addView(title, LinearLayout.LayoutParams(-1, px(30)))
-
-        val cardH = max(px(84), (height - px(54)) / 3)
+    private fun trendingStack(items: List<MediaCard>): View = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(15), dp(9), dp(17), dp(10))
+        setBackgroundColor(Color.rgb(7, 5, 17))
+        addView(text("Trending Now", 15f, white, true), LinearLayout.LayoutParams(-1, dp(30)))
         items.take(3).forEach { item ->
-            val card = FrameLayout(this)
-            card.isFocusable = true
-            card.isClickable = true
-            card.stateListAnimator = null
-            card.background = outlineDrawable(panel2, Color.TRANSPARENT, 0, px(5))
+            val card = FrameLayout(this@MainActivity).apply {
+                isFocusable = true; isClickable = true; stateListAnimator = null
+                background = box(panel, Color.TRANSPARENT, 0, 5)
+            }
+            val art = ImageView(this@MainActivity).apply { scaleType = ImageView.ScaleType.CENTER_CROP; setBackgroundColor(panel) }
+            card.addView(art, FrameLayout.LayoutParams(-1, -1)); loadArt(art, item.artworkUrl, dp(520))
+            card.addView(text(item.title, 15f, white, true).apply { gravity = Gravity.BOTTOM; setPadding(dp(11), 0, dp(8), dp(9)); maxLines = 2 }, FrameLayout.LayoutParams(-1, -1))
+            card.setOnFocusChangeListener { _, f -> card.background = box(Color.TRANSPARENT, if (f) blue else Color.TRANSPARENT, if (f) 3 else 0, 5); if (f) showHero(item) }
+            card.setOnClickListener { openMedia(item) }
+            addView(card, LinearLayout.LayoutParams(-1, 0, 1f).apply { bottomMargin = dp(7) })
+        }
+    }
 
-            val art = ImageView(this)
-            art.scaleType = ImageView.ScaleType.CENTER_CROP
-            art.setBackgroundColor(panel2)
-            card.addView(art, FrameLayout.LayoutParams(-1, -1))
-            loadArtwork(art, item.artworkUrl, max(420, width))
-
-            val shade = View(this)
-            shade.setBackgroundColor(Color.argb(70, 0, 0, 0))
-            card.addView(shade, FrameLayout.LayoutParams(-1, -1))
-
-            val t = TextView(this)
-            t.text = item.title
-            t.setTextColor(white)
-            t.textSize = 15f
-            t.typeface = android.graphics.Typeface.DEFAULT_BOLD
-            t.gravity = Gravity.BOTTOM or Gravity.START
-            t.setPadding(px(12), px(8), px(10), px(10))
-            t.maxLines = 2
-            card.addView(t, FrameLayout.LayoutParams(-1, -1))
-
+    private fun addLandscapeRail(parent: LinearLayout, title: String, items: List<MediaCard>, height: Int) {
+        parent.addView(sectionTitle(title, null), LinearLayout.LayoutParams(-1, dp(31)))
+        val scroll = HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; clipChildren = false }
+        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; clipChildren = false }
+        val cardW = (screen.widthPx * .15f).toInt().coerceIn(dp(225), dp(315))
+        val cardH = max(dp(105), height - dp(34))
+        items.take(12).forEach { item ->
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL; isFocusable = true; isClickable = true; stateListAnimator = null
+                setPadding(dp(3), dp(3), dp(3), dp(3)); background = box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 5)
+            }
+            val image = ImageView(this).apply { scaleType = ImageView.ScaleType.CENTER_CROP; setBackgroundColor(panel) }
+            card.addView(image, LinearLayout.LayoutParams(cardW - dp(6), (cardH * .68f).toInt())); loadArt(image, item.artworkUrl, cardW * 2)
+            val name = text(item.title, 13f, white, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }
+            card.addView(name, LinearLayout.LayoutParams(cardW - dp(6), dp(23)))
+            card.addView(text(progressLine(item), 11f, muted), LinearLayout.LayoutParams(cardW - dp(6), dp(19)))
             card.setOnFocusChangeListener { _, f ->
-                card.background = outlineDrawable(Color.TRANSPARENT, if (f) blue else Color.TRANSPARENT, if (f) px(3) else 0, px(5))
-                if (f) showHero(item)
+                card.background = box(Color.TRANSPARENT, if (f) blue else Color.TRANSPARENT, if (f) 3 else 0, 5)
+                name.setTextColor(if (f) blue else white); if (f) showHero(item)
+                if (f && AppSettingsStore(this).clickSounds()) card.playSoundEffect(SoundEffectConstants.CLICK)
             }
             card.setOnClickListener { openMedia(item) }
-            val cp = LinearLayout.LayoutParams(-1, cardH)
-            cp.bottomMargin = px(8)
-            wrap.addView(card, cp)
+            row.addView(card, LinearLayout.LayoutParams(cardW, cardH).apply { rightMargin = dp(11) })
         }
-        return wrap
+        scroll.addView(row); parent.addView(scroll, LinearLayout.LayoutParams(-1, cardH))
     }
 
-    private fun addLandscapeRail(parent: LinearLayout, heading: String, items: List<MediaCard>, totalHeight: Int) {
-        parent.addView(sectionHeader(heading, null), LinearLayout.LayoutParams(-1, px(32)))
-        val hsv = HorizontalScrollView(this)
-        hsv.isHorizontalScrollBarEnabled = false
-        hsv.clipChildren = false
-        hsv.clipToPadding = false
-        val row = LinearLayout(this)
-        row.orientation = LinearLayout.HORIZONTAL
-        row.clipChildren = false
-        row.setPadding(0, px(2), px(20), px(2))
-
-        val cardW = (screen.widthPx * 0.15f).toInt().coerceIn(px(230), px(320))
-        val cardH = (totalHeight - px(38)).coerceAtLeast(px(105))
-        items.take(12).forEach { row.addView(landscapeCard(it, cardW, cardH)) }
-        hsv.addView(row)
-        parent.addView(hsv, LinearLayout.LayoutParams(-1, totalHeight - px(32)))
+    private fun addPosterRail(parent: LinearLayout, title: String, items: List<MediaCard>, height: Int) {
+        parent.addView(sectionTitle(title, "See All  ›"), LinearLayout.LayoutParams(-1, dp(32)))
+        val scroll = HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; clipChildren = false }
+        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; clipChildren = false }
+        val cardW = (screen.widthPx * .108f).toInt().coerceIn(dp(158), dp(225))
+        val cardH = height - dp(35)
+        items.take(14).forEach { item ->
+            val card = FrameLayout(this).apply {
+                isFocusable = true; isClickable = true; stateListAnimator = null
+                setPadding(dp(3), dp(3), dp(3), dp(3)); background = box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 5)
+            }
+            val image = ImageView(this).apply { scaleType = ImageView.ScaleType.CENTER_CROP; setBackgroundColor(panel) }
+            card.addView(image, FrameLayout.LayoutParams(-1, -1)); loadArt(image, item.artworkUrl, cardW * 2)
+            val name = text(item.title, 12f, white, true).apply { gravity = Gravity.BOTTOM; setPadding(dp(9), 0, dp(7), dp(8)); maxLines = 2; ellipsize = TextUtils.TruncateAt.END; setBackgroundColor(Color.argb(90, 0, 0, 0)) }
+            card.addView(name, FrameLayout.LayoutParams(-1, dp(52), Gravity.BOTTOM))
+            card.setOnFocusChangeListener { _, f ->
+                card.background = box(Color.TRANSPARENT, if (f) blue else Color.TRANSPARENT, if (f) 4 else 0, 5)
+                name.setTextColor(if (f) Color.rgb(119, 187, 255) else white); if (f) showHero(item)
+                if (f && AppSettingsStore(this).clickSounds()) card.playSoundEffect(SoundEffectConstants.CLICK)
+            }
+            card.setOnClickListener { openMedia(item) }
+            card.setOnLongClickListener { profiles.setWatchlist(item.id, !profiles.isInWatchlist(item.id)); true }
+            row.addView(card, LinearLayout.LayoutParams(cardW, cardH).apply { rightMargin = dp(11) })
+        }
+        scroll.addView(row); parent.addView(scroll, LinearLayout.LayoutParams(-1, cardH))
     }
 
-    private fun landscapeCard(item: MediaCard, width: Int, height: Int): View {
-        val holder = LinearLayout(this)
-        holder.orientation = LinearLayout.VERTICAL
-        holder.isFocusable = true
-        holder.isClickable = true
-        holder.stateListAnimator = null
-        holder.setPadding(px(3), px(3), px(3), px(3))
-        holder.background = outlineDrawable(Color.TRANSPARENT, Color.TRANSPARENT, 0, px(5))
-
-        val artH = (height * 0.70f).toInt()
-        val art = ImageView(this)
-        art.scaleType = ImageView.ScaleType.CENTER_CROP
-        art.setBackgroundColor(panel2)
-        holder.addView(art, LinearLayout.LayoutParams(width - px(6), artH))
-        loadArtwork(art, item.artworkUrl, max(width * 2, 480))
-
-        val t = TextView(this)
-        t.text = item.title
-        t.setTextColor(white)
-        t.textSize = 13f
-        t.maxLines = 1
-        t.ellipsize = TextUtils.TruncateAt.END
-        holder.addView(t, LinearLayout.LayoutParams(width - px(6), px(24)))
-
-        val sub = TextView(this)
-        sub.text = progressLine(item)
-        sub.setTextColor(Color.rgb(194, 164, 232))
-        sub.textSize = 11f
-        holder.addView(sub, LinearLayout.LayoutParams(width - px(6), px(20)))
-
-        holder.setOnFocusChangeListener { _, f ->
-            holder.background = outlineDrawable(Color.TRANSPARENT, if (f) blue else Color.TRANSPARENT, if (f) px(3) else 0, px(5))
-            t.setTextColor(if (f) blue else white)
-            if (f) showHero(item)
-            if (f && AppSettingsStore(this).clickSounds()) holder.playSoundEffect(SoundEffectConstants.CLICK)
-        }
-        holder.setOnClickListener { openMedia(item) }
-        val lp = LinearLayout.LayoutParams(width, height)
-        lp.rightMargin = px(12)
-        holder.layoutParams = lp
-        return holder
+    private fun buildMobile(w: Int, h: Int): View = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL; setPadding(dp(15), dp(12), dp(15), dp(18)); setBackgroundColor(bg)
+        val top = LinearLayout(this@MainActivity).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        top.addView(text("M00V13", 25f, purple, true), LinearLayout.LayoutParams(0, dp(48), 1f))
+        topAction(top, "⌕") { open(SearchActivity::class.java) }; topAction(top, "⚙") { open(SettingsActivity::class.java) }
+        addView(top)
+        val movies = discovery.get(DiscoveryStore.POPULAR_MOVIES)
+        addView(hero(movies.firstOrNull() ?: catalog.all().firstOrNull()), LinearLayout.LayoutParams(-1, (h * .35f).toInt()))
+        addPosterRail(this, "Trending Movies", movies, (h * .43f).toInt())
     }
 
-    private fun addPosterRail(parent: LinearLayout, heading: String, items: List<MediaCard>, totalHeight: Int) {
-        parent.addView(sectionHeader(heading, "See All  ›"), LinearLayout.LayoutParams(-1, px(34)))
-        val hsv = HorizontalScrollView(this)
-        hsv.isHorizontalScrollBarEnabled = false
-        hsv.clipChildren = false
-        val row = LinearLayout(this)
-        row.orientation = LinearLayout.HORIZONTAL
-        row.clipChildren = false
-        row.setPadding(0, px(2), px(20), px(2))
-
-        val cardW = (screen.widthPx * 0.108f).toInt().coerceIn(px(158), px(228))
-        val cardH = totalHeight - px(38)
-        items.take(14).forEach { row.addView(posterCard(it, cardW, cardH)) }
-        hsv.addView(row)
-        parent.addView(hsv, LinearLayout.LayoutParams(-1, cardH))
+    private fun sectionTitle(left: String, right: String?): View = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+        addView(text(left, 18f, white, true), LinearLayout.LayoutParams(0, -1, 1f))
+        if (right != null) addView(text(right, 12f, Color.rgb(190, 113, 255)).apply { gravity = Gravity.CENTER_VERTICAL or Gravity.END }, LinearLayout.LayoutParams(dp(100), -1))
     }
 
-    private fun posterCard(item: MediaCard, width: Int, height: Int): View {
-        val card = FrameLayout(this)
-        card.isFocusable = true
-        card.isClickable = true
-        card.stateListAnimator = null
-        card.setPadding(px(3), px(3), px(3), px(3))
-        card.background = outlineDrawable(Color.TRANSPARENT, Color.TRANSPARENT, 0, px(5))
-
-        val art = ImageView(this)
-        art.scaleType = ImageView.ScaleType.CENTER_CROP
-        art.setBackgroundColor(panel2)
-        card.addView(art, FrameLayout.LayoutParams(width - px(6), height - px(6)))
-        loadArtwork(art, item.artworkUrl, max(width * 2, 420))
-
-        val titleShade = View(this)
-        titleShade.setBackgroundColor(Color.argb(105, 0, 0, 0))
-        val slp = FrameLayout.LayoutParams(-1, px(50), Gravity.BOTTOM)
-        slp.leftMargin = px(3); slp.rightMargin = px(3); slp.bottomMargin = px(3)
-        card.addView(titleShade, slp)
-
-        val title = TextView(this)
-        title.text = item.title
-        title.setTextColor(white)
-        title.textSize = 12f
-        title.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        title.maxLines = 2
-        title.ellipsize = TextUtils.TruncateAt.END
-        title.gravity = Gravity.BOTTOM or Gravity.START
-        title.setPadding(px(9), px(3), px(7), px(8))
-        card.addView(title, FrameLayout.LayoutParams(-1, px(52), Gravity.BOTTOM))
-
-        card.setOnFocusChangeListener { _, f ->
-            card.background = outlineDrawable(Color.TRANSPARENT, if (f) blue else Color.TRANSPARENT, if (f) px(4) else 0, px(5))
-            title.setTextColor(if (f) Color.rgb(115, 184, 255) else white)
-            if (f) showHero(item)
-            if (f && AppSettingsStore(this).clickSounds()) card.playSoundEffect(SoundEffectConstants.CLICK)
+    private fun actionButton(label: String, primary: Boolean): TextView = text(label, 16f, white, true).apply {
+        gravity = Gravity.CENTER; isFocusable = true; isClickable = true; stateListAnimator = null
+        background = if (primary) box(Color.rgb(101, 45, 239), blue, 2, 6) else box(Color.rgb(20, 11, 42), Color.rgb(106, 57, 157), 1, 6)
+        setOnFocusChangeListener { _, f ->
+            background = if (f) box(if (primary) Color.rgb(92, 42, 229) else Color.rgb(25, 14, 49), blue, 3, 6) else if (primary) box(Color.rgb(101, 45, 239), Color.rgb(90, 80, 180), 1, 6) else box(Color.rgb(20, 11, 42), Color.rgb(106, 57, 157), 1, 6)
+            setTextColor(if (f) Color.rgb(146, 201, 255) else white)
         }
-        card.setOnClickListener { openMedia(item) }
-        card.setOnLongClickListener {
-            profiles.setWatchlist(item.id, !profiles.isInWatchlist(item.id)); true
-        }
-        val lp = LinearLayout.LayoutParams(width, height)
-        lp.rightMargin = px(11)
-        card.layoutParams = lp
-        return card
-    }
-
-    private fun sectionHeader(left: String, right: String?): View {
-        val row = LinearLayout(this)
-        row.orientation = LinearLayout.HORIZONTAL
-        row.gravity = Gravity.CENTER_VERTICAL
-        val title = TextView(this)
-        title.text = left
-        title.setTextColor(white)
-        title.textSize = 18f
-        title.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        row.addView(title, LinearLayout.LayoutParams(0, -1, 1f))
-        if (right != null) {
-            val see = TextView(this)
-            see.text = right
-            see.setTextColor(Color.rgb(189, 112, 255))
-            see.textSize = 12f
-            see.gravity = Gravity.CENTER_VERTICAL or Gravity.END
-            row.addView(see, LinearLayout.LayoutParams(px(95), -1))
-        }
-        return row
-    }
-
-    private fun actionButton(label: String, primary: Boolean): TextView {
-        val b = TextView(this)
-        b.text = label
-        b.gravity = Gravity.CENTER
-        b.textSize = 16f
-        b.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        b.setTextColor(white)
-        b.isFocusable = true
-        b.isClickable = true
-        b.stateListAnimator = null
-        b.background = if (primary) outlineDrawable(Color.rgb(102, 46, 239), blue, px(2), px(6)) else outlineDrawable(Color.argb(135, 18, 10, 42), Color.rgb(105, 56, 157), px(1), px(6))
-        b.setOnFocusChangeListener { _, f ->
-            b.background = if (f) outlineDrawable(if (primary) Color.rgb(93, 42, 231) else Color.rgb(24, 13, 48), blue, px(3), px(6)) else if (primary) outlineDrawable(Color.rgb(102, 46, 239), Color.rgb(90, 80, 180), px(1), px(6)) else outlineDrawable(Color.argb(135, 18, 10, 42), Color.rgb(105, 56, 157), px(1), px(6))
-            b.setTextColor(if (f) Color.rgb(146, 201, 255) else white)
-        }
-        return b
     }
 
     private fun showHero(item: MediaCard) {
-        heroTitle?.text = item.title
-        heroMeta?.text = heroDetail(item)
-        heroArt?.let {
-            it.setImageDrawable(null)
-            loadHero(item)
-        }
+        heroTitle?.text = item.title; heroMeta?.text = heroDetail(item)
+        heroArt?.setImageDrawable(null); loadHero(item)
     }
 
     private fun loadHero(item: MediaCard) {
-        val target = heroArt ?: return
+        val view = heroArt ?: return
         val url = item.artworkUrl ?: return
         if (url.isBlank()) return
         val token = ++heroToken
-        artExecutor.submit {
+        artPool.submit {
             try {
-                val f = ArtworkCache(this).fetch(url, 88, min(screen.widthPx, 1920)) ?: return@submit
-                val bitmap = BitmapFactory.decodeFile(f.absolutePath) ?: return@submit
-                runOnUiThread {
-                    if (!isFinishing && !isDestroyed && token == heroToken && heroArt === target) target.setImageBitmap(bitmap)
-                }
-            } catch (e: Exception) {
-                DebugLog.append(this, "ART", "Hero artwork failed: ${e.message}")
-            }
+                val file = ArtworkCache(this).fetch(url, 88, min(screen.widthPx, 1920)) ?: return@submit
+                val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return@submit
+                runOnUiThread { if (!isFinishing && !isDestroyed && token == heroToken && heroArt === view) view.setImageBitmap(bitmap) }
+            } catch (e: Exception) { DebugLog.append(this, "ART", "Hero failed: ${e.message}") }
         }
     }
 
-    private fun loadArtwork(image: ImageView, url: String?, targetPx: Int) {
+    private fun loadArt(view: ImageView, url: String?, target: Int) {
         if (url.isNullOrBlank()) return
-        artExecutor.submit {
+        artPool.submit {
             try {
-                val f: File = ArtworkCache(this).fetch(url, 84, min(targetPx, screen.widthPx)) ?: return@submit
-                val bitmap = BitmapFactory.decodeFile(f.absolutePath) ?: return@submit
-                runOnUiThread {
-                    if (!isFinishing && !isDestroyed) image.setImageBitmap(bitmap)
-                }
-            } catch (e: Exception) {
-                DebugLog.append(this, "ART", "Artwork failed: ${e.message}")
-            }
+                val file = ArtworkCache(this).fetch(url, 84, min(target, screen.widthPx)) ?: return@submit
+                val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return@submit
+                runOnUiThread { if (!isFinishing && !isDestroyed) view.setImageBitmap(bitmap) }
+            } catch (e: Exception) { DebugLog.append(this, "ART", "Artwork failed: ${e.message}") }
         }
     }
 
-    private fun buildCompactHome(w: Int, h: Int): View {
-        val root = LinearLayout(this)
-        root.orientation = LinearLayout.VERTICAL
-        root.setPadding(px(16), px(14), px(16), px(22))
-        root.setBackgroundColor(bg)
+    private fun continueWatching(all: List<MediaCard>) = all.filter {
+        val p = profiles.progressMs(it.id); val d = profiles.durationMs(it.id)
+        !profiles.isWatched(it.id) && p > 0 && d > 0
+    }.sortedByDescending { profiles.lastUpdatedMs(it.id) }
 
-        val top = LinearLayout(this)
-        top.orientation = LinearLayout.HORIZONTAL
-        top.gravity = Gravity.CENTER_VERTICAL
-        val brand = TextView(this)
-        brand.text = "M00V13"
-        brand.setTextColor(purple)
-        brand.textSize = 24f
-        brand.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        top.addView(brand, LinearLayout.LayoutParams(0, px(48), 1f))
-        topAction(top, "⌕") { startActivity(Intent(this, SearchActivity::class.java)) }
-        topAction(top, "⚙") { startActivity(Intent(this, SettingsActivity::class.java)) }
-        root.addView(top)
-
-        val items = discovery.get(DiscoveryStore.POPULAR_MOVIES)
-        val heroItem = items.firstOrNull() ?: catalog.all().firstOrNull()
-        root.addView(buildHero(heroItem), LinearLayout.LayoutParams(-1, (h * .34f).toInt()))
-        addPosterRail(root, "Trending Movies", items, (h * .42f).toInt())
-        return root
-    }
-
-    private fun openBrowse(kind: String) {
-        startActivity(Intent(this, BrowseActivity::class.java).putExtra(BrowseActivity.EXTRA_KIND, kind))
-    }
-
-    private fun openMedia(item: MediaCard) {
-        catalog.upsert(item)
-        startActivity(Intent(this, MediaOpenActivity::class.java).putExtra(MediaOpenActivity.EXTRA_MEDIA_ID, item.id))
-    }
-
-    private fun continueWatching(all: List<MediaCard>): List<MediaCard> = all
-        .filter {
-            val p = profiles.progressMs(it.id)
-            val d = profiles.durationMs(it.id)
-            !profiles.isWatched(it.id) && p > 0L && d > 0L
-        }
-        .sortedByDescending { profiles.lastUpdatedMs(it.id) }
-
-    private fun mostRecentlyTouched(all: List<MediaCard>): MediaCard? = all.maxByOrNull { profiles.lastUpdatedMs(it.id) }
+    private fun mostRecent(all: List<MediaCard>): MediaCard? = all.maxByOrNull { profiles.lastUpdatedMs(it.id) }
 
     private fun heroDetail(item: MediaCard): String {
         val type = if (item.series) "TV Series" else "Movie"
-        val sub = item.subtitle?.takeIf { it.isNotBlank() }?.let { " • $it" } ?: ""
-        val genre = item.genre.takeIf { it.isNotBlank() }?.let { " • $it" } ?: ""
-        val p = profiles.progressMs(item.id)
-        val d = profiles.durationMs(item.id)
-        val progress = if (p > 0 && d > 0) " • ${min(99, (p * 100 / d).toInt())}% watched" else ""
-        return "$type$sub$genre$progress"
+        val sub = if (!item.subtitle.isNullOrBlank()) " • ${item.subtitle}" else ""
+        val genre = if (item.genre.isNotBlank()) " • ${item.genre}" else ""
+        return type + sub + genre
     }
 
-    private fun chipLine(item: MediaCard): String {
-        val year = item.subtitle?.takeIf { it.matches(Regex(".*\\d{4}.*")) } ?: ""
-        val g = item.genre.takeIf { it.isNotBlank() } ?: "Featured"
-        return listOf(year, g, "4K", "HDR", "Dolby Vision", "Atmos").filter { it.isNotBlank() }.joinToString("   ")
-    }
+    private fun chipLine(item: MediaCard): String = listOf(item.genre.takeIf { it.isNotBlank() } ?: "Featured", "4K", "HDR", "Dolby Vision", "Atmos").joinToString("   ")
 
     private fun progressLine(item: MediaCard): String {
-        val p = profiles.progressMs(item.id)
-        val d = profiles.durationMs(item.id)
-        if (p > 0 && d > 0) {
-            val mins = max(1, ((d - p) / 60000L).toInt())
-            return "${min(99, (p * 100 / d).toInt())}% watched • ${mins}m left"
-        }
+        val p = profiles.progressMs(item.id); val d = profiles.durationMs(item.id)
+        if (p > 0 && d > 0) return "${min(99, (p * 100 / d).toInt())}% watched • ${max(1, ((d - p) / 60000).toInt())}m left"
         return if (item.series) "TV Series" else "Movie"
     }
 
-    private fun navBackground(active: Boolean): GradientDrawable = outlineDrawable(
-        if (active) Color.rgb(20, 12, 48) else Color.TRANSPARENT,
-        if (active) blue else Color.TRANSPARENT,
-        if (active) px(2) else 0,
-        px(7)
-    )
+    private fun browse(kind: String) = startActivity(Intent(this, BrowseActivity::class.java).putExtra(BrowseActivity.EXTRA_KIND, kind))
+    private fun open(clazz: Class<*>) = startActivity(Intent(this, clazz))
+    private fun openMedia(item: MediaCard) { catalog.upsert(item); startActivity(Intent(this, MediaOpenActivity::class.java).putExtra(MediaOpenActivity.EXTRA_MEDIA_ID, item.id)) }
 
-    private fun transparentFocusBackground(): GradientDrawable = outlineDrawable(Color.TRANSPARENT, Color.TRANSPARENT, 0, px(7))
-
-    private fun outlineDrawable(fill: Int, stroke: Int, strokeWidth: Int, radius: Int): GradientDrawable = GradientDrawable().apply {
-        shape = GradientDrawable.RECTANGLE
-        setColor(fill)
-        cornerRadius = radius.toFloat()
-        if (strokeWidth > 0) setStroke(strokeWidth, stroke)
+    private fun text(value: String, size: Float, color: Int, bold: Boolean = false) = TextView(this).apply {
+        text = value; textSize = size; setTextColor(color); includeFontPadding = false
+        if (bold) typeface = Typeface.DEFAULT_BOLD
     }
 
-    private fun horizontalShade(): GradientDrawable = GradientDrawable(
-        GradientDrawable.Orientation.LEFT_RIGHT,
-        intArrayOf(Color.argb(238, 2, 2, 9), Color.argb(185, 4, 3, 12), Color.argb(30, 4, 3, 12))
-    )
-
-    private fun px(dp: Int): Int = (dp * resources.displayMetrics.density + 0.5f).toInt()
+    private fun navBg(on: Boolean) = box(if (on) Color.rgb(20, 12, 48) else Color.TRANSPARENT, if (on) blue else Color.TRANSPARENT, if (on) 2 else 0, 7)
+    private fun box(fill: Int, stroke: Int, strokeDp: Int, radiusDp: Int) = GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE; setColor(fill); cornerRadius = dp(radiusDp).toFloat(); if (strokeDp > 0) setStroke(dp(strokeDp), stroke)
+    }
+    private fun dp(v: Int) = (v * resources.displayMetrics.density + .5f).toInt()
 }
