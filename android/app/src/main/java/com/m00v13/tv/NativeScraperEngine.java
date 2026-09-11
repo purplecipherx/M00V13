@@ -24,15 +24,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class NativeScraperEngine {
     private static final int CONNECT_TIMEOUT_MS=4500, READ_TIMEOUT_MS=5500, MAX_BODY_BYTES=2*1024*1024, MAX_TOTAL_RESULTS=30;
+    private static final int FAST_CANDIDATE_TARGET=16, FAST_SOURCE_TARGET=10;
+    private static final long MIN_FAST_WINDOW_MS=700L, PROVIDER_PHASE_BUDGET_MS=5500L, DETAIL_PHASE_BUDGET_MS=4500L;
     private static final Pattern INFOHASH=Pattern.compile("(?i)([a-f0-9]{40})");
     private static final String USER_AGENT="Mozilla/5.0 (Linux; Android TV) AppleWebKit/537.36 Chrome/126 Safari/537.36 M00V13/0.1";
     private final Context context;
@@ -43,20 +47,74 @@ public final class NativeScraperEngine {
     public static final class SearchResult{public final List<SourceOption> sources;public final List<String> providerErrors;SearchResult(List<SourceOption>s,List<String>e){sources=s;providerErrors=e;}}
     private static final class Candidate{final NativeProviderDefinition provider;final String baseUrl,title,detailsUrl,directUri;final int seeders;final long sizeBytes;Candidate(NativeProviderDefinition p,String b,String t,String d,String u,int s,long z){provider=p;baseUrl=b;title=t;detailsUrl=d;directUri=u;seeders=s;sizeBytes=z;}}
     private static final class JsonRow{final JSONObject row,parent;JsonRow(JSONObject r,JSONObject p){row=r;parent=p;}}
+    private static final class ProviderResult{final NativeProviderDefinition provider;final List<Candidate> candidates;final String error;ProviderResult(NativeProviderDefinition p,List<Candidate>c,String e){provider=p;candidates=c;error=e;}}
+    private static final class DetailResult{final Candidate candidate;final SourceOption source;final String error;DetailResult(Candidate c,SourceOption s,String e){candidate=c;source=s;error=e;}}
 
     public SearchResult search(String rawQuery){
         String query=rawQuery==null?"":rawQuery.trim();if(query.isEmpty())return new SearchResult(Collections.emptyList(),Collections.emptyList());
         List<NativeProviderDefinition> providers=NativeProviderDefinition.load(context,providerTier);if(providers.isEmpty())return new SearchResult(Collections.emptyList(),Collections.singletonList(providerTier==0?"provider catalog is empty":"tier "+providerTier+" provider catalog is empty"));
-        int workers=SearchConcurrency.recommended(context);
-        ExecutorService providerPool=Executors.newFixedThreadPool(workers);ArrayList<Future<List<Candidate>>> futures=new ArrayList<>();ArrayList<String> errors=new ArrayList<>();
-        DebugLog.append(context,"SEARCH","provider fanout tier="+providerTier+" providers="+providers.size()+" workers="+workers);
-        for(NativeProviderDefinition p:providers)futures.add(providerPool.submit(new Callable<List<Candidate>>(){public List<Candidate> call()throws Exception{return searchProvider(p,query);}}));
-        ArrayList<Candidate> candidates=new ArrayList<>();for(int i=0;i<futures.size();i++){try{candidates.addAll(futures.get(i).get());}catch(Exception e){errors.add(providers.get(i).name+": "+shortMessage(e));}}providerPool.shutdownNow();candidates.sort(Comparator.comparingInt((Candidate c)->c.seeders).reversed());
-        if(candidates.size()>MAX_TOTAL_RESULTS)candidates=new ArrayList<>(candidates.subList(0,MAX_TOTAL_RESULTS));if(candidates.isEmpty())return new SearchResult(Collections.emptyList(),Collections.unmodifiableList(errors));
-        ExecutorService detailPool=Executors.newFixedThreadPool(workers);ArrayList<Future<SourceOption>> dfs=new ArrayList<>();for(Candidate c:candidates)dfs.add(detailPool.submit(()->resolveCandidate(c)));
-        ArrayList<SourceOption> sources=new ArrayList<>();Set<String> seen=new HashSet<>();for(int i=0;i<dfs.size();i++){try{SourceOption s=dfs.get(i).get();if(s!=null&&s.uri!=null&&seen.add(dedupeKey(s.uri)))sources.add(s);}catch(Exception e){errors.add(candidates.get(i).provider.name+" detail: "+shortMessage(e));}}detailPool.shutdownNow();
-        sources.sort(Comparator.comparingInt((SourceOption s)->s.score).reversed().thenComparing(Comparator.comparingInt((SourceOption s)->s.seeders).reversed()));return new SearchResult(Collections.unmodifiableList(sources),Collections.unmodifiableList(errors));
+        int workers=SearchConcurrency.forJobs(context,providers.size());
+        ArrayList<String> errors=new ArrayList<>();
+        ArrayList<Candidate> candidates=collectProviderCandidates(providers,query,workers,errors);
+        candidates.sort(Comparator.comparingInt((Candidate c)->c.seeders).reversed());
+        if(candidates.size()>MAX_TOTAL_RESULTS)candidates=new ArrayList<>(candidates.subList(0,MAX_TOTAL_RESULTS));
+        if(candidates.isEmpty())return new SearchResult(Collections.emptyList(),Collections.unmodifiableList(errors));
+
+        ArrayList<SourceOption> sources=new ArrayList<>();
+        ArrayList<Candidate> unresolved=new ArrayList<>();
+        Set<String> seen=new HashSet<>();
+        for(Candidate c:candidates){
+            if(c.directUri==null||c.directUri.isEmpty()){unresolved.add(c);continue;}
+            try{SourceOption s=resolveCandidate(c);addSource(s,sources,seen);}catch(Exception e){errors.add(c.provider.name+" direct: "+shortMessage(e));}
+        }
+
+        if(sources.size()<FAST_SOURCE_TARGET&&!unresolved.isEmpty())collectDetails(unresolved,workers,sources,seen,errors);
+        sources.sort(Comparator.comparingInt((SourceOption s)->s.score).reversed().thenComparing(Comparator.comparingInt((SourceOption s)->s.seeders).reversed()));
+        DebugLog.append(context,"SEARCH","tier="+providerTier+" fast sources="+sources.size()+" candidates="+candidates.size()+" unresolved="+unresolved.size());
+        return new SearchResult(Collections.unmodifiableList(sources),Collections.unmodifiableList(errors));
     }
+
+    private ArrayList<Candidate> collectProviderCandidates(List<NativeProviderDefinition> providers,String query,int workers,ArrayList<String> errors){
+        ExecutorService pool=Executors.newFixedThreadPool(Math.max(1,workers));
+        CompletionService<ProviderResult> completion=new ExecutorCompletionService<>(pool);
+        for(NativeProviderDefinition p:providers){
+            completion.submit(()->{try{return new ProviderResult(p,searchProvider(p,query),null);}catch(Exception e){return new ProviderResult(p,Collections.emptyList(),shortMessage(e));}});
+        }
+        DebugLog.append(context,"SEARCH","provider fanout tier="+providerTier+" providers="+providers.size()+" workers="+workers);
+        ArrayList<Candidate> out=new ArrayList<>();int remaining=providers.size();
+        long started=System.nanoTime(),hardDeadline=started+TimeUnit.MILLISECONDS.toNanos(PROVIDER_PHASE_BUDGET_MS),fastDeadline=started+TimeUnit.MILLISECONDS.toNanos(MIN_FAST_WINDOW_MS);
+        try{
+            while(remaining>0){
+                long now=System.nanoTime();boolean enough=out.size()>=FAST_CANDIDATE_TARGET;long deadline=enough?Math.min(hardDeadline,fastDeadline):hardDeadline;long wait=deadline-now;if(wait<=0)break;
+                Future<ProviderResult> future=completion.poll(wait,TimeUnit.NANOSECONDS);if(future==null)break;remaining--;
+                ProviderResult result=future.get();if(result.error!=null)errors.add(result.provider.name+": "+result.error);else if(result.candidates!=null)out.addAll(result.candidates);
+            }
+        }catch(InterruptedException e){Thread.currentThread().interrupt();errors.add("provider search interrupted");}
+        catch(Exception e){errors.add("provider search: "+shortMessage(e));}
+        finally{pool.shutdownNow();}
+        if(remaining>0)DebugLog.append(context,"SEARCH","tier="+providerTier+" provider cutoff remaining="+remaining+" candidates="+out.size());
+        return out;
+    }
+
+    private void collectDetails(List<Candidate> candidates,int workers,ArrayList<SourceOption> sources,Set<String> seen,ArrayList<String> errors){
+        int detailWorkers=Math.max(1,Math.min(workers,candidates.size()));
+        ExecutorService pool=Executors.newFixedThreadPool(detailWorkers);
+        CompletionService<DetailResult> completion=new ExecutorCompletionService<>(pool);
+        for(Candidate c:candidates){completion.submit(()->{try{return new DetailResult(c,resolveCandidate(c),null);}catch(Exception e){return new DetailResult(c,null,shortMessage(e));}});}
+        int remaining=candidates.size();long started=System.nanoTime(),hardDeadline=started+TimeUnit.MILLISECONDS.toNanos(DETAIL_PHASE_BUDGET_MS),fastDeadline=started+TimeUnit.MILLISECONDS.toNanos(MIN_FAST_WINDOW_MS);
+        try{
+            while(remaining>0){
+                long now=System.nanoTime();boolean enough=sources.size()>=FAST_SOURCE_TARGET;long deadline=enough?Math.min(hardDeadline,fastDeadline):hardDeadline;long wait=deadline-now;if(wait<=0)break;
+                Future<DetailResult> future=completion.poll(wait,TimeUnit.NANOSECONDS);if(future==null)break;remaining--;
+                DetailResult result=future.get();if(result.error!=null)errors.add(result.candidate.provider.name+" detail: "+result.error);else addSource(result.source,sources,seen);
+            }
+        }catch(InterruptedException e){Thread.currentThread().interrupt();errors.add("detail search interrupted");}
+        catch(Exception e){errors.add("detail search: "+shortMessage(e));}
+        finally{pool.shutdownNow();}
+        if(remaining>0)DebugLog.append(context,"SEARCH","tier="+providerTier+" detail cutoff remaining="+remaining+" sources="+sources.size());
+    }
+
+    private static void addSource(SourceOption source,List<SourceOption> sources,Set<String> seen){if(source!=null&&source.uri!=null&&seen.add(dedupeKey(source.uri)))sources.add(source);}
 
     private List<Candidate> searchProvider(NativeProviderDefinition p,String query)throws Exception{return p.isJson()?searchJsonProvider(p,query):searchMarkupProvider(p,query);}
 
