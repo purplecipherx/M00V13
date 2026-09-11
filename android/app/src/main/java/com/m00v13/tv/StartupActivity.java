@@ -11,10 +11,9 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-/** Minimal branded launcher. Show the cow immediately, then hand off as soon as Home can start. */
+/** Branded launcher. Keep the supplied cow visible while process caches warm in parallel. */
 public final class StartupActivity extends Activity {
-    private static final long MIN_SPLASH_MS = 350L;
-    private static final long MAX_SPLASH_MS = 5000L;
+    private static final long SPLASH_MS = 5000L;
     private final Handler main = new Handler(Looper.getMainLooper());
     private boolean launched;
 
@@ -26,27 +25,27 @@ public final class StartupActivity extends Activity {
         try { getWindow().setNavigationBarColor(Color.BLACK); } catch (Throwable ignored) {}
         try { getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); } catch (Throwable ignored) {}
 
-        FrameLayout splash = splashView();
-        setContentView(splash);
+        // Use the real packaged cow JPEG directly. Do not base64-decode artwork on the UI thread.
+        setContentView(splashView());
 
-        // Do not sit on a black screen for five seconds. Give the supplied artwork one frame,
-        // then open Home. MAX_SPLASH_MS is only a safety bound if the short handoff is delayed.
-        splash.postDelayed(this::launchHome, MIN_SPLASH_MS);
-        main.postDelayed(this::launchHome, MAX_SPLASH_MS);
+        // Spend the visible splash window warming persistent catalog/discovery/artwork caches.
+        StartupWarmup.start(getApplicationContext());
+
+        // Product requirement: the cow remains visible for a full five seconds.
+        main.postDelayed(this::launchHome, SPLASH_MS);
     }
 
     private FrameLayout splashView() {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.BLACK);
-        ImageView image = new ImageView(this);
-        image.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        image.setBackgroundColor(Color.BLACK);
 
-        if (!SplashArtwork.apply(image)) {
-            try {
-                image.setImageResource(R.drawable.loading_cow_hd);
-                image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            } catch (Throwable ignored) {}
+        ImageView image = new ImageView(this);
+        image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        image.setBackgroundColor(Color.BLACK);
+        try {
+            image.setImageResource(R.drawable.loading_cow);
+        } catch (Throwable ignored) {
+            image.setImageResource(R.drawable.loading_cow_hd);
         }
 
         root.addView(image, new FrameLayout.LayoutParams(
