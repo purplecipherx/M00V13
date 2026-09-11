@@ -3,8 +3,6 @@ package com.m00v13.tv;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -16,14 +14,17 @@ import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import java.io.File;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,46 +33,573 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** One fast TV shell for Home, Movies and TV. Artwork is intentionally lazy. */
+/**
+ * Fast TV shell for Home, Movies and TV.
+ *
+ * Performance rules:
+ *  - horizontal rails are RecyclerViews, so off-screen poster views do not exist;
+ *  - one recycled-view pool is shared by every rail;
+ *  - artwork is memory + disk cached and only requested for bound/visible cells;
+ *  - focus continuity is kept in RAM while navigating and persisted only when leaving;
+ *  - metadata descriptions are debounced so fast D-pad movement never floods the network.
+ */
 public final class MediaHubActivity extends Activity {
-    public static final String EXTRA_MODE="mode";
-    public static final String MODE_HOME="home",MODE_MOVIES="movies",MODE_TV="tv";
-    private static final String[] GENRES={"Action","Comedy","Drama","Thriller","Sci-Fi","Horror","Animation","Documentary"};
-    private static final int BG=Color.rgb(4,3,12),PANEL=Color.rgb(13,8,27),PURPLE=Color.rgb(180,78,255),BLUE=Color.rgb(44,157,255),WHITE=Color.rgb(247,245,250),MUTED=Color.rgb(190,181,202);
-    private ProfileStore profiles;private CatalogStore catalog;private DiscoveryStore discovery;private String mode;
-    private final ExecutorService artPool=Executors.newFixedThreadPool(2),dataPool=Executors.newFixedThreadPool(3);
-    private final Map<String,List<MediaCard>> genreData=new ConcurrentHashMap<>();
-    private final Map<String,String> descriptions=new ConcurrentHashMap<>();
-    private ImageView previewArt;private TextView previewTitle,previewMeta,previewDescription;private int previewToken;private boolean genresLoading,firstResume=true;
+    public static final String EXTRA_MODE = "mode";
+    public static final String MODE_HOME = "home", MODE_MOVIES = "movies", MODE_TV = "tv";
 
-    @Override protected void onCreate(Bundle b){super.onCreate(b);TvUi.disableWindowAnimations(this);profiles=new ProfileStore(this);catalog=new CatalogStore(this);discovery=new DiscoveryStore(this);mode=getIntent().getStringExtra(EXTRA_MODE);if(!MODE_MOVIES.equals(mode)&&!MODE_TV.equals(mode))mode=MODE_HOME;render();if(discovery.stale())dataPool.submit(()->{try{discovery.refresh();runOnUiThread(()->{if(!dead())render();});}catch(Exception e){DebugLog.append(this,"HUB","Discovery "+msg(e));}});if(!MODE_HOME.equals(mode))loadGenres();}
-    @Override protected void onResume(){super.onResume();if(firstResume){firstResume=false;return;}if(catalog!=null)render();}
-    @Override protected void onDestroy(){artPool.shutdownNow();dataPool.shutdownNow();super.onDestroy();}
+    private static final String[] GENRES = {
+        "Action", "Comedy", "Drama", "Thriller", "Sci-Fi", "Horror", "Animation", "Documentary"
+    };
+    private static final int BG = Color.rgb(4, 3, 12);
+    private static final int PANEL = Color.rgb(13, 8, 27);
+    private static final int PURPLE = Color.rgb(180, 78, 255);
+    private static final int BLUE = Color.rgb(44, 157, 255);
+    private static final int WHITE = Color.rgb(247, 245, 250);
+    private static final int MUTED = Color.rgb(190, 181, 202);
 
-    private void render(){int w=getResources().getDisplayMetrics().widthPixels,h=getResources().getDisplayMetrics().heightPixels,topH=Math.max(dp(58),(int)(h*.075f));FrameLayout root=new FrameLayout(this);root.setBackgroundColor(BG);root.addView(topbar(),new FrameLayout.LayoutParams(-1,topH));int previewW=w<1000?0:Math.max(dp(245),(int)(w*.20f));if(previewW>0){View p=previewPane(previewW,h-topH);FrameLayout.LayoutParams pp=new FrameLayout.LayoutParams(previewW,h-topH);pp.topMargin=topH;root.addView(p,pp);}ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(false);LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(22),dp(12),dp(22),dp(40));content.setBackgroundColor(BG);scroll.addView(content,new ScrollView.LayoutParams(-1,-2));FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(w-previewW,h-topH);cp.leftMargin=previewW;cp.topMargin=topH;root.addView(scroll,cp);List<Section> sections=sections();if(sections.isEmpty())content.addView(text("Loading catalog…",22,true));for(int i=0;i<sections.size();i++)addSection(content,sections.get(i),h,i==0);setContentView(root);restoreFocus(root);}
+    private final ExecutorService artPool = Executors.newFixedThreadPool(2);
+    private final ExecutorService dataPool = Executors.newFixedThreadPool(3);
+    private final Map<String, List<MediaCard>> genreData = new ConcurrentHashMap<>();
+    private final Map<String, String> descriptions = new ConcurrentHashMap<>();
+    private final Map<String, RailAdapter> railAdapters = new HashMap<>();
+    private final RecyclerView.RecycledViewPool posterPool = new RecyclerView.RecycledViewPool();
 
-    private LinearLayout topbar(){LinearLayout b=new LinearLayout(this);b.setOrientation(LinearLayout.HORIZONTAL);b.setGravity(Gravity.CENTER_VERTICAL);b.setPadding(dp(16),0,dp(10),0);b.setBackgroundColor(Color.rgb(5,4,16));TextView brand=text("M00V13",22,true);brand.setTextColor(PURPLE);b.addView(brand,new LinearLayout.LayoutParams(0,-1,1f));top(b,"Home",MODE_HOME.equals(mode),()->switchMode(MODE_HOME));top(b,"Movies",MODE_MOVIES.equals(mode),()->switchMode(MODE_MOVIES));top(b,"TV Shows",MODE_TV.equals(mode),()->switchMode(MODE_TV));top(b,"⌕ Search",false,()->open(SearchActivity.class));top(b,"♡ My Lists",false,()->open(ProfileActivity.class));top(b,"↗ Real Debrid",false,()->open(DebridActivity.class));top(b,"◉ Providers",false,()->open(ProviderSettingsActivity.class));top(b,"⚙ Settings",false,()->open(SettingsActivity.class));top(b,"₿ Support",false,()->open(DonateActivity.class));return b;}
-    private void top(LinearLayout p,String s,boolean active,Runnable r){TextView v=text(s,13,active);v.setGravity(Gravity.CENTER);v.setFocusable(true);v.setClickable(true);v.setPadding(dp(9),0,dp(9),0);v.setStateListAnimator(null);v.setTextColor(active?BLUE:Color.rgb(220,198,239));v.setBackground(active?outline(true,7):null);v.setOnFocusChangeListener((x,f)->{v.setTextColor((f||active)?BLUE:Color.rgb(220,198,239));v.setBackground((f||active)?outline(true,7):null);});v.setOnClickListener(x->r.run());p.addView(v,new LinearLayout.LayoutParams(-2,-1));}
+    private ProfileStore profiles;
+    private CatalogStore catalog;
+    private DiscoveryStore discovery;
+    private ArtworkLoader artwork;
+    private String mode;
+    private ImageView previewArt;
+    private TextView previewTitle;
+    private TextView previewMeta;
+    private TextView previewDescription;
+    private int previewToken;
+    private boolean genresLoading;
+    private String focusSection;
+    private String focusMediaId;
 
-    private View previewPane(int w,int h){LinearLayout p=new LinearLayout(this);p.setOrientation(LinearLayout.VERTICAL);p.setPadding(dp(14),dp(14),dp(14),dp(18));p.setBackgroundColor(Color.rgb(3,3,11));previewArt=new ImageView(this);previewArt.setScaleType(ImageView.ScaleType.CENTER_CROP);previewArt.setBackgroundColor(PANEL);p.addView(previewArt,new LinearLayout.LayoutParams(-1,Math.min((int)(h*.54f),(int)(w*1.48f))));previewTitle=text("Select a title",22,true);previewTitle.setPadding(0,dp(12),0,dp(4));p.addView(previewTitle);previewMeta=text("",13,false);previewMeta.setTextColor(PURPLE);p.addView(previewMeta);previewDescription=text("Move across a poster to preview it here.",14,false);previewDescription.setTextColor(MUTED);previewDescription.setMaxLines(7);previewDescription.setEllipsize(TextUtils.TruncateAt.END);previewDescription.setPadding(0,dp(9),0,0);p.addView(previewDescription,new LinearLayout.LayoutParams(-1,0,1f));return p;}
+    @Override protected void onCreate(Bundle state) {
+        super.onCreate(state);
+        TvUi.disableWindowAnimations(this);
+        profiles = new ProfileStore(this);
+        catalog = new CatalogStore(this);
+        discovery = new DiscoveryStore(this);
+        artwork = new ArtworkLoader(this);
+        mode = getIntent().getStringExtra(EXTRA_MODE);
+        if (!MODE_MOVIES.equals(mode) && !MODE_TV.equals(mode)) mode = MODE_HOME;
+        loadFocusMemory();
+        posterPool.setMaxRecycledViews(0, 18);
+        render();
 
-    private List<Section> sections(){ArrayList<Section> out=new ArrayList<>();List<MediaCard> all=catalog.all();if(MODE_HOME.equals(mode)){ArrayList<MediaCard> cont=new ArrayList<>();for(MediaCard c:all){long p=profiles.progressMs(c.id),d=profiles.durationMs(c.id);if(!profiles.isWatched(c.id)&&p>0&&d>0)cont.add(c);}cont.sort((a,b)->Long.compare(profiles.lastUpdatedMs(b.id),profiles.lastUpdatedMs(a.id)));if(!cont.isEmpty())out.add(new Section("Continue Watching","continue",cont));List<MediaCard> movies=nonEmpty(discovery.get(DiscoveryStore.POPULAR_MOVIES),filter(all,false)),tv=nonEmpty(discovery.get(DiscoveryStore.POPULAR_TV),filter(all,true));out.add(new Section("Trending Movies","trending_movies",movies));out.add(new Section("Trending TV Shows","trending_tv",tv));out.add(new Section("New Movies","new_movies",newest(movies)));out.add(new Section("New TV Shows","new_tv",newest(tv)));}else{boolean series=MODE_TV.equals(mode);List<MediaCard> base=filter(all,series);out.add(new Section(series?"Newest TV Shows":"Newest Movies","newest",newest(base)));for(String g:GENRES){List<MediaCard> list=genreData.get(g);if(list==null||list.isEmpty())list=genreFilter(base,g);if(!list.isEmpty())out.add(new Section(g,g.toLowerCase(Locale.US).replace('-','_'),newest(list)));}}return out;}
+        if (discovery.stale()) {
+            dataPool.submit(() -> {
+                try {
+                    discovery.refresh();
+                    runOnUiThread(() -> { if (!dead()) render(); });
+                } catch (Exception e) {
+                    DebugLog.append(this, "HUB", "Discovery " + msg(e));
+                }
+            });
+        }
+        if (!MODE_HOME.equals(mode)) loadGenres();
+    }
 
-    private void addSection(LinearLayout root,Section s,int screenH,boolean eagerRow){if(s.items.isEmpty())return;LinearLayout head=new LinearLayout(this);head.setOrientation(LinearLayout.HORIZONTAL);head.setGravity(Gravity.CENTER_VERTICAL);head.addView(text(s.title,20,true),new LinearLayout.LayoutParams(0,dp(42),1f));TextView see=text("See All  ›",13,true);see.setTextColor(PURPLE);see.setGravity(Gravity.CENTER);see.setFocusable(true);see.setClickable(true);see.setPadding(dp(10),0,dp(10),0);see.setOnFocusChangeListener((v,f)->{see.setTextColor(f?BLUE:PURPLE);see.setBackground(f?outline(true,7):null);});see.setOnClickListener(v->openGrid(s));head.addView(see,new LinearLayout.LayoutParams(dp(110),dp(38)));root.addView(head);int cardH=Math.max(dp(190),Math.min(dp(270),(int)(screenH*.31f))),cardW=(int)(cardH*.67f);HorizontalScrollView hsv=new HorizontalScrollView(this);hsv.setHorizontalScrollBarEnabled(false);LinearLayout rail=new LinearLayout(this);rail.setOrientation(LinearLayout.HORIZONTAL);for(int i=0;i<s.items.size();i++){MediaCard m=s.items.get(i);View card=poster(m,s.key,cardW,cardH,eagerRow&&i<6);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(cardW,cardH);lp.rightMargin=dp(10);rail.addView(card,lp);}if(rail.getChildCount()>1){View first=rail.getChildAt(0),last=rail.getChildAt(rail.getChildCount()-1);first.setOnKeyListener((v,key,e)->{if(e.getAction()==KeyEvent.ACTION_DOWN&&key==KeyEvent.KEYCODE_DPAD_LEFT){last.requestFocus();hsv.post(()->hsv.scrollTo(Math.max(0,last.getRight()-hsv.getWidth()),0));return true;}return false;});last.setOnKeyListener((v,key,e)->{if(e.getAction()==KeyEvent.ACTION_DOWN&&key==KeyEvent.KEYCODE_DPAD_RIGHT){first.requestFocus();hsv.post(()->hsv.scrollTo(0,0));return true;}return false;});}hsv.addView(rail,new HorizontalScrollView.LayoutParams(-2,cardH));root.addView(hsv,new LinearLayout.LayoutParams(-1,cardH));root.addView(new View(this),new LinearLayout.LayoutParams(1,dp(15)));}
+    @Override protected void onPause() {
+        persistFocusMemory();
+        super.onPause();
+    }
 
-    private View poster(MediaCard m,String section,int w,int h,boolean eager){FrameLayout c=new FrameLayout(this);c.setFocusable(true);c.setClickable(true);c.setStateListAnimator(null);c.setPadding(dp(3),dp(3),dp(3),dp(3));c.setBackground(outline(false,6));c.setTag("poster:"+section+":"+m.id);ImageView im=new ImageView(this);im.setScaleType(ImageView.ScaleType.CENTER_CROP);im.setBackgroundColor(PANEL);c.addView(im,new FrameLayout.LayoutParams(-1,-1));if(eager)loadArt(im,m.artworkUrl,w*2);TextView n=text(m.title,12,true);n.setGravity(Gravity.BOTTOM);n.setMaxLines(2);n.setEllipsize(TextUtils.TruncateAt.END);n.setPadding(dp(7),0,dp(6),dp(7));n.setBackgroundColor(Color.argb(95,0,0,0));c.addView(n,new FrameLayout.LayoutParams(-1,(int)(h*.25f),Gravity.BOTTOM));c.setOnFocusChangeListener((v,f)->{c.setBackground(outline(f,6));n.setTextColor(f?BLUE:WHITE);if(f){if(im.getDrawable()==null)loadArt(im,m.artworkUrl,w*2);remember(section,m.id);showPreview(m);if(new AppSettingsStore(this).clickSounds())c.playSoundEffect(SoundEffectConstants.CLICK);}});c.setOnClickListener(v->openMedia(m));return c;}
+    @Override protected void onDestroy() {
+        artPool.shutdownNow();
+        dataPool.shutdownNow();
+        super.onDestroy();
+    }
 
-    private void showPreview(MediaCard m){if(previewTitle==null)return;previewTitle.setText(m.title);previewMeta.setText(detail(m));previewDescription.setText(detail(m));previewArt.setImageDrawable(null);loadArt(previewArt,m.artworkUrl,700);int t=++previewToken;String cached=descriptions.get(m.id);if(cached!=null){previewDescription.setText(cached);return;}previewDescription.postDelayed(()->{if(dead()||t!=previewToken)return;dataPool.submit(()->{String d;try{d=new CinemetaClient().description(m);}catch(Exception e){d="";}if(d==null||d.trim().isEmpty())d=detail(m);descriptions.put(m.id,d);final String x=d;runOnUiThread(()->{if(!dead()&&t==previewToken)previewDescription.setText(x);});});},350);}
-    private void openGrid(Section s){ArrayList<String> ids=new ArrayList<>();for(MediaCard c:s.items)ids.add(c.id);Intent i=new Intent(this,CatalogGridActivity.class);i.putExtra(CatalogGridActivity.EXTRA_TITLE,s.title);i.putStringArrayListExtra(CatalogGridActivity.EXTRA_IDS,ids);i.putExtra(CatalogGridActivity.EXTRA_FOCUS_KEY,mode+":"+s.key);startActivity(i);overridePendingTransition(0,0);}
-    private void openMedia(MediaCard m){Intent i=new Intent(this,MediaOpenActivity.class);i.putExtra(MediaOpenActivity.EXTRA_MEDIA_ID,m.id);startActivity(i);overridePendingTransition(0,0);}
-    private void switchMode(String next){if(next.equals(mode))return;Intent i=new Intent(this,MediaHubActivity.class);i.putExtra(EXTRA_MODE,next);i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);startActivity(i);finish();overridePendingTransition(0,0);}private void open(Class<?> c){startActivity(new Intent(this,c));overridePendingTransition(0,0);}
+    private void render() {
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int topH = Math.max(dp(58), (int) (height * .075f));
 
-    private void remember(String section,String id){getSharedPreferences("m00v13_hub_focus",MODE_PRIVATE).edit().putString("section."+mode,section).putString("id."+mode,id).apply();}
-    private void restoreFocus(View root){SharedPreferences p=getSharedPreferences("m00v13_hub_focus",MODE_PRIVATE);String section=p.getString("section."+mode,null),id=p.getString("id."+mode,null);if(section==null||id==null)return;String tag="poster:"+section+":"+id;root.post(()->{View v=findTag(root,tag);if(v!=null)v.requestFocus();});}
-    private View findTag(View v,String tag){if(tag.equals(v.getTag()))return v;if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++){View x=findTag(g.getChildAt(i),tag);if(x!=null)return x;}}return null;}
-    private void loadGenres(){if(genresLoading)return;genresLoading=true;AtomicInteger left=new AtomicInteger(GENRES.length);for(String g:GENRES)dataPool.submit(()->{try{List<MediaCard> got=new CinemetaClient().genre(MODE_TV.equals(mode)?"series":"movie",g);genreData.put(g,got);for(MediaCard c:got)catalog.upsert(c);}catch(Exception e){DebugLog.append(this,"HUB","Genre "+g+" "+msg(e));}finally{if(left.decrementAndGet()==0)runOnUiThread(()->{genresLoading=false;if(!dead())render();});}});}
-    private void loadArt(ImageView v,String u,int target){if(u==null||u.isEmpty())return;artPool.submit(()->{try{File f=new ArtworkCache(this).fetch(u,86,Math.min(target,getResources().getDisplayMetrics().widthPixels));if(f==null)return;Bitmap b=BitmapFactory.decodeFile(f.getAbsolutePath());runOnUiThread(()->{if(!dead()&&b!=null)v.setImageBitmap(b);});}catch(Exception ignored){}});}
-    private static List<MediaCard> filter(List<MediaCard> all,boolean series){ArrayList<MediaCard> o=new ArrayList<>();for(MediaCard c:all)if(c.series==series)o.add(c);return o;}private static List<MediaCard> genreFilter(List<MediaCard> all,String g){ArrayList<MediaCard> o=new ArrayList<>();for(MediaCard c:all){if(c.genre.equalsIgnoreCase(g)){o.add(c);continue;}for(String t:c.tags)if(t.equalsIgnoreCase(g)){o.add(c);break;}}return o;}private static List<MediaCard> newest(List<MediaCard> in){ArrayList<MediaCard> o=new ArrayList<>(in);o.sort((a,b)->Integer.compare(year(b),year(a)));return o;}private static int year(MediaCard c){if(c.subtitle==null)return 0;java.util.regex.Matcher m=java.util.regex.Pattern.compile("(19|20)\\d{2}").matcher(c.subtitle);return m.find()?Integer.parseInt(m.group()):0;}private static List<MediaCard> nonEmpty(List<MediaCard>a,List<MediaCard>b){return a!=null&&!a.isEmpty()?a:b;}
-    private String detail(MediaCard m){return(m.series?"TV Series":"Movie")+(m.subtitle==null||m.subtitle.isEmpty()?"":" • "+m.subtitle)+(m.genre.isEmpty()?"":" • "+m.genre);}private TextView text(String s,int z,boolean bold){TextView v=new TextView(this);v.setText(s==null?"":s);v.setTextColor(WHITE);v.setTextSize(z);v.setGravity(Gravity.CENTER_VERTICAL);if(bold)v.setTypeface(Typeface.DEFAULT_BOLD);return v;}private GradientDrawable outline(boolean f,int r){GradientDrawable g=new GradientDrawable();g.setColor(PANEL);g.setCornerRadius(dp(r));g.setStroke(dp(f?3:1),f?BLUE:Color.rgb(42,34,53));return g;}private int dp(int x){return TvUi.dp(this,x);}private boolean dead(){return isFinishing()||isDestroyed();}private static String msg(Throwable t){Throwable x=t;while(x.getCause()!=null)x=x.getCause();return x.getMessage()==null?x.getClass().getSimpleName():x.getMessage();}
-    private static final class Section{final String title,key;final List<MediaCard>items;Section(String t,String k,List<MediaCard>i){title=t;key=k;items=i==null?Collections.emptyList():i;}}
+        railAdapters.clear();
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(BG);
+        root.addView(topbar(), new FrameLayout.LayoutParams(-1, topH));
+
+        int previewW = width < 1000 ? 0 : Math.max(dp(245), (int) (width * .20f));
+        if (previewW > 0) {
+            View pane = previewPane(previewW, height - topH);
+            FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(previewW, height - topH);
+            p.topMargin = topH;
+            root.addView(pane, p);
+        }
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setVerticalScrollBarEnabled(false);
+        scroll.setSmoothScrollingEnabled(false);
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(22), dp(12), dp(22), dp(40));
+        content.setBackgroundColor(BG);
+        scroll.addView(content, new ScrollView.LayoutParams(-1, -2));
+        FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(width - previewW, height - topH);
+        cp.leftMargin = previewW;
+        cp.topMargin = topH;
+        root.addView(scroll, cp);
+
+        List<Section> sections = sections();
+        if (sections.isEmpty()) content.addView(text("Loading catalog…", 22, true));
+        for (Section section : sections) addSection(content, section, height);
+
+        setContentView(root);
+        restoreFocus();
+    }
+
+    private LinearLayout topbar() {
+        LinearLayout bar = new LinearLayout(this);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setPadding(dp(16), 0, dp(10), 0);
+        bar.setBackgroundColor(Color.rgb(5, 4, 16));
+        TextView brand = text("M00V13", 22, true);
+        brand.setTextColor(PURPLE);
+        bar.addView(brand, new LinearLayout.LayoutParams(0, -1, 1f));
+        top(bar, "Home", MODE_HOME.equals(mode), () -> switchMode(MODE_HOME));
+        top(bar, "Movies", MODE_MOVIES.equals(mode), () -> switchMode(MODE_MOVIES));
+        top(bar, "TV Shows", MODE_TV.equals(mode), () -> switchMode(MODE_TV));
+        top(bar, "⌕ Search", false, () -> open(SearchActivity.class));
+        top(bar, "♡ My Lists", false, () -> open(ProfileActivity.class));
+        top(bar, "↗ Real Debrid", false, () -> open(DebridActivity.class));
+        top(bar, "◉ Providers", false, () -> open(ProviderSettingsActivity.class));
+        top(bar, "⚙ Settings", false, () -> open(SettingsActivity.class));
+        top(bar, "₿ Support", false, () -> open(DonateActivity.class));
+        return bar;
+    }
+
+    private void top(LinearLayout parent, String label, boolean active, Runnable action) {
+        TextView view = text(label, 13, active);
+        view.setGravity(Gravity.CENTER);
+        view.setFocusable(true);
+        view.setClickable(true);
+        view.setPadding(dp(9), 0, dp(9), 0);
+        view.setStateListAnimator(null);
+        view.setTextColor(active ? BLUE : Color.rgb(220, 198, 239));
+        view.setBackground(active ? outline(true, 7) : null);
+        view.setOnFocusChangeListener((v, focused) -> {
+            view.setTextColor((focused || active) ? BLUE : Color.rgb(220, 198, 239));
+            view.setBackground((focused || active) ? outline(true, 7) : null);
+        });
+        view.setOnClickListener(v -> action.run());
+        parent.addView(view, new LinearLayout.LayoutParams(-2, -1));
+    }
+
+    private View previewPane(int width, int height) {
+        LinearLayout pane = new LinearLayout(this);
+        pane.setOrientation(LinearLayout.VERTICAL);
+        pane.setPadding(dp(14), dp(14), dp(14), dp(18));
+        pane.setBackgroundColor(Color.rgb(3, 3, 11));
+        previewArt = new ImageView(this);
+        previewArt.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        previewArt.setBackgroundColor(PANEL);
+        pane.addView(previewArt, new LinearLayout.LayoutParams(-1,
+            Math.min((int) (height * .54f), (int) (width * 1.48f))));
+        previewTitle = text("Select a title", 22, true);
+        previewTitle.setPadding(0, dp(12), 0, dp(4));
+        pane.addView(previewTitle);
+        previewMeta = text("", 13, false);
+        previewMeta.setTextColor(PURPLE);
+        pane.addView(previewMeta);
+        previewDescription = text("Move across a poster to preview it here.", 14, false);
+        previewDescription.setTextColor(MUTED);
+        previewDescription.setMaxLines(7);
+        previewDescription.setEllipsize(TextUtils.TruncateAt.END);
+        previewDescription.setPadding(0, dp(9), 0, 0);
+        pane.addView(previewDescription, new LinearLayout.LayoutParams(-1, 0, 1f));
+        return pane;
+    }
+
+    private List<Section> sections() {
+        ArrayList<Section> out = new ArrayList<>();
+        List<MediaCard> all = catalog.all();
+        if (MODE_HOME.equals(mode)) {
+            ArrayList<MediaCard> continueWatching = new ArrayList<>();
+            for (MediaCard card : all) {
+                long p = profiles.progressMs(card.id), d = profiles.durationMs(card.id);
+                if (!profiles.isWatched(card.id) && p > 0 && d > 0) continueWatching.add(card);
+            }
+            continueWatching.sort((a, b) -> Long.compare(profiles.lastUpdatedMs(b.id), profiles.lastUpdatedMs(a.id)));
+            if (!continueWatching.isEmpty()) out.add(new Section("Continue Watching", "continue", continueWatching));
+
+            List<MediaCard> movies = nonEmpty(discovery.get(DiscoveryStore.POPULAR_MOVIES), filter(all, false));
+            List<MediaCard> tv = nonEmpty(discovery.get(DiscoveryStore.POPULAR_TV), filter(all, true));
+            out.add(new Section("Trending Movies", "trending_movies", movies));
+            out.add(new Section("Trending TV Shows", "trending_tv", tv));
+            out.add(new Section("New Movies", "new_movies", newest(movies)));
+            out.add(new Section("New TV Shows", "new_tv", newest(tv)));
+        } else {
+            boolean series = MODE_TV.equals(mode);
+            List<MediaCard> base = filter(all, series);
+            out.add(new Section(series ? "Newest TV Shows" : "Newest Movies", "newest", newest(base)));
+            for (String genre : GENRES) {
+                List<MediaCard> list = genreData.get(genre);
+                if (list == null || list.isEmpty()) list = genreFilter(base, genre);
+                if (!list.isEmpty()) out.add(new Section(genre,
+                    genre.toLowerCase(Locale.US).replace('-', '_'), newest(list)));
+            }
+        }
+        return out;
+    }
+
+    private void addSection(LinearLayout root, Section section, int screenHeight) {
+        if (section.items.isEmpty()) return;
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        header.addView(text(section.title, 20, true), new LinearLayout.LayoutParams(0, dp(42), 1f));
+        TextView seeAll = text("See All  ›", 13, true);
+        seeAll.setTextColor(PURPLE);
+        seeAll.setGravity(Gravity.CENTER);
+        seeAll.setFocusable(true);
+        seeAll.setClickable(true);
+        seeAll.setPadding(dp(10), 0, dp(10), 0);
+        seeAll.setOnFocusChangeListener((v, focused) -> {
+            seeAll.setTextColor(focused ? BLUE : PURPLE);
+            seeAll.setBackground(focused ? outline(true, 7) : null);
+        });
+        seeAll.setOnClickListener(v -> openGrid(section));
+        header.addView(seeAll, new LinearLayout.LayoutParams(dp(110), dp(38)));
+        root.addView(header);
+
+        int cardH = Math.max(dp(190), Math.min(dp(270), (int) (screenHeight * .31f)));
+        int cardW = (int) (cardH * .67f);
+        RecyclerView rail = new RecyclerView(this);
+        rail.setHasFixedSize(true);
+        rail.setItemAnimator(null);
+        rail.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        rail.setHorizontalScrollBarEnabled(false);
+        rail.setItemViewCacheSize(4);
+        rail.setRecycledViewPool(posterPool);
+        LinearLayoutManager manager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        manager.setInitialPrefetchItemCount(2);
+        rail.setLayoutManager(manager);
+        RailAdapter adapter = new RailAdapter(section, cardW, cardH);
+        rail.setAdapter(adapter);
+        railAdapters.put(section.key, adapter);
+        root.addView(rail, new LinearLayout.LayoutParams(-1, cardH));
+        root.addView(new View(this), new LinearLayout.LayoutParams(1, dp(15)));
+    }
+
+    private final class RailAdapter extends RecyclerView.Adapter<PosterHolder> {
+        private final Section section;
+        private final int cardW;
+        private final int cardH;
+        private RecyclerView recycler;
+
+        RailAdapter(Section section, int cardW, int cardH) {
+            this.section = section;
+            this.cardW = cardW;
+            this.cardH = cardH;
+            setHasStableIds(true);
+        }
+
+        @Override public long getItemId(int position) {
+            return section.items.get(position).id.hashCode();
+        }
+
+        @Override public PosterHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            FrameLayout card = new FrameLayout(MediaHubActivity.this);
+            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(cardW, cardH);
+            lp.rightMargin = dp(10);
+            card.setLayoutParams(lp);
+            card.setFocusable(true);
+            card.setClickable(true);
+            card.setStateListAnimator(null);
+            card.setPadding(dp(3), dp(3), dp(3), dp(3));
+            card.setBackground(outline(false, 6));
+
+            ImageView image = new ImageView(MediaHubActivity.this);
+            image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            image.setBackgroundColor(PANEL);
+            card.addView(image, new FrameLayout.LayoutParams(-1, -1));
+
+            TextView name = text("", 12, true);
+            name.setGravity(Gravity.BOTTOM);
+            name.setMaxLines(2);
+            name.setEllipsize(TextUtils.TruncateAt.END);
+            name.setPadding(dp(7), 0, dp(6), dp(7));
+            name.setBackgroundColor(Color.argb(95, 0, 0, 0));
+            card.addView(name, new FrameLayout.LayoutParams(-1, (int) (cardH * .25f), Gravity.BOTTOM));
+            return new PosterHolder(card, image, name);
+        }
+
+        @Override public void onBindViewHolder(PosterHolder holder, int position) {
+            MediaCard media = section.items.get(position);
+            holder.name.setText(media.title);
+            holder.name.setTextColor(WHITE);
+            holder.card.setBackground(outline(false, 6));
+            holder.card.setTag(media.id);
+            artwork.load(holder.image, media.artworkUrl,
+                Math.min(cardW * 2, getResources().getDisplayMetrics().widthPixels), artPool);
+
+            holder.card.setOnFocusChangeListener((v, focused) -> {
+                holder.card.setBackground(outline(focused, 6));
+                holder.name.setTextColor(focused ? BLUE : WHITE);
+                if (focused) {
+                    rememberInMemory(section.key, media.id);
+                    showPreview(media);
+                    if (new AppSettingsStore(MediaHubActivity.this).clickSounds())
+                        holder.card.playSoundEffect(SoundEffectConstants.CLICK);
+                }
+            });
+            holder.card.setOnClickListener(v -> openMedia(media));
+            holder.card.setOnKeyListener((v, keyCode, event) -> {
+                if (event.getAction() != KeyEvent.ACTION_DOWN || section.items.size() < 2) return false;
+                int current = holder.getBindingAdapterPosition();
+                if (current == RecyclerView.NO_POSITION) return false;
+                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && current == 0) {
+                    focusPosition(section.items.size() - 1);
+                    return true;
+                }
+                if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && current == section.items.size() - 1) {
+                    focusPosition(0);
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        @Override public int getItemCount() { return section.items.size(); }
+
+        @Override public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+            recycler = recyclerView;
+        }
+
+        void focusId(String id) {
+            if (id == null || recycler == null) return;
+            for (int i = 0; i < section.items.size(); i++) {
+                if (id.equals(section.items.get(i).id)) {
+                    focusPosition(i);
+                    return;
+                }
+            }
+        }
+
+        void focusPosition(int position) {
+            if (recycler == null || position < 0 || position >= section.items.size()) return;
+            recycler.scrollToPosition(position);
+            recycler.post(() -> {
+                RecyclerView.ViewHolder vh = recycler.findViewHolderForAdapterPosition(position);
+                if (vh != null) vh.itemView.requestFocus();
+            });
+        }
+    }
+
+    private static final class PosterHolder extends RecyclerView.ViewHolder {
+        final FrameLayout card;
+        final ImageView image;
+        final TextView name;
+        PosterHolder(FrameLayout card, ImageView image, TextView name) {
+            super(card);
+            this.card = card;
+            this.image = image;
+            this.name = name;
+        }
+    }
+
+    private void showPreview(MediaCard media) {
+        if (previewTitle == null) return;
+        previewTitle.setText(media.title);
+        previewMeta.setText(detail(media));
+        previewDescription.setText(detail(media));
+        artwork.load(previewArt, media.artworkUrl, 700, artPool);
+
+        int token = ++previewToken;
+        String cached = descriptions.get(media.id);
+        if (cached != null) {
+            previewDescription.setText(cached);
+            return;
+        }
+        previewDescription.postDelayed(() -> {
+            if (dead() || token != previewToken) return;
+            dataPool.submit(() -> {
+                String description;
+                try { description = new CinemetaClient().description(media); }
+                catch (Exception e) { description = ""; }
+                if (description == null || description.trim().isEmpty()) description = detail(media);
+                descriptions.put(media.id, description);
+                final String result = description;
+                runOnUiThread(() -> {
+                    if (!dead() && token == previewToken) previewDescription.setText(result);
+                });
+            });
+        }, 350);
+    }
+
+    private void openGrid(Section section) {
+        ArrayList<String> ids = new ArrayList<>();
+        for (MediaCard card : section.items) ids.add(card.id);
+        Intent intent = new Intent(this, CatalogGridActivity.class);
+        intent.putExtra(CatalogGridActivity.EXTRA_TITLE, section.title);
+        intent.putStringArrayListExtra(CatalogGridActivity.EXTRA_IDS, ids);
+        intent.putExtra(CatalogGridActivity.EXTRA_FOCUS_KEY, mode + ":" + section.key);
+        startActivity(intent);
+        overridePendingTransition(0, 0);
+    }
+
+    private void openMedia(MediaCard media) {
+        Intent intent = new Intent(this, MediaOpenActivity.class);
+        intent.putExtra(MediaOpenActivity.EXTRA_MEDIA_ID, media.id);
+        startActivity(intent);
+        overridePendingTransition(0, 0);
+    }
+
+    private void switchMode(String next) {
+        if (next.equals(mode)) return;
+        persistFocusMemory();
+        Intent intent = new Intent(this, MediaHubActivity.class);
+        intent.putExtra(EXTRA_MODE, next);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+        overridePendingTransition(0, 0);
+    }
+
+    private void open(Class<?> activity) {
+        startActivity(new Intent(this, activity));
+        overridePendingTransition(0, 0);
+    }
+
+    private void loadFocusMemory() {
+        SharedPreferences prefs = getSharedPreferences("m00v13_hub_focus", MODE_PRIVATE);
+        focusSection = prefs.getString("section." + mode, null);
+        focusMediaId = prefs.getString("id." + mode, null);
+    }
+
+    private void rememberInMemory(String section, String id) {
+        focusSection = section;
+        focusMediaId = id;
+    }
+
+    private void persistFocusMemory() {
+        if (focusSection == null || focusMediaId == null) return;
+        getSharedPreferences("m00v13_hub_focus", MODE_PRIVATE).edit()
+            .putString("section." + mode, focusSection)
+            .putString("id." + mode, focusMediaId)
+            .apply();
+    }
+
+    private void restoreFocus() {
+        if (focusSection == null || focusMediaId == null) return;
+        RailAdapter adapter = railAdapters.get(focusSection);
+        if (adapter != null) {
+            String id = focusMediaId;
+            previewDescription.postDelayed(() -> adapter.focusId(id), 40);
+        }
+    }
+
+    private void loadGenres() {
+        if (genresLoading) return;
+        genresLoading = true;
+        AtomicInteger left = new AtomicInteger(GENRES.length);
+        for (String genre : GENRES) {
+            dataPool.submit(() -> {
+                try {
+                    List<MediaCard> got = new CinemetaClient().genre(MODE_TV.equals(mode) ? "series" : "movie", genre);
+                    genreData.put(genre, got);
+                    catalog.upsertAll(got);
+                } catch (Exception e) {
+                    DebugLog.append(this, "HUB", "Genre " + genre + " " + msg(e));
+                } finally {
+                    if (left.decrementAndGet() == 0) {
+                        runOnUiThread(() -> {
+                            genresLoading = false;
+                            if (!dead()) render();
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    private static List<MediaCard> filter(List<MediaCard> all, boolean series) {
+        ArrayList<MediaCard> out = new ArrayList<>();
+        for (MediaCard card : all) if (card.series == series) out.add(card);
+        return out;
+    }
+
+    private static List<MediaCard> genreFilter(List<MediaCard> all, String genre) {
+        ArrayList<MediaCard> out = new ArrayList<>();
+        for (MediaCard card : all) {
+            if (card.genre.equalsIgnoreCase(genre)) {
+                out.add(card);
+                continue;
+            }
+            for (String tag : card.tags) {
+                if (tag.equalsIgnoreCase(genre)) {
+                    out.add(card);
+                    break;
+                }
+            }
+        }
+        return out;
+    }
+
+    private static List<MediaCard> newest(List<MediaCard> in) {
+        ArrayList<MediaCard> out = new ArrayList<>(in);
+        out.sort((a, b) -> Integer.compare(year(b), year(a)));
+        return out;
+    }
+
+    private static int year(MediaCard card) {
+        if (card.subtitle == null) return 0;
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(19|20)\\d{2}").matcher(card.subtitle);
+        return matcher.find() ? Integer.parseInt(matcher.group()) : 0;
+    }
+
+    private static List<MediaCard> nonEmpty(List<MediaCard> a, List<MediaCard> b) {
+        return a != null && !a.isEmpty() ? a : b;
+    }
+
+    private String detail(MediaCard media) {
+        return (media.series ? "TV Series" : "Movie")
+            + (media.subtitle == null || media.subtitle.isEmpty() ? "" : " • " + media.subtitle)
+            + (media.genre.isEmpty() ? "" : " • " + media.genre);
+    }
+
+    private TextView text(String value, int sp, boolean bold) {
+        TextView view = new TextView(this);
+        view.setText(value == null ? "" : value);
+        view.setTextColor(WHITE);
+        view.setTextSize(sp);
+        view.setGravity(Gravity.CENTER_VERTICAL);
+        if (bold) view.setTypeface(Typeface.DEFAULT_BOLD);
+        return view;
+    }
+
+    private GradientDrawable outline(boolean focused, int radiusDp) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(PANEL);
+        drawable.setCornerRadius(dp(radiusDp));
+        drawable.setStroke(dp(focused ? 3 : 1), focused ? BLUE : Color.rgb(42, 34, 53));
+        return drawable;
+    }
+
+    private int dp(int value) { return TvUi.dp(this, value); }
+    private boolean dead() { return isFinishing() || isDestroyed(); }
+    private static String msg(Throwable throwable) {
+        Throwable x = throwable;
+        while (x.getCause() != null) x = x.getCause();
+        return x.getMessage() == null ? x.getClass().getSimpleName() : x.getMessage();
+    }
+
+    private static final class Section {
+        final String title;
+        final String key;
+        final List<MediaCard> items;
+        Section(String title, String key, List<MediaCard> items) {
+            this.title = title;
+            this.key = key;
+            this.items = items == null ? Collections.emptyList() : items;
+        }
+    }
 }
