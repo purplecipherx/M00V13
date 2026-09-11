@@ -21,7 +21,7 @@ public final class SourceStore {
         for (SourceOption s : sources) {
             try {
                 JSONObject o = new JSONObject();
-                o.put("provider", s.provider); o.put("uri", s.uri); o.put("quality", s.quality);
+                o.put("provider", s.provider); o.put("releaseName", s.releaseName); o.put("uri", s.uri); o.put("quality", s.quality);
                 o.put("videoCodec", s.videoCodec); o.put("hdr", s.hdr); o.put("audioCodec", s.audioCodec);
                 o.put("audioLayout", s.audioLayout); o.put("audioLanguages", new JSONArray(s.audioLanguages));
                 o.put("subtitleLanguages", new JSONArray(s.subtitleLanguages)); o.put("sizeBytes", s.sizeBytes);
@@ -41,7 +41,7 @@ public final class SourceStore {
             JSONArray a = new JSONArray(prefs.getString("sources." + mediaId, "[]"));
             for (int i = 0; i < a.length(); i++) {
                 JSONObject o = a.getJSONObject(i); Boolean cached = o.has("cached") ? Boolean.valueOf(o.optBoolean("cached")) : null;
-                out.add(new SourceOption(o.optString("provider"), o.optString("uri"), o.optString("quality"), o.optString("videoCodec"), o.optString("hdr"), o.optString("audioCodec"), o.optString("audioLayout"), strings(o.optJSONArray("audioLanguages")), strings(o.optJSONArray("subtitleLanguages")), o.optLong("sizeBytes"), o.optInt("seeders", -1), cached, o.optInt("score")));
+                out.add(new SourceOption(o.optString("provider"), o.optString("releaseName"), o.optString("uri"), o.optString("quality"), o.optString("videoCodec"), o.optString("hdr"), o.optString("audioCodec"), o.optString("audioLayout"), strings(o.optJSONArray("audioLanguages")), strings(o.optJSONArray("subtitleLanguages")), o.optLong("sizeBytes"), o.optInt("seeders", -1), cached, o.optInt("score")));
             }
         } catch (JSONException ignored) {}
         return out;
