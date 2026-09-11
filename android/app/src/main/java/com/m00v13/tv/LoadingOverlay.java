@@ -24,12 +24,11 @@ public final class LoadingOverlay {
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image.setAdjustViewBounds(false);
         image.setBackgroundColor(Color.BLACK);
-        try {
-            image.setImageResource(R.drawable.m00v13_loading);
-        } catch (Throwable t) {
-            DebugLog.append(activity, "LOADING", "Artwork fallback: " + t.getClass().getSimpleName());
-            image.setImageResource(R.drawable.loading_cow_hd);
-            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        if (!SplashArtwork.apply(image)) {
+            try {
+                image.setImageResource(R.drawable.loading_cow_hd);
+                image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            } catch (Throwable ignored) {}
         }
         root.addView(image, new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
