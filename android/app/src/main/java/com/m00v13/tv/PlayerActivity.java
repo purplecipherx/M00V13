@@ -2,6 +2,7 @@ package com.m00v13.tv;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -39,6 +40,8 @@ public final class PlayerActivity extends Activity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        TvUi.disableWindowAnimations(this);
+        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
         profiles = new ProfileStore(this);
         preferred = profiles.preferredLanguage();
         mediaId = getIntent().getStringExtra(EXTRA_MEDIA_ID);
@@ -48,6 +51,8 @@ public final class PlayerActivity extends Activity {
         if (raw == null || raw.trim().isEmpty()) { finish(); return; }
 
         view = new PlayerView(this);
+        view.setBackgroundColor(Color.BLACK);
+        view.setShutterBackgroundColor(Color.BLACK);
         view.setUseController(true);
         view.setControllerAutoShow(true);
         view.setControllerShowTimeoutMs(5000);
