@@ -13,15 +13,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-/**
- * Process-wide artwork loader layered over ArtworkCache.
- *
- * Identical in-flight image requests collapse into one disk/network/decode operation. This matters
- * on TV because the same poster can be visible in multiple rails and in the hover-preview pane.
- */
+/** Process-wide artwork loader optimized for fast TV poster fill. */
 public final class ArtworkLoader {
-    private static final int MEMORY_KIB = 12 * 1024;
+    private static final int MEMORY_KIB = 16 * 1024;
+    private static final ExecutorService SHARED_IO = Executors.newFixedThreadPool(4, r -> {
+        Thread t = new Thread(r, "m00v13-artwork");
+        t.setDaemon(true);
+        t.setPriority(Thread.NORM_PRIORITY - 1);
+        return t;
+    });
     private static final LruCache<String, Bitmap> MEMORY = new LruCache<String, Bitmap>(MEMORY_KIB) {
         @Override protected int sizeOf(String key, Bitmap value) {
             return Math.max(1, value.getAllocationByteCount() / 1024);
@@ -36,6 +39,7 @@ public final class ArtworkLoader {
         disk = new ArtworkCache(context.getApplicationContext());
     }
 
+    /** The executor parameter is retained for API compatibility; artwork work uses one shared pool. */
     public void load(ImageView view, String url, int targetWidthPx, Executor executor) {
         if (view == null) return;
         final int target = bucket(targetWidthPx);
@@ -60,26 +64,20 @@ public final class ArtworkLoader {
                 waiters.add(new WeakReference<>(view));
                 return;
             }
-            waiters = new ArrayList<>(3);
+            waiters = new ArrayList<>(4);
             waiters.add(new WeakReference<>(view));
             INFLIGHT.put(key, waiters);
         }
 
-        executor.execute(() -> {
+        SHARED_IO.execute(() -> {
             Bitmap bitmap = null;
             try {
                 File file = disk.fetch(url, 90, target);
-                if (file != null) {
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inPreferredConfig = Bitmap.Config.RGB_565;
-                    options.inDither = false;
-                    bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-                    if (bitmap != null) {
-                        synchronized (MEMORY) { MEMORY.put(key, bitmap); }
-                    }
+                if (file != null) bitmap = decodeForTarget(file, target);
+                if (bitmap != null) {
+                    synchronized (MEMORY) { MEMORY.put(key, bitmap); }
                 }
-            } catch (Throwable ignored) {
-            }
+            } catch (Throwable ignored) {}
 
             final Bitmap ready = bitmap;
             final List<WeakReference<ImageView>> waiters;
@@ -96,16 +94,39 @@ public final class ArtworkLoader {
         });
     }
 
+    private static Bitmap decodeForTarget(File file, int target) {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(file.getAbsolutePath(), bounds);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        options.inDither = false;
+        options.inSampleSize = sampleSize(bounds.outWidth, target);
+        Bitmap decoded = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+        if (decoded == null || decoded.getWidth() <= target) return decoded;
+        int h = Math.max(1, Math.round(decoded.getHeight() * (target / (float) decoded.getWidth())));
+        Bitmap scaled = Bitmap.createScaledBitmap(decoded, target, h, false);
+        if (scaled != decoded) decoded.recycle();
+        return scaled;
+    }
+
+    private static int sampleSize(int width, int target) {
+        if (width <= 0 || target <= 0) return 1;
+        int sample = 1;
+        while (width / (sample * 2) >= target) sample *= 2;
+        return Math.max(1, sample);
+    }
+
     public static void clearMemory() {
         synchronized (MEMORY) { MEMORY.evictAll(); }
         synchronized (INFLIGHT_LOCK) { INFLIGHT.clear(); }
     }
 
     private static int bucket(int px) {
-        if (px <= 400) return 360;
-        if (px <= 540) return 500;
-        if (px <= 700) return 620;
-        return 780;
+        if (px <= 360) return 320;
+        if (px <= 500) return 420;
+        if (px <= 650) return 560;
+        return 700;
     }
 
     private static String key(String url, int width) {
