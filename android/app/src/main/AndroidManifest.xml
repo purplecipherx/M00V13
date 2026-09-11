@@ -26,6 +26,7 @@
         <activity android:name=".ProviderSettingsActivity" />
         <activity android:name=".DiagnosticsActivity" />
         <activity android:name=".MainActivity" />
+        <activity android:name=".HomeActivity" />
 
         <activity android:name=".StartupActivity" android:exported="true">
             <intent-filter>
