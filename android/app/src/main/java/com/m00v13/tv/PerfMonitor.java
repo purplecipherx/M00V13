@@ -2,6 +2,8 @@ package com.m00v13.tv;
 
 import android.app.Activity;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.FrameMetrics;
 import android.view.Window;
 import java.lang.ref.WeakReference;
@@ -18,19 +20,23 @@ public final class PerfMonitor {
             if (LISTENERS.containsKey(activity)) return;
             WeakReference<Activity> ref = new WeakReference<>(activity);
             Window.OnFrameMetricsAvailableListener listener = (window, metrics, dropped) -> {
-                long totalNs = metrics.getMetric(FrameMetrics.TOTAL_DURATION);
-                if (totalNs < 40_000_000L && dropped <= 0) return;
-                Activity a = ref.get();
-                if (a == null || a.isFinishing()) return;
-                long inputNs = metrics.getMetric(FrameMetrics.INPUT_HANDLING_DURATION);
-                long layoutNs = metrics.getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION);
-                long drawNs = metrics.getMetric(FrameMetrics.DRAW_DURATION);
-                DebugLog.append(a, "PERF", "frame=" + (totalNs / 1_000_000L) + "ms input=" +
-                    (inputNs / 1_000_000L) + "ms layout=" + (layoutNs / 1_000_000L) + "ms draw=" +
-                    (drawNs / 1_000_000L) + "ms dropped=" + dropped + " activity=" + a.getClass().getSimpleName());
+                try {
+                    long totalNs = metrics.getMetric(FrameMetrics.TOTAL_DURATION);
+                    if (totalNs < 40_000_000L && dropped <= 0) return;
+                    Activity a = ref.get();
+                    if (a == null || a.isFinishing()) return;
+                    long inputNs = metrics.getMetric(FrameMetrics.INPUT_HANDLING_DURATION);
+                    long layoutNs = metrics.getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION);
+                    long drawNs = metrics.getMetric(FrameMetrics.DRAW_DURATION);
+                    DebugLog.append(a, "PERF", "frame=" + (totalNs / 1_000_000L) + "ms input=" +
+                        (inputNs / 1_000_000L) + "ms layout=" + (layoutNs / 1_000_000L) + "ms draw=" +
+                        (drawNs / 1_000_000L) + "ms dropped=" + dropped + " activity=" + a.getClass().getSimpleName());
+                } catch (Throwable ignored) {}
             };
-            activity.getWindow().addOnFrameMetricsAvailableListener(listener, null);
-            LISTENERS.put(activity, listener);
+            try {
+                activity.getWindow().addOnFrameMetricsAvailableListener(listener, new Handler(Looper.getMainLooper()));
+                LISTENERS.put(activity, listener);
+            } catch (Throwable ignored) {}
         }
     }
 
