@@ -63,8 +63,9 @@ public final class TvUi {
     }
 
     public static void disableWindowAnimations(android.app.Activity activity) {
-        try { activity.getWindow().setWindowAnimations(0); activity.overridePendingTransition(0,0); } catch (Exception ignored) {}
-        PerfMonitor.attach(activity);
+        try { activity.getWindow().setWindowAnimations(0); activity.overridePendingTransition(0,0); } catch (Throwable ignored) {}
+        // Instrumentation must never be able to prevent an Activity from opening.
+        try { PerfMonitor.attach(activity); } catch (Throwable ignored) {}
     }
 
     public static int dp(Context c, int value) {
