@@ -30,7 +30,10 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".HomeActivity" />
 
-        <activity android:name=".StartupActivity" android:exported="true">
+        <activity
+            android:name=".StartupActivity"
+            android:exported="true"
+            android:theme="@style/StartupTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
