@@ -8,7 +8,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class NativeProviderDefinition {
     public final String id,name,responseType,searchPath,queryParam,queryString,rowSelector,titleSelector,titleAttribute,detailsSelector,detailsAttribute,seedersSelector,sizeSelector,rowMagnetSelector,rowMagnetAttribute,rowMagnetQueryParam,detailMagnetSelector;
@@ -50,8 +53,17 @@ public final class NativeProviderDefinition {
                 if(!d.mirrors.isEmpty()&&!d.searchPath.isEmpty()&&(validJson||validMarkup)&&(wantedTier==0||d.tier==wantedTier)&&enabled)out.add(d);
             }
         }catch(Exception ignored){}
+        applySavedOrder(out,settings.providerOrder());
         return Collections.unmodifiableList(out);
     }
+
+    private static void applySavedOrder(ArrayList<NativeProviderDefinition> providers,List<String> order){
+        if(order==null||order.isEmpty()||providers.size()<2)return;
+        final Map<String,Integer> saved=new HashMap<>();for(int i=0;i<order.size();i++)saved.put(order.get(i),i);
+        final Map<String,Integer> original=new HashMap<>();for(int i=0;i<providers.size();i++)original.put(providers.get(i).id,i);
+        providers.sort(Comparator.comparingInt((NativeProviderDefinition d)->saved.containsKey(d.id)?saved.get(d.id):100000+original.get(d.id)));
+    }
+
     private static List<String> strings(JSONArray a){if(a==null)return Collections.emptyList();ArrayList<String> out=new ArrayList<>();for(int i=0;i<a.length();i++){String s=a.optString(i,"");if(!s.isEmpty())out.add(s);}return out;}
     private static boolean empty(String s){return s==null||s.isEmpty();} private static String nz(String s){return s==null?"":s;}
 }
