@@ -107,7 +107,13 @@ public final class MediaHubActivity extends Activity {
         clickSounds = new AppSettingsStore(this).clickSounds();
 
         String requested = getIntent().getStringExtra(EXTRA_MODE);
-        if (MODE_MOVIES.equals(requested) || MODE_TV.equals(requested) || MODE_LIBRARY.equals(requested)) mode = requested;
+        if (MODE_LIBRARY.equals(requested)) {
+            startActivity(new Intent(this, LibraryActivity.class));
+            finish();
+            overridePendingTransition(0, 0);
+            return;
+        }
+        if (MODE_MOVIES.equals(requested) || MODE_TV.equals(requested)) mode = requested;
 
         screenWidth = getResources().getDisplayMetrics().widthPixels;
         screenHeight = getResources().getDisplayMetrics().heightPixels;
@@ -240,7 +246,7 @@ public final class MediaHubActivity extends Activity {
         addNav(rail, MODE_HOME, "⌂\nHome", () -> loadMode(MODE_HOME, true));
         addNav(rail, MODE_MOVIES, "▣\nMovies", () -> loadMode(MODE_MOVIES, true));
         addNav(rail, MODE_TV, "▤\nSeries", () -> loadMode(MODE_TV, true));
-        addNav(rail, MODE_LIBRARY, "♡\nLibrary", () -> loadMode(MODE_LIBRARY, true));
+        addNav(rail, MODE_LIBRARY, "♡\nLibrary", () -> open(LibraryActivity.class));
         addNav(rail, MODE_SEARCH, "⌕\nSearch", () -> {
             mode = MODE_SEARCH;
             updateNavStyles();
