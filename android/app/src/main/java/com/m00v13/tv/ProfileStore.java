@@ -130,6 +130,7 @@ public final class ProfileStore {
     public List<String> watchedMediaIds() { return new ArrayList<>(prefs.getStringSet(root + "watched_ids", new HashSet<>())); }
 
     public boolean isInWatchlist(String mediaId) { return prefs.getStringSet(root + "watchlist", new HashSet<>()).contains(mediaId); }
+    public List<String> watchlistMediaIds() { return new ArrayList<>(prefs.getStringSet(root + "watchlist", new HashSet<>())); }
     public void setWatchlist(String mediaId, boolean enabled) {
         Set<String> ids = new HashSet<>(prefs.getStringSet(root + "watchlist", new HashSet<>()));
         if (enabled) ids.add(mediaId); else ids.remove(mediaId);
@@ -140,7 +141,7 @@ public final class ProfileStore {
         SharedPreferences.Editor e = prefs.edit();
         for (String tag : tags) {
             String key = root + "tag." + tag.toLowerCase(java.util.Locale.US);
-            e.putInt(key, Math.max(-20, Math.min(20, prefs.getInt(key, 0) + delta)));
+            e.putInt(key, Math.max(-20, Math.min(20, prefs.getInt(key, 0) + delta));
         }
         e.apply();
     }
