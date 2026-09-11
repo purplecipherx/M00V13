@@ -21,14 +21,19 @@ public final class LoadingOverlay {
         root.setElevation(1000f);
 
         ImageView image = new ImageView(activity);
-        image.setImageResource(R.drawable.m00v13_loading);
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image.setAdjustViewBounds(false);
         image.setBackgroundColor(Color.BLACK);
+        try {
+            image.setImageResource(R.drawable.m00v13_loading);
+        } catch (Throwable t) {
+            DebugLog.append(activity, "LOADING", "Artwork fallback: " + t.getClass().getSimpleName());
+            image.setImageResource(R.drawable.loading_cow_hd);
+            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        }
         root.addView(image, new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // Keep dynamic load state available without covering the artwork's own LOADING treatment.
         if (message != null && !message.trim().isEmpty()) {
             TextView status = TvUi.text(activity, message, 15, true);
             status.setTextColor(Color.WHITE);
@@ -48,9 +53,7 @@ public final class LoadingOverlay {
         }
     }
 
-    public static LoadingOverlay show(Activity activity) {
-        return show(activity, "Loading…");
-    }
+    public static LoadingOverlay show(Activity activity) { return show(activity, "Loading…"); }
 
     public static LoadingOverlay show(Activity activity, String message) {
         LoadingOverlay overlay = new LoadingOverlay(activity, message);
