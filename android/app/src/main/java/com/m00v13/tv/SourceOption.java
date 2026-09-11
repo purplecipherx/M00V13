@@ -5,6 +5,7 @@ import java.util.List;
 
 public final class SourceOption {
     public final String provider;
+    public final String releaseName;
     public final String uri;
     public final String quality;
     public final String videoCodec;
@@ -18,11 +19,21 @@ public final class SourceOption {
     public final Boolean cached;
     public final int score;
 
+    /** Backward-compatible constructor for callers that do not have a release name. */
     public SourceOption(String provider, String uri, String quality, String videoCodec, String hdr,
                         String audioCodec, String audioLayout, List<String> audioLanguages,
                         List<String> subtitleLanguages, long sizeBytes, int seeders,
                         Boolean cached, int score) {
+        this(provider, "", uri, quality, videoCodec, hdr, audioCodec, audioLayout,
+            audioLanguages, subtitleLanguages, sizeBytes, seeders, cached, score);
+    }
+
+    public SourceOption(String provider, String releaseName, String uri, String quality,
+                        String videoCodec, String hdr, String audioCodec, String audioLayout,
+                        List<String> audioLanguages, List<String> subtitleLanguages,
+                        long sizeBytes, int seeders, Boolean cached, int score) {
         this.provider = provider == null ? "unknown" : provider;
+        this.releaseName = releaseName == null ? "" : releaseName.trim();
         this.uri = uri;
         this.quality = quality == null ? "?" : quality;
         this.videoCodec = videoCodec == null ? "?" : videoCodec;
