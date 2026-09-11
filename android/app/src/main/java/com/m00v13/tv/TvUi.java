@@ -64,6 +64,7 @@ public final class TvUi {
 
     public static void disableWindowAnimations(android.app.Activity activity) {
         try { activity.getWindow().setWindowAnimations(0); activity.overridePendingTransition(0,0); } catch (Exception ignored) {}
+        PerfMonitor.attach(activity);
     }
 
     public static int dp(Context c, int value) {
