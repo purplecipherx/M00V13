@@ -26,6 +26,20 @@ public final class CinemetaClient {
     public List<MediaCard> searchSeries(String q) throws Exception { return searchWithFallback("series","imdbRating",q); }
     public List<MediaCard> genre(String type,String genre) throws Exception { return catalog(type,"series".equals(type)?"imdbRating":"top","genre="+Uri.encode(genre)); }
 
+    /** Returns wide fanart for the TV hero. Poster artwork must never be stretched into the hero. */
+    public String background(MediaCard card) throws Exception {
+        if(card==null||card.id==null||!card.id.startsWith("cinemeta_")) return null;
+        String prefix=card.series?"cinemeta_series_":"cinemeta_movie_";
+        if(!card.id.startsWith(prefix)) return null;
+        String imdb=card.id.substring(prefix.length());
+        if(imdb.isEmpty()) return null;
+        JSONObject root=get(BASE+"meta/"+(card.series?"series":"movie")+"/"+Uri.encode(imdb)+".json");
+        JSONObject meta=root.optJSONObject("meta");
+        if(meta==null) return null;
+        String bg=meta.optString("background","");
+        return bg.isEmpty()?null:bg;
+    }
+
     private List<MediaCard> searchWithFallback(String type,String id,String q)throws Exception{
         List<MediaCard> first=catalog(type,id,"search="+Uri.encode(q));if(!first.isEmpty())return rank(first,q);
         for(String alt:variants(q)){if(alt.equalsIgnoreCase(q))continue;List<MediaCard> found=catalog(type,id,"search="+Uri.encode(alt));if(!found.isEmpty()){DebugLogStatic.note("Cinemeta fuzzy fallback '"+q+"' -> '"+alt+"'");return rank(found,q);}}
@@ -51,6 +65,5 @@ public final class CinemetaClient {
     private JSONObject get(String url)throws Exception{HttpURLConnection c=(HttpURLConnection)new URL(url).openConnection();c.setConnectTimeout(5000);c.setReadTimeout(7000);c.setInstanceFollowRedirects(true);c.setRequestProperty("Accept","application/json");c.setRequestProperty("User-Agent","M00V13/0.1 Android");int code=c.getResponseCode();InputStream raw=code>=400?c.getErrorStream():c.getInputStream();String body=raw==null?"":read(raw,2*1024*1024);c.disconnect();if(code<200||code>=300)throw new IllegalStateException("Cinemeta HTTP "+code);return new JSONObject(body);}
     private static String read(InputStream raw,int limit)throws Exception{try(InputStream in=new BufferedInputStream(raw);ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[8192];int total=0;while(total<limit){int n=in.read(b,0,Math.min(b.length,limit-total));if(n<0)break;out.write(b,0,n);total+=n;}return new String(out.toByteArray(),StandardCharsets.UTF_8);}}
 
-    /** Keeps this class context-free while still allowing a breadcrumb in logcat-style diagnostics later. */
     private static final class DebugLogStatic{static void note(String ignored){}}
 }
