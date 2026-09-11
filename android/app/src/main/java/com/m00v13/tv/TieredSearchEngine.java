@@ -9,12 +9,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/** Tier 1 -> Tier 2 -> Tier 3 waterfall with user-configurable provider tiers. */
+/** Tier 1 -> Tier 2 -> Tier 3 waterfall optimized for fast first usable result. */
 public final class TieredSearchEngine {
     private static final int MIN_USABLE = 5;
-    private static final int MIN_CACHED = 2;
     private static final int MIN_WITHOUT_DEBRID = 8;
-    private static final int MAX_CACHE_PROBES_PER_PASS = 8;
+    private static final int MAX_CACHE_PROBES = 3;
     private static final int MAX_RETURNED = 40;
     private final Context context;
 
@@ -33,14 +32,26 @@ public final class TieredSearchEngine {
             DebugLog.append(context, "SEARCH", "tier=" + tier + " query='" + query + "' sources=" + pass.sources.size() + " ms=" + (System.currentTimeMillis()-started));
             collected.addAll(pass.sources);
             errors.addAll(pass.providerErrors);
-            collected = filterBySettings(dedupe(collected), settings);
-            collected = rank(collected);
+            collected = rank(filterBySettings(dedupe(collected), settings));
 
-            if (debridConnected && !collected.isEmpty()) {
-                try { collected = new ArrayList<>(new RealDebridClient(context).probeCache(collected, MAX_CACHE_PROBES_PER_PASS)); }
-                catch (Exception e) { errors.add("debrid cache probe: " + shortMessage(e)); }
+            // Do not block every tier on Real-Debrid cache probing. Finding sources and
+            // determining cache state are separate network jobs; only probe once after
+            // we already have enough candidates to show/play.
+            int needed = debridConnected ? MIN_USABLE : MIN_WITHOUT_DEBRID;
+            if (collected.size() >= needed) break;
+        }
+
+        collected = rank(filterBySettings(dedupe(collected), settings));
+
+        if (debridConnected && !collected.isEmpty()) {
+            try {
+                // Probe only the strongest few candidates. The old path probed up to eight
+                // after every tier, which could add many Real-Debrid HTTP round trips before
+                // the user saw anything.
+                collected = new ArrayList<>(new RealDebridClient(context).probeCache(collected, MAX_CACHE_PROBES));
+            } catch (Exception e) {
+                errors.add("debrid cache probe: " + shortMessage(e));
             }
-            if (satisfied(collected, debridConnected)) break;
         }
 
         collected = rank(filterBySettings(dedupe(collected), settings));
@@ -52,7 +63,6 @@ public final class TieredSearchEngine {
         return tier == 1 ? s.providerTier1() : tier == 2 ? s.providerTier2() : s.providerTier3();
     }
 
-    /** Playback quality preferences filter streaming candidates; download-size policy is applied only by download planning. */
     private static ArrayList<SourceOption> filterBySettings(List<SourceOption> input, AppSettingsStore settings) {
         ArrayList<SourceOption> out = new ArrayList<>();
         int max = qualityRank(settings.maxQuality());
@@ -74,18 +84,12 @@ public final class TieredSearchEngine {
         return 0;
     }
 
-    private static boolean satisfied(List<SourceOption> sources, boolean debridConnected) {
-        if (sources.size() < MIN_USABLE) return false;
-        if (!debridConnected) return sources.size() >= MIN_WITHOUT_DEBRID;
-        int cached = 0; for (SourceOption source : sources) if (Boolean.TRUE.equals(source.cached)) cached++;
-        return cached >= MIN_CACHED;
-    }
-
     private static ArrayList<SourceOption> dedupe(List<SourceOption> input) {
         Map<String, SourceOption> unique = new LinkedHashMap<>();
         for (SourceOption source : input) {
             if (source == null || source.uri == null || source.uri.trim().isEmpty()) continue;
-            String key = dedupeKey(source.uri); SourceOption current = unique.get(key);
+            String key = dedupeKey(source.uri);
+            SourceOption current = unique.get(key);
             if (current == null || source.score > current.score) unique.put(key, source);
         }
         return new ArrayList<>(unique.values());
@@ -100,13 +104,19 @@ public final class TieredSearchEngine {
     }
 
     private static String dedupeKey(String uri) {
-        String lower = uri.toLowerCase(Locale.US); int start = lower.indexOf("btih:");
-        if (start >= 0) { int end = lower.indexOf('&', start); return end < 0 ? lower.substring(start) : lower.substring(start, end); }
+        String lower = uri.toLowerCase(Locale.US);
+        int start = lower.indexOf("btih:");
+        if (start >= 0) {
+            int end = lower.indexOf('&', start);
+            return end < 0 ? lower.substring(start) : lower.substring(start, end);
+        }
         return lower;
     }
 
     private static String shortMessage(Throwable t) {
-        Throwable x=t; while(x.getCause()!=null)x=x.getCause(); String m=x.getMessage();
-        return m==null||m.trim().isEmpty()?x.getClass().getSimpleName():m;
+        Throwable x = t;
+        while (x.getCause() != null) x = x.getCause();
+        String m = x.getMessage();
+        return m == null || m.trim().isEmpty() ? x.getClass().getSimpleName() : m;
     }
 }
