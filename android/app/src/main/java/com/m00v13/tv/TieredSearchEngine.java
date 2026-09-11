@@ -13,7 +13,7 @@ import java.util.Map;
 public final class TieredSearchEngine {
     private static final int MIN_USABLE = 5;
     private static final int MIN_WITHOUT_DEBRID = 8;
-    private static final int MAX_CACHE_PROBES = 3;
+    private static final int MAX_CACHE_PROBES = 1;
     private static final int MAX_RETURNED = 40;
     private final Context context;
 
@@ -34,9 +34,6 @@ public final class TieredSearchEngine {
             errors.addAll(pass.providerErrors);
             collected = rank(filterBySettings(dedupe(collected), settings));
 
-            // Do not block every tier on Real-Debrid cache probing. Finding sources and
-            // determining cache state are separate network jobs; only probe once after
-            // we already have enough candidates to show/play.
             int needed = debridConnected ? MIN_USABLE : MIN_WITHOUT_DEBRID;
             if (collected.size() >= needed) break;
         }
@@ -45,9 +42,8 @@ public final class TieredSearchEngine {
 
         if (debridConnected && !collected.isEmpty()) {
             try {
-                // Probe only the strongest few candidates. The old path probed up to eight
-                // after every tier, which could add many Real-Debrid HTTP round trips before
-                // the user saw anything.
+                // One best-candidate probe preserves smart one-click when possible without
+                // making the user wait on a batch of Real-Debrid torrent API round trips.
                 collected = new ArrayList<>(new RealDebridClient(context).probeCache(collected, MAX_CACHE_PROBES));
             } catch (Exception e) {
                 errors.add("debrid cache probe: " + shortMessage(e));
