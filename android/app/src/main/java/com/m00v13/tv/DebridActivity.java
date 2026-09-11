@@ -5,8 +5,12 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.concurrent.ExecutorService;
@@ -16,17 +20,20 @@ public final class DebridActivity extends Activity {
     private static final int BG = Color.rgb(9, 5, 15);
     private static final int PURPLE = Color.rgb(168, 85, 247);
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler main = new Handler(Looper.getMainLooper());
     private TextView status;
     private Button action;
     private volatile boolean cancelled;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        TvUi.disableWindowAnimations(this);
         render();
     }
 
     @Override protected void onDestroy() {
         cancelled = true;
+        main.removeCallbacksAndMessages(null);
         executor.shutdownNow();
         super.onDestroy();
     }
@@ -38,13 +45,14 @@ public final class DebridActivity extends Activity {
         root.setPadding(dp(64), dp(48), dp(64), dp(48));
         root.setBackgroundColor(BG);
 
-        root.addView(text("Debrid", 32, true));
+        root.addView(text("Real-Debrid", 32, true));
         TextView explainer = text("M00V13 resolves torrent sources through Real-Debrid before playback. Login uses the official device-code flow; no password is stored in M00V13.", 17, false);
         explainer.setTextColor(Color.rgb(205, 190, 220));
         explainer.setPadding(0, dp(10), 0, dp(22));
         root.addView(explainer);
 
-        status = text(store.isConnected() ? "Real-Debrid: connected" : "Real-Debrid: not connected", 21, true);
+        status = text(store.isConnected() ? "Connected" : "Not connected", 21, true);
+        status.setTextColor(store.isConnected() ? TvUi.BLUE : Color.WHITE);
         status.setPadding(0, 0, 0, dp(18));
         root.addView(status);
 
@@ -53,9 +61,7 @@ public final class DebridActivity extends Activity {
             if (new DebridStore(this).isConnected()) {
                 new DebridStore(this).disconnect();
                 render();
-            } else {
-                beginAuth();
-            }
+            } else beginAuth();
         });
         root.addView(action, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(62)));
         setContentView(root);
@@ -69,21 +75,12 @@ public final class DebridActivity extends Activity {
                 RealDebridClient client = new RealDebridClient(this);
                 RealDebridClient.DeviceCode code = client.beginDeviceAuth();
                 runOnUiThread(() -> showCode(code));
-
                 long deadline = System.currentTimeMillis() + code.expiresInSeconds * 1000L;
                 while (!cancelled && System.currentTimeMillis() < deadline) {
                     RealDebridClient.UserCredentials credentials = client.pollUserCredentials(code.deviceCode);
                     if (credentials != null) {
                         client.finishDeviceAuth(code, credentials);
-                        runOnUiThread(() -> {
-                            status.setText("Real-Debrid connected ✓");
-                            action.setEnabled(true);
-                            action.setText("Disconnect Real-Debrid");
-                            action.setOnClickListener(v -> {
-                                new DebridStore(this).disconnect();
-                                render();
-                            });
-                        });
+                        runOnUiThread(this::showConnectedAndClose);
                         return;
                     }
                     Thread.sleep(Math.max(1, code.intervalSeconds) * 1000L);
@@ -93,6 +90,24 @@ public final class DebridActivity extends Activity {
                 if (!cancelled) runOnUiThread(() -> { status.setText("Connection failed: " + message(e)); action.setEnabled(true); });
             }
         });
+    }
+
+    private void showConnectedAndClose() {
+        DebugLog.append(this, "DEBRID", "Real-Debrid connected");
+        status.setText("Connected");
+        status.setTextColor(TvUi.BLUE);
+        action.setEnabled(false);
+
+        FrameLayout overlay = new FrameLayout(this);
+        overlay.setBackgroundColor(Color.argb(238, 7, 5, 12));
+        TextView connected = text("CONNECTED", 54, true);
+        connected.setTextColor(TvUi.BLUE);
+        connected.setGravity(Gravity.CENTER);
+        overlay.addView(connected, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        ViewGroup decor = (ViewGroup) getWindow().getDecorView();
+        decor.addView(overlay, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        main.postDelayed(() -> { if (overlay.getParent() instanceof ViewGroup) ((ViewGroup) overlay.getParent()).removeView(overlay); }, 1000L);
+        main.postDelayed(() -> { if (!isFinishing() && !isDestroyed()) finish(); }, 5000L);
     }
 
     private void showCode(RealDebridClient.DeviceCode code) {
@@ -123,19 +138,12 @@ public final class DebridActivity extends Activity {
     }
 
     private Button button(String label) {
-        Button b = new Button(this);
-        b.setText(label); b.setTextColor(Color.WHITE); b.setTextSize(17); b.setAllCaps(false);
-        b.setGravity(Gravity.CENTER); b.setFocusable(true);
-        b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PURPLE));
+        Button b = TvUi.button(this, label);
+        b.setTextSize(17);
         return b;
     }
 
-    private TextView text(String value, int sp, boolean bold) {
-        TextView v = new TextView(this);
-        v.setText(value); v.setTextColor(Color.WHITE); v.setTextSize(sp);
-        if (bold) v.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        return v;
-    }
+    private TextView text(String value, int sp, boolean bold) { return TvUi.text(this, value, sp, bold); }
 
     private static String message(Throwable t) {
         Throwable x = t;
