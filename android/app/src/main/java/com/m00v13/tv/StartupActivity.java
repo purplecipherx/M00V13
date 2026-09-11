@@ -25,31 +25,20 @@ public final class StartupActivity extends Activity {
         try { getWindow().setNavigationBarColor(Color.BLACK); } catch (Throwable ignored) {}
         try { getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); } catch (Throwable ignored) {}
 
-        // Use the real packaged cow JPEG directly. Do not base64-decode artwork on the UI thread.
         setContentView(splashView());
-
-        // Spend the visible splash window warming persistent catalog/discovery/artwork caches.
         StartupWarmup.start(getApplicationContext());
-
-        // Product requirement: the cow remains visible for a full five seconds.
         main.postDelayed(this::launchHome, SPLASH_MS);
     }
 
     private FrameLayout splashView() {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.BLACK);
-
         ImageView image = new ImageView(this);
         image.setScaleType(ImageView.ScaleType.FIT_CENTER);
         image.setBackgroundColor(Color.BLACK);
-        try {
-            image.setImageResource(R.drawable.loading_cow);
-        } catch (Throwable ignored) {
-            image.setImageResource(R.drawable.loading_cow_hd);
-        }
-
-        root.addView(image, new FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        try { image.setImageResource(R.drawable.loading_cow); }
+        catch (Throwable ignored) { image.setImageResource(R.drawable.loading_cow_hd); }
+        root.addView(image, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         return root;
     }
 
@@ -57,14 +46,12 @@ public final class StartupActivity extends Activity {
         if (launched || isFinishing() || isDestroyed()) return;
         launched = true;
         try {
-            Intent i = new Intent(this, MediaHubActivity.class);
-            i.putExtra(MediaHubActivity.EXTRA_MODE, MediaHubActivity.MODE_HOME);
-            startActivity(i);
+            startActivity(new Intent(this, WebAppActivity.class));
             finish();
             try { overridePendingTransition(0, 0); } catch (Throwable ignored) {}
         } catch (Throwable t) {
             launched = false;
-            DebugLog.append(this, "STARTUP", "Home launch failed: " + t.getClass().getSimpleName());
+            DebugLog.append(this, "STARTUP", "Web app launch failed: " + t.getClass().getSimpleName());
         }
     }
 
