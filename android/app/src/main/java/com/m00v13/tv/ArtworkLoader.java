@@ -51,25 +51,46 @@ public final class ArtworkLoader {
             return;
         }
 
-        Bitmap hit;
-        synchronized (MEMORY) { hit = MEMORY.get(key); }
-        if (hit != null && !hit.isRecycled()) {
+        Bitmap hit = memoryHit(key);
+        if (hit != null) {
             view.setImageBitmap(hit);
             return;
         }
 
         view.setImageDrawable(null);
+        boolean start = false;
         synchronized (INFLIGHT_LOCK) {
             List<WeakReference<ImageView>> waiters = INFLIGHT.get(key);
             if (waiters != null) {
                 waiters.add(new WeakReference<>(view));
-                return;
+            } else {
+                waiters = new ArrayList<>(4);
+                waiters.add(new WeakReference<>(view));
+                INFLIGHT.put(key, waiters);
+                start = true;
             }
-            waiters = new ArrayList<>(4);
-            waiters.add(new WeakReference<>(view));
-            INFLIGHT.put(key, waiters);
         }
+        if (start) startLoad(url, target, key);
+    }
 
+    /** Queue an artwork request without needing a visible ImageView. */
+    public void prefetch(String url, int targetWidthPx) {
+        if (url == null || url.isEmpty()) return;
+        final int target = bucket(targetWidthPx);
+        final String key = key(url, target);
+        if (memoryHit(key) != null) return;
+
+        boolean start = false;
+        synchronized (INFLIGHT_LOCK) {
+            if (!INFLIGHT.containsKey(key)) {
+                INFLIGHT.put(key, new ArrayList<>(2));
+                start = true;
+            }
+        }
+        if (start) startLoad(url, target, key);
+    }
+
+    private void startLoad(String url, int target, String key) {
         SHARED_IO.execute(() -> {
             Bitmap bitmap = null;
             try {
@@ -93,6 +114,12 @@ public final class ArtworkLoader {
                 });
             }
         });
+    }
+
+    private static Bitmap memoryHit(String key) {
+        Bitmap hit;
+        synchronized (MEMORY) { hit = MEMORY.get(key); }
+        return hit != null && !hit.isRecycled() ? hit : null;
     }
 
     private static Bitmap decodeForTarget(File file, int target) {
