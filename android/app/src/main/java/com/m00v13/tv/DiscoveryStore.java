@@ -31,23 +31,33 @@ public final class DiscoveryStore {
         CinemetaClient client=new CinemetaClient();
         List<MediaCard> movies=client.popularMovies();
         List<MediaCard> tv=client.popularSeries();
-        List<MediaCard> bigMovies=client.genre("movie","Action");
-        List<MediaCard> bigTv=client.genre("series","Action");
-        put(POPULAR_MOVIES,movies); put(POPULAR_TV,tv); put(BLOCKBUSTER_MOVIES,bigMovies); put(BLOCKBUSTER_TV,bigTv);
-        prefs.edit().putLong("updated",System.currentTimeMillis()).apply();
-        DebugLog.append(context,"DISCOVERY","Refreshed movies="+movies.size()+" tv="+tv.size()+" blockbusterMovies="+bigMovies.size()+" blockbusterTv="+bigTv.size());
+
+        // Home no longer needs genre-specific "Action" rails. Do not spend startup/refresh time
+        // fetching them just to throw them away. Movies/TV genre tabs load those on demand.
+        ArrayList<MediaCard> all=new ArrayList<>(movies.size()+tv.size());
+        all.addAll(movies); all.addAll(tv);
+        catalog.upsertAll(all);
+
+        putIds(POPULAR_MOVIES,movies);
+        putIds(POPULAR_TV,tv);
+        prefs.edit()
+            .remove("section."+BLOCKBUSTER_MOVIES)
+            .remove("section."+BLOCKBUSTER_TV)
+            .putLong("updated",System.currentTimeMillis())
+            .apply();
+        DebugLog.append(context,"DISCOVERY","Refreshed movies="+movies.size()+" tv="+tv.size()+" (batched)");
     }
 
-    private void put(String section,List<MediaCard> cards){
+    private void putIds(String section,List<MediaCard> cards){
         JSONArray ids=new JSONArray();
-        for(MediaCard card:cards){ catalog.upsert(card); ids.put(card.id); }
+        for(MediaCard card:cards) ids.put(card.id);
         prefs.edit().putString("section."+section,ids.toString()).apply();
     }
 
     public List<MediaCard> get(String section){
         String raw=prefs.getString("section."+section,"[]");
         try{
-            JSONArray ids=new JSONArray(raw); ArrayList<MediaCard> out=new ArrayList<>();
+            JSONArray ids=new JSONArray(raw); ArrayList<MediaCard> out=new ArrayList<>(ids.length());
             for(int i=0;i<ids.length();i++){MediaCard card=catalog.find(ids.optString(i));if(card!=null)out.add(card);}
             return out;
         }catch(Exception e){return Collections.emptyList();}
