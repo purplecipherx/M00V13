@@ -46,7 +46,7 @@ public final class TieredSearchEngine {
 
         collected = rank(filterBySettings(dedupe(collected), settings));
 
-        if (debridConnected && !collected.isEmpty()) {
+        if (debridConnected && settings.verifyDebridCache() && !collected.isEmpty()) {
             // Cache probing is useful for smart one-click, but it must never hold the source
             // picker hostage behind a slow Real-Debrid request. Give the best-candidate probe
             // a very small latency budget; on timeout we return the ranked sources immediately.
