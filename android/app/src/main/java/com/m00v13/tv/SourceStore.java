@@ -29,12 +29,10 @@ public final class SourceStore {
                 o.put("score", s.score); a.put(o);
             } catch (JSONException ignored) {}
         }
-        prefs.edit().putString("sources." + mediaId, a.toString())
-            .putLong("updated." + mediaId, System.currentTimeMillis()).apply();
+        prefs.edit().putString("sources." + mediaId, a.toString()).putLong("updated." + mediaId, System.currentTimeMillis()).apply();
     }
 
     public List<SourceOption> getFresh(String mediaId) { return getFresh(mediaId, DEFAULT_TTL_MS); }
-
     public List<SourceOption> getFresh(String mediaId, long ttlMs) {
         long age = System.currentTimeMillis() - prefs.getLong("updated." + mediaId, 0L);
         if (age < 0 || age > ttlMs) return Collections.emptyList();
@@ -42,27 +40,14 @@ public final class SourceStore {
         try {
             JSONArray a = new JSONArray(prefs.getString("sources." + mediaId, "[]"));
             for (int i = 0; i < a.length(); i++) {
-                JSONObject o = a.getJSONObject(i);
-                Boolean cached = o.has("cached") ? Boolean.valueOf(o.optBoolean("cached")) : null;
-                out.add(new SourceOption(o.optString("provider"), o.optString("uri"), o.optString("quality"),
-                    o.optString("videoCodec"), o.optString("hdr"), o.optString("audioCodec"), o.optString("audioLayout"),
-                    strings(o.optJSONArray("audioLanguages")), strings(o.optJSONArray("subtitleLanguages")),
-                    o.optLong("sizeBytes"), o.optInt("seeders", -1), cached, o.optInt("score")));
+                JSONObject o = a.getJSONObject(i); Boolean cached = o.has("cached") ? Boolean.valueOf(o.optBoolean("cached")) : null;
+                out.add(new SourceOption(o.optString("provider"), o.optString("uri"), o.optString("quality"), o.optString("videoCodec"), o.optString("hdr"), o.optString("audioCodec"), o.optString("audioLayout"), strings(o.optJSONArray("audioLanguages")), strings(o.optJSONArray("subtitleLanguages")), o.optLong("sizeBytes"), o.optInt("seeders", -1), cached, o.optInt("score")));
             }
         } catch (JSONException ignored) {}
         return out;
     }
 
-    public void clear(String mediaId) {
-        prefs.edit().remove("sources." + mediaId).remove("updated." + mediaId).apply();
-    }
-
-    private static List<String> strings(JSONArray a) {
-        if (a == null) return Collections.emptyList();
-        ArrayList<String> out = new ArrayList<>();
-        for (int i = 0; i < a.length(); i++) {
-            String s = a.optString(i, ""); if (!s.isEmpty()) out.add(s);
-        }
-        return out;
-    }
+    public void removeUri(String mediaId,String uri){if(mediaId==null||uri==null)return;List<SourceOption> current=new ArrayList<>(getFresh(mediaId,Long.MAX_VALUE));ArrayList<SourceOption> keep=new ArrayList<>();for(SourceOption s:current)if(!uri.equals(s.uri))keep.add(s);put(mediaId,keep);}
+    public void clear(String mediaId) { prefs.edit().remove("sources." + mediaId).remove("updated." + mediaId).apply(); }
+    private static List<String> strings(JSONArray a) { if (a == null) return Collections.emptyList(); ArrayList<String> out = new ArrayList<>(); for (int i = 0; i < a.length(); i++) { String s = a.optString(i, ""); if (!s.isEmpty()) out.add(s); } return out; }
 }
