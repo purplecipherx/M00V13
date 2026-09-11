@@ -9,4 +9,10 @@
         <item name="android:navigationBarColor">#000000</item>
         <item name="android:windowLightNavigationBar">false</item>
     </style>
+
+    <!-- Startup gets a real drawable immediately, before StartupActivity.onCreate finishes. -->
+    <style name="StartupTheme" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/loading_cow</item>
+        <item name="android:windowDisablePreview">false</item>
+    </style>
 </resources>
