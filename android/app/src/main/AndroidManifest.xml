@@ -17,6 +17,8 @@
         <activity android:name=".MediaOpenActivity" />
         <activity android:name=".DownloadsActivity" />
         <activity android:name=".BrowseActivity" />
+        <activity android:name=".CatalogGridActivity" />
+        <activity android:name=".MediaHubActivity" />
         <activity android:name=".SearchActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".DebridActivity" />
