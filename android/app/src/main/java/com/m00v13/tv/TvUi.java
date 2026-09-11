@@ -23,6 +23,7 @@ public final class TvUi {
 
     public static Button button(Context c, String label) {
         Button b = new Button(c);
+        final boolean clickSounds = new AppSettingsStore(c).clickSounds();
         b.setText(label);
         b.setTextColor(WHITE);
         b.setTextSize(16);
@@ -38,7 +39,7 @@ public final class TvUi {
             b.setScaleX(1f); b.setScaleY(1f); b.setTranslationX(0f); b.setTranslationY(0f); b.setElevation(0f);
             b.setTextColor(focused ? BLUE : WHITE);
             b.setBackground(focusBackground(c,focused,dp(c,8)));
-            if (focused && new AppSettingsStore(c).clickSounds()) b.playSoundEffect(SoundEffectConstants.CLICK);
+            if (focused && clickSounds) b.playSoundEffect(SoundEffectConstants.CLICK);
         });
         return b;
     }
