@@ -17,6 +17,7 @@
         <activity android:name=".SourceSelectionActivity" />
         <activity android:name=".MediaOpenActivity" />
         <activity android:name=".DownloadsActivity" />
+        <activity android:name=".LibraryActivity" />
         <activity android:name=".BrowseActivity" />
         <activity android:name=".CatalogGridActivity" />
         <activity android:name=".MediaHubActivity" />
