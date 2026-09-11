@@ -31,7 +31,10 @@ public final class NativeProviderDefinition {
     public boolean isJson(){return "json".equalsIgnoreCase(responseType);}
     public boolean isXml(){return "xml".equalsIgnoreCase(responseType);}
     public static List<NativeProviderDefinition> load(Context context){return load(context,0);}
-    public static List<NativeProviderDefinition> load(Context context,int wantedTier){
+    public static List<NativeProviderDefinition> load(Context context,int wantedTier){return loadInternal(context,wantedTier,true);}
+    public static List<NativeProviderDefinition> loadAll(Context context){return loadInternal(context,0,false);}
+
+    private static List<NativeProviderDefinition> loadInternal(Context context,int wantedTier,boolean enabledOnly){
         ArrayList<NativeProviderDefinition> out=new ArrayList<>(); AppSettingsStore settings=new AppSettingsStore(context);
         try(InputStream in=context.getAssets().open("cardigann_providers.json")){
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] b=new byte[8192];int n;while((n=in.read(b))>=0)bytes.write(b,0,n);
@@ -43,7 +46,8 @@ public final class NativeProviderDefinition {
                 boolean hasDirect=!d.rowMagnetSelector.isEmpty()||!d.rowInfoHashSelector.isEmpty();
                 boolean hasDetail=!d.detailMagnetSelector.isEmpty()||!d.detailInfoHashSelector.isEmpty();
                 boolean validMarkup=!d.isJson()&&!d.rowSelector.isEmpty()&&!d.titleSelector.isEmpty()&&(hasDirect||hasDetail);
-                if(!d.mirrors.isEmpty()&&!d.searchPath.isEmpty()&&(validJson||validMarkup)&&(wantedTier==0||d.tier==wantedTier)&&settings.providerEnabled(d.id,d.tier))out.add(d);
+                boolean enabled=!enabledOnly||settings.providerEnabled(d.id,d.tier);
+                if(!d.mirrors.isEmpty()&&!d.searchPath.isEmpty()&&(validJson||validMarkup)&&(wantedTier==0||d.tier==wantedTier)&&enabled)out.add(d);
             }
         }catch(Exception ignored){}
         return Collections.unmodifiableList(out);
