@@ -2,162 +2,71 @@ package com.m00v13.tv;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class SourceSelectionActivity extends Activity {
-    public static final String EXTRA_MEDIA_ID = "media_id";
-    public static final String EXTRA_TITLE = "title";
-    public static final String EXTRA_URIS = "uris";
-    public static final String EXTRA_LABELS = "labels";
-
-    private static final int BG = Color.rgb(9, 5, 15);
-    private static final int PURPLE = Color.rgb(168, 85, 247);
-    private final ExecutorService resolverExecutor = Executors.newSingleThreadExecutor();
+    public static final String EXTRA_MEDIA_ID="media_id", EXTRA_TITLE="title", EXTRA_URIS="uris", EXTRA_LABELS="labels";
+    private final ExecutorService resolverExecutor=Executors.newSingleThreadExecutor();
+    private final ExecutorService artExecutor=Executors.newFixedThreadPool(2);
     private TextView status;
+    private String mediaId;
+    private ArrayList<String> uris;
+    private ArrayList<String> labels;
+    private MediaCard media;
 
-    @Override protected void onCreate(Bundle state) {
-        super.onCreate(state);
-        String title = getIntent().getStringExtra(EXTRA_TITLE);
-        String mediaId = getIntent().getStringExtra(EXTRA_MEDIA_ID);
-        ArrayList<String> uris = getIntent().getStringArrayListExtra(EXTRA_URIS);
-        ArrayList<String> labels = getIntent().getStringArrayListExtra(EXTRA_LABELS);
-
-        if ((uris == null || uris.isEmpty()) && mediaId != null) {
-            List<SourceOption> cached = new SourceStore(this).getFresh(mediaId);
-            uris = new ArrayList<>();
-            labels = new ArrayList<>();
-            for (SourceOption source : cached) {
-                if (source.uri == null || source.uri.trim().isEmpty()) continue;
-                uris.add(source.uri);
-                labels.add(source.compactLabel() + "\n" + source.provider);
-            }
-        }
-
-        final ArrayList<String> finalUris = uris == null ? new ArrayList<>() : uris;
-        final ArrayList<String> finalLabels = labels == null ? new ArrayList<>() : labels;
-
-        ScrollView scroll = new ScrollView(this);
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(56), dp(38), dp(56), dp(38));
-        root.setBackgroundColor(BG);
-        scroll.addView(root);
-
-        TextView heading = text(title == null ? "Choose source" : title, 30, true);
-        root.addView(heading);
-        TextView hint = text("Best source is first. Torrent sources are resolved through your connected debrid account before Media3 receives a playback URL.", 16, false);
-        hint.setTextColor(Color.rgb(205, 190, 220));
-        hint.setPadding(0, dp(8), 0, dp(10));
-        root.addView(hint);
-        status = text(new DebridStore(this).isConnected() ? "Debrid connected" : "Debrid not connected", 15, false);
-        status.setTextColor(Color.rgb(190, 175, 205));
-        status.setPadding(0, 0, 0, dp(18));
-        root.addView(status);
-
-        if (finalUris.isEmpty()) {
-            root.addView(text("No fresh playable sources are cached. A scrape will populate this screen.", 20, false));
-        } else {
-            for (int i = 0; i < finalUris.size(); i++) {
-                final int index = i;
-                String label = i < finalLabels.size() ? finalLabels.get(i) : "Source " + (i + 1);
-                Button b = new Button(this);
-                b.setText(label);
-                b.setTextColor(Color.WHITE);
-                b.setTextSize(16);
-                b.setAllCaps(false);
-                b.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-                b.setFocusable(true);
-                b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PURPLE));
-                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(76));
-                p.bottomMargin = dp(10);
-                b.setLayoutParams(p);
-                b.setOnClickListener(v -> openSource(b, mediaId, finalUris, index));
-                root.addView(b);
-            }
-        }
-        setContentView(scroll);
+    @Override protected void onCreate(Bundle state){
+        super.onCreate(state); TvUi.disableWindowAnimations(this);
+        String title=getIntent().getStringExtra(EXTRA_TITLE); mediaId=getIntent().getStringExtra(EXTRA_MEDIA_ID); media=mediaId==null?null:new CatalogStore(this).find(mediaId);
+        uris=getIntent().getStringArrayListExtra(EXTRA_URIS); labels=getIntent().getStringArrayListExtra(EXTRA_LABELS);
+        if((uris==null||uris.isEmpty())&&mediaId!=null){List<SourceOption> cached=new SourceStore(this).getFresh(mediaId);uris=new ArrayList<>();labels=new ArrayList<>();for(SourceOption s:cached){if(s.uri==null||s.uri.trim().isEmpty())continue;uris.add(s.uri);labels.add(s.compactLabel()+"\n"+s.provider);}}
+        if(uris==null)uris=new ArrayList<>(); if(labels==null)labels=new ArrayList<>(); setContentView(build(title));
     }
 
-    @Override protected void onDestroy() {
-        resolverExecutor.shutdownNow();
-        super.onDestroy();
+    private View build(String title){
+        ScreenProfile sp=ScreenProfile.detect(this); ScrollView scroll=new ScrollView(this);LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(TvUi.dp(this,sp.sidePaddingDp),TvUi.dp(this,28),TvUi.dp(this,sp.sidePaddingDp),TvUi.dp(this,30));root.setBackgroundColor(TvUi.BG);scroll.addView(root);
+        root.addView(TvUi.text(this,title==null?"Choose source":title,sp.mobile()?26:30,true));TextView hint=TvUi.text(this,"Best source first • RD-cached sources rank highest • bad/infringing sources are removed",15,false);hint.setTextColor(TvUi.MUTED);hint.setPadding(0,dp(6),0,dp(8));root.addView(hint);
+        status=TvUi.text(this,new DebridStore(this).isConnected()?"Real-Debrid connected":"Real-Debrid not connected",15,false);status.setTextColor(TvUi.MUTED);status.setPadding(0,0,0,dp(14));root.addView(status);
+        if(uris.isEmpty()){root.addView(TvUi.text(this,"No fresh playable sources are available.",20,false));return scroll;}
+        for(int i=0;i<uris.size();i++)root.addView(sourceRow(i));return scroll;
     }
 
-    private void openSource(Button button, String mediaId, ArrayList<String> all, int selected) {
-        String uri = all.get(selected);
-        if (!uri.startsWith("magnet:")) {
-            startPlayer(mediaId, uri, directFallbacks(all, selected));
-            return;
-        }
-
-        if (!new DebridStore(this).isConnected()) {
-            status.setText("Connect Real-Debrid first.");
-            startActivity(new Intent(this, DebridActivity.class));
-            return;
-        }
-
-        button.setEnabled(false);
-        status.setText("Resolving selected source through Real-Debrid…");
-        final LoadingOverlay loading = LoadingOverlay.show(this);
-        resolverExecutor.submit(() -> {
-            try {
-                String resolved = new RealDebridClient(this).resolveMagnet(uri);
-                runOnUiThread(() -> {
-                    loading.hide();
-                    if (isFinishing() || isDestroyed()) return;
-                    status.setText("Resolved ✓ starting playback");
-                    startPlayer(mediaId, resolved, new ArrayList<>());
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    loading.hide();
-                    if (isFinishing() || isDestroyed()) return;
-                    button.setEnabled(true);
-                    status.setText("Resolve failed: " + message(e));
-                });
-            }
-        });
+    private View sourceRow(int index){
+        LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(6),dp(5),dp(6),dp(5));row.setBackground(TvUi.focusBackground(this,false,dp(8)));row.setFocusable(true);row.setClickable(true);row.setStateListAnimator(null);
+        ImageView thumb=new ImageView(this);thumb.setScaleType(ImageView.ScaleType.CENTER_CROP);thumb.setBackgroundColor(TvUi.CARD);row.addView(thumb,new LinearLayout.LayoutParams(dp(96),dp(64)));loadArtwork(thumb);
+        String label=index<labels.size()?labels.get(index):"Source "+(index+1);TextView text=TvUi.text(this,label,15,true);text.setMaxLines(3);text.setEllipsize(android.text.TextUtils.TruncateAt.END);LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(68),1f);tp.setMarginStart(dp(14));row.addView(text,tp);
+        row.setOnFocusChangeListener((v,f)->{row.animate().cancel();row.setScaleX(1f);row.setScaleY(1f);row.setBackground(TvUi.focusBackground(this,f,dp(8)));text.setTextColor(f?TvUi.BLUE:TvUi.WHITE);if(f&&new AppSettingsStore(this).clickSounds())row.playSoundEffect(android.view.SoundEffectConstants.CLICK);});
+        row.setOnClickListener(v->openSource(row,index));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(82));p.bottomMargin=dp(8);row.setLayoutParams(p);return row;
     }
 
-    private void startPlayer(String mediaId, String uri, ArrayList<String> fallbackUris) {
-        Intent play = new Intent(this, PlayerActivity.class);
-        play.putExtra(PlayerActivity.EXTRA_MEDIA_ID, mediaId);
-        play.putExtra(PlayerActivity.EXTRA_URI, uri);
-        play.putStringArrayListExtra(PlayerActivity.EXTRA_FALLBACK_URIS, fallbackUris);
-        startActivity(play);
+    private void loadArtwork(ImageView v){if(media==null||media.artworkUrl==null||media.artworkUrl.isEmpty())return;artExecutor.submit(()->{try{File f=new ArtworkCache(this).fetch(media.artworkUrl,78,240);if(f==null)return;android.graphics.Bitmap b=BitmapFactory.decodeFile(f.getAbsolutePath());runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&b!=null)v.setImageBitmap(b);});}catch(Exception ignored){}});}
+
+    private void openSource(View row,int selected){
+        if(selected<0||selected>=uris.size())return;String uri=uris.get(selected);
+        if(!uri.startsWith("magnet:")){startPlayer(uri,directFallbacks(selected));return;}
+        if(!new DebridStore(this).isConnected()){status.setText("Connect Real-Debrid first.");startActivity(new Intent(this,DebridActivity.class));return;}
+        row.setEnabled(false);status.setText("Resolving selected source through Real-Debrid…");LoadingOverlay loading=LoadingOverlay.show(this,"Resolving source…");
+        resolverExecutor.submit(()->{try{String resolved=new RealDebridClient(this).resolveMagnet(uri);runOnUiThread(()->{loading.hide();if(dead())return;status.setText("Resolved — starting playback");startPlayer(resolved,new ArrayList<>());});}
+        catch(Exception e){String m=msg(e);boolean bad=e instanceof RealDebridClient.InfringingSourceException||m.toLowerCase().contains("infring")||m.toLowerCase().contains("not instantly available");DebugLog.append(this,"SOURCE","Resolve failed: "+m);runOnUiThread(()->{loading.hide();if(dead())return;row.setEnabled(true);if(bad){new SourceStore(this).removeUri(mediaId,uri);status.setText("Source rejected by Real-Debrid and removed. Choose another source.");row.setVisibility(View.GONE);}else status.setText("Resolve failed: "+m);});}});
     }
 
-    private ArrayList<String> directFallbacks(ArrayList<String> all, int selected) {
-        ArrayList<String> out = new ArrayList<>();
-        for (int i = selected + 1; i < all.size(); i++) if (!all.get(i).startsWith("magnet:")) out.add(all.get(i));
-        for (int i = 0; i < selected; i++) if (!all.get(i).startsWith("magnet:")) out.add(all.get(i));
-        return out;
-    }
-
-    private static String message(Throwable t) {
-        Throwable x = t;
-        while (x.getCause() != null) x = x.getCause();
-        return x.getMessage() == null ? x.getClass().getSimpleName() : x.getMessage();
-    }
-
-    private TextView text(String value, int sp, boolean bold) {
-        TextView v = new TextView(this);
-        v.setText(value);
-        v.setTextColor(Color.WHITE);
-        v.setTextSize(sp);
-        if (bold) v.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        return v;
-    }
-
-    private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
+    private void startPlayer(String uri,ArrayList<String> fallbackUris){Intent p=new Intent(this,PlayerActivity.class);p.putExtra(PlayerActivity.EXTRA_MEDIA_ID,mediaId);p.putExtra(PlayerActivity.EXTRA_URI,uri);p.putStringArrayListExtra(PlayerActivity.EXTRA_FALLBACK_URIS,fallbackUris);startActivity(p);}
+    private ArrayList<String> directFallbacks(int selected){ArrayList<String> out=new ArrayList<>();for(int i=selected+1;i<uris.size();i++)if(!uris.get(i).startsWith("magnet:"))out.add(uris.get(i));for(int i=0;i<selected;i++)if(!uris.get(i).startsWith("magnet:"))out.add(uris.get(i));return out;}
+    private boolean dead(){return isFinishing()||isDestroyed();}
+    private static String msg(Throwable t){Throwable x=t;while(x.getCause()!=null)x=x.getCause();return x.getMessage()==null?x.getClass().getSimpleName():x.getMessage();}
+    private int dp(int v){return TvUi.dp(this,v);}
+    @Override protected void onDestroy(){resolverExecutor.shutdownNow();artExecutor.shutdownNow();super.onDestroy();}
 }
