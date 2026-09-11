@@ -6,7 +6,8 @@ import android.content.SharedPreferences;
 public final class AppSettingsStore {
     private static final String PREFS = "m00v13_app_settings";
     private final SharedPreferences p;
-    public AppSettingsStore(Context c){ p=c.getApplicationContext().getSharedPreferences(PREFS,Context.MODE_PRIVATE); }
+    private final Context context;
+    public AppSettingsStore(Context c){ context=c.getApplicationContext(); p=context.getSharedPreferences(PREFS,Context.MODE_PRIVATE); }
 
     public boolean launchOnBoot(){ return p.getBoolean("launch_on_boot",false); }
     public void setLaunchOnBoot(boolean v){ p.edit().putBoolean("launch_on_boot",v).apply(); }
@@ -20,14 +21,32 @@ public final class AppSettingsStore {
     public void setMaxQuality(String v){ p.edit().putString("max_quality",v).apply(); }
     public boolean exclude3d(){ return p.getBoolean("exclude_3d",true); }
     public void setExclude3d(boolean v){ p.edit().putBoolean("exclude_3d",v).apply(); }
-    public int maxDownloadGiB(){ return p.getInt("max_download_gib",12); }
-    public void setMaxDownloadGiB(int v){ p.edit().putInt("max_download_gib",Math.max(1,v)).apply(); }
+
+    /** 0 means unlimited. If unset, default to the current usable free-space budget. */
+    public int maxDownloadGiB(){
+        if(p.contains("max_download_gib")) return Math.max(0,p.getInt("max_download_gib",0));
+        long free=StoragePolicy.availableBytes(context.getFilesDir());
+        long usable=Math.max(0L,free-StoragePolicy.PROTECTED_SYSTEM_RESERVE_BYTES-256L*StoragePolicy.MIB);
+        return (int)Math.max(1L,usable/(1024L*StoragePolicy.MIB));
+    }
+    public void setMaxDownloadGiB(int v){ p.edit().putInt("max_download_gib",Math.max(0,v)).apply(); }
+    public boolean unlimitedDownloadSize(){ return p.contains("max_download_gib") && p.getInt("max_download_gib",0)==0; }
+
     public int episodesAhead(){ return p.getInt("episodes_ahead",2); }
     public void setEpisodesAhead(int v){ p.edit().putInt("episodes_ahead",Math.max(0,Math.min(20,v))).apply(); }
     public boolean wifiOnlyDownloads(){ return p.getBoolean("wifi_downloads",true); }
     public void setWifiOnlyDownloads(boolean v){ p.edit().putBoolean("wifi_downloads",v).apply(); }
+
     public boolean providerTier1(){ return p.getBoolean("provider_tier1",true); }
     public boolean providerTier2(){ return p.getBoolean("provider_tier2",true); }
-    public boolean providerTier3(){ return p.getBoolean("provider_tier3",true); }
+    public boolean providerTier3(){ return p.getBoolean("provider_tier3",false); }
     public void setProviderTier(int tier,boolean v){ p.edit().putBoolean("provider_tier"+tier,v).apply(); }
+
+    /** Providers default enabled in tiers 1-2 and disabled in tier 3. */
+    public boolean providerEnabled(String id,int tier){
+        String key="provider_"+safe(id);
+        return p.contains(key)?p.getBoolean(key,true):tier<=2;
+    }
+    public void setProviderEnabled(String id,boolean enabled){ p.edit().putBoolean("provider_"+safe(id),enabled).apply(); }
+    private static String safe(String s){ return s==null?"unknown":s.replaceAll("[^A-Za-z0-9_-]","_"); }
 }
