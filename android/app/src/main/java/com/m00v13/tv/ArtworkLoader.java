@@ -19,7 +19,8 @@ import java.util.concurrent.Executors;
 /** Process-wide artwork loader optimized for fast TV poster fill. */
 public final class ArtworkLoader {
     private static final int MEMORY_KIB = 16 * 1024;
-    private static final ExecutorService SHARED_IO = Executors.newFixedThreadPool(4, r -> {
+    private static final int ARTWORK_WORKERS = 8;
+    private static final ExecutorService SHARED_IO = Executors.newFixedThreadPool(ARTWORK_WORKERS, r -> {
         Thread t = new Thread(r, "m00v13-artwork");
         t.setDaemon(true);
         t.setPriority(Thread.NORM_PRIORITY - 1);
