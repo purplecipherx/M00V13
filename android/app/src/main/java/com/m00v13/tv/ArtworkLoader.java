@@ -154,7 +154,9 @@ public final class ArtworkLoader {
         if (px <= 360) return 320;
         if (px <= 500) return 420;
         if (px <= 650) return 560;
-        return 700;
+        if (px <= 820) return 700;
+        if (px <= 1280) return 1120;
+        return 1440;
     }
 
     private static String key(String url, int width) {
