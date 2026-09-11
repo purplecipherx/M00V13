@@ -19,14 +19,22 @@ import java.util.concurrent.Executors;
 
 public final class SearchActivity extends Activity {
     private LinearLayout results;
+    private LinearLayout recent;
     private EditText input;
     private Button searchButton;
     private TextView status;
     private CatalogStore catalog;
+    private SearchHistoryStore history;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private volatile boolean searchRunning = false;
 
-    @Override protected void onCreate(Bundle state) { super.onCreate(state); catalog = new CatalogStore(this); setContentView(build()); }
+    @Override protected void onCreate(Bundle state) {
+        super.onCreate(state);
+        TvUi.disableWindowAnimations(this);
+        catalog = new CatalogStore(this);
+        history = new SearchHistoryStore(this);
+        setContentView(build());
+    }
     @Override protected void onDestroy() { executor.shutdownNow(); super.onDestroy(); }
 
     private ScrollView build() {
@@ -48,22 +56,42 @@ public final class SearchActivity extends Activity {
         searchButton = TvUi.button(this, "Find movie / show"); searchButton.setOnClickListener(v -> beginSearch()); root.addView(searchButton, full(58));
         status = TvUi.text(this, new MetadataStore(this).isConfigured()
             ? "TMDB metadata enabled • exact-title search first, then provider waterfall."
-            : "Keyless metadata enabled • posters and exact movie/TV matches do not require a TMDB key.", 15, false);
-        status.setTextColor(TvUi.MUTED); status.setPadding(0, dp(8), 0, dp(14)); root.addView(status);
+            : "Keyless metadata enabled • posters and movie/TV matches do not require a TMDB key.", 15, false);
+        status.setTextColor(TvUi.MUTED); status.setPadding(0, dp(8), 0, dp(10)); root.addView(status);
+
+        recent = new LinearLayout(this); recent.setOrientation(LinearLayout.VERTICAL); root.addView(recent);
+        renderRecent();
         results = new LinearLayout(this); results.setOrientation(LinearLayout.VERTICAL); root.addView(results);
         input.setOnEditorActionListener((v, actionId, event) -> { if (actionId == EditorInfo.IME_ACTION_SEARCH) { beginSearch(); return true; } return false; });
         return scroll;
+    }
+
+    private void renderRecent(){
+        if(recent==null)return;
+        recent.removeAllViews();
+        List<String> items=history.recent();
+        if(items.isEmpty())return;
+        TextView h=TvUi.text(this,"Recent searches — hold to delete",17,true);h.setTextColor(TvUi.MUTED);h.setPadding(0,dp(6),0,dp(6));recent.addView(h);
+        int limit=Math.min(8,items.size());
+        for(int i=0;i<limit;i++){
+            String q=items.get(i);
+            Button b=TvUi.button(this,q); b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
+            b.setOnClickListener(v->{input.setText(q);input.setSelection(q.length());beginSearch();});
+            b.setOnLongClickListener(v->{history.remove(q);renderRecent();status.setText("Removed from recent searches.");return true;});
+            LinearLayout.LayoutParams p=full(50);p.bottomMargin=dp(5);recent.addView(b,p);
+        }
     }
 
     private void beginSearch() {
         if (searchRunning) return;
         String q = input.getText() == null ? "" : input.getText().toString().trim();
         if (q.isEmpty()) { status.setText("Enter a title first."); return; }
+        history.add(q); renderRecent();
         hideKeyboard(); input.clearFocus(); searchButton.requestFocus(); searchRunning = true; searchButton.setEnabled(false); results.removeAllViews();
         DebugLog.append(this,"SEARCH","Metadata lookup query='"+q+"'");
 
         MetadataStore ms = new MetadataStore(this);
-        status.setText("Finding exact title…");
+        status.setText("Finding title…");
         executor.submit(() -> {
             try {
                 if (ms.isConfigured()) {
@@ -77,13 +105,13 @@ public final class SearchActivity extends Activity {
                 }
             } catch (Exception e) {
                 DebugLog.append(this,"SEARCH","Metadata lookup failed: "+msg(e));
-                runOnUiThread(() -> { if (dead()) return; finishBusy(); status.setText("Metadata lookup failed; press Search again for another try. " + msg(e)); });
+                runOnUiThread(() -> { if (dead()) return; finishBusy(); status.setText("Metadata lookup failed. " + msg(e)); });
             }
         });
     }
 
     private void showTmdbResults(List<TmdbClient.Result> found) {
-        results.removeAllViews(); if (found.isEmpty()) { status.setText("No matching movie or show found."); return; } status.setText("Choose the exact title:");
+        results.removeAllViews(); if (found.isEmpty()) { status.setText("No exact match. Try a broader title or alternate spelling."); return; } status.setText("Choose a title:");
         for (TmdbClient.Result r : found) {
             String type = r.series ? "TV" : "Movie";
             Button b = TvUi.button(this, r.title + (r.year.isEmpty() ? "" : " (" + r.year + ")") + "  •  " + type);
@@ -92,7 +120,7 @@ public final class SearchActivity extends Activity {
     }
 
     private void showCinemetaResults(List<MediaCard> found) {
-        results.removeAllViews(); if(found.isEmpty()){status.setText("No matching movie or show found.");return;} status.setText("Choose the exact title:");
+        results.removeAllViews(); if(found.isEmpty()){status.setText("No exact match. Try a broader title or alternate spelling.");return;} status.setText("Choose a title:");
         int limit=Math.min(20,found.size());
         for(int i=0;i<limit;i++){
             MediaCard card=found.get(i); String type=card.series?"TV":"Movie"; String year=card.subtitle==null||card.subtitle.isEmpty()?"":" ("+card.subtitle+")";
@@ -107,6 +135,12 @@ public final class SearchActivity extends Activity {
 
     private void scrapeCard(MediaCard card, Button selected) {
         if (searchRunning) return;
+        List<SourceOption> cached=new SourceStore(this).getFresh(card.id);
+        if(!cached.isEmpty()){
+            catalog.upsert(card);
+            status.setText(cached.size()+" cached sources — opening immediately");
+            Intent i=new Intent(this,SourceSelectionActivity.class);i.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID,card.id);i.putExtra(SourceSelectionActivity.EXTRA_TITLE,card.title);startActivity(i);return;
+        }
         searchRunning=true; selected.setEnabled(false); status.setText("Searching sources for " + card.title + "…"); final LoadingOverlay loading=LoadingOverlay.show(this);
         executor.submit(() -> {
             try {
@@ -115,8 +149,8 @@ public final class SearchActivity extends Activity {
                 runOnUiThread(() -> {
                     loading.hide(); if(dead())return; searchRunning=false; selected.setEnabled(true); catalog.upsert(card);
                     if(ranked.isEmpty()){status.setText("Title saved, but no usable sources were found.");return;}
-                    new SourceStore(this).put(card.id,ranked); int cached=0;for(SourceOption s:ranked)if(Boolean.TRUE.equals(s.cached))cached++;
-                    status.setText(ranked.size()+" sources found"+(cached>0?" • "+cached+" debrid-cached":""));
+                    new SourceStore(this).put(card.id,ranked); int cachedCount=0;for(SourceOption s:ranked)if(Boolean.TRUE.equals(s.cached))cachedCount++;
+                    status.setText(ranked.size()+" sources found"+(cachedCount>0?" • "+cachedCount+" debrid-cached":""));
                     Intent i=new Intent(this,SourceSelectionActivity.class);i.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID,card.id);i.putExtra(SourceSelectionActivity.EXTRA_TITLE,card.title);startActivity(i);
                 });
             }catch(Exception e){DebugLog.append(this,"SEARCH","Source search failed: "+msg(e));runOnUiThread(()->{loading.hide();if(dead())return;searchRunning=false;selected.setEnabled(true);status.setText("Search failed: "+msg(e));});}
