@@ -49,5 +49,6 @@ public final class SourceStore {
 
     public void removeUri(String mediaId,String uri){if(mediaId==null||uri==null)return;List<SourceOption> current=new ArrayList<>(getFresh(mediaId,Long.MAX_VALUE));ArrayList<SourceOption> keep=new ArrayList<>();for(SourceOption s:current)if(!uri.equals(s.uri))keep.add(s);put(mediaId,keep);}
     public void clear(String mediaId) { prefs.edit().remove("sources." + mediaId).remove("updated." + mediaId).apply(); }
+    public void clearAll(){ prefs.edit().clear().apply(); }
     private static List<String> strings(JSONArray a) { if (a == null) return Collections.emptyList(); ArrayList<String> out = new ArrayList<>(); for (int i = 0; i < a.length(); i++) { String s = a.optString(i, ""); if (!s.isEmpty()) out.add(s); } return out; }
 }
