@@ -3,7 +3,6 @@ package com.m00v13.tv;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -11,6 +10,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -19,7 +19,7 @@ public final class SettingsActivity extends Activity {
     private AppSettingsStore prefs;
     private LinearLayout root;
 
-    @Override protected void onCreate(Bundle state){ super.onCreate(state); prefs=new AppSettingsStore(this); setContentView(build()); }
+    @Override protected void onCreate(Bundle state){ super.onCreate(state); TvUi.disableWindowAnimations(this); prefs=new AppSettingsStore(this); setContentView(build()); }
 
     private View build(){
         ScreenProfile sp=ScreenProfile.detect(this);
@@ -29,7 +29,7 @@ public final class SettingsActivity extends Activity {
 
         sub("Playback");
         toggle("Automatic audio passthrough",prefs.automaticPassthrough(),v->prefs.setAutomaticPassthrough(v));
-        action("Detect / test passthrough support",v->{String summary=AudioCapabilities.log(this);new AlertDialog.Builder(this).setTitle("Current audio output").setMessage(summary+"\n\nThis reports what the active Android audio route advertises. A real encoded test clip can be added to the hardware test suite next.").setPositiveButton("OK",null).show();});
+        action("Detect / test passthrough support",v->{String summary=AudioCapabilities.log(this);new AlertDialog.Builder(this).setTitle("Current audio output").setMessage(summary+"\n\nM00V13 uses Media3's platform audio sink. Encoded formats are passed through when the active Android output route reports direct support.").setPositiveButton("OK",null).show();});
         choice("Maximum video quality",new String[]{"4K","1080p","720p","480p"},prefs.maxQuality(),prefs::setMaxQuality);
         toggle("Exclude 3D releases",prefs.exclude3d(),v->prefs.setExclude3d(v));
 
@@ -39,7 +39,7 @@ public final class SettingsActivity extends Activity {
 
         sub("Downloads");
         choice("Download episodes ahead",new String[]{"0","1","2","3","5","10"},String.valueOf(prefs.episodesAhead()),v->prefs.setEpisodesAhead(Integer.parseInt(v)));
-        choice("Per-download size limit",new String[]{"2 GB","4 GB","8 GB","12 GB","20 GB","40 GB"},prefs.maxDownloadGiB()+" GB",v->prefs.setMaxDownloadGiB(Integer.parseInt(v.split(" ")[0])));
+        action("Per-download size limit: "+downloadLimitLabel(),v->showDownloadLimitDialog());
         toggle("Wi-Fi only automatic downloads",prefs.wifiOnlyDownloads(),v->prefs.setWifiOnlyDownloads(v));
         action("Downloads & storage",v->startActivity(new Intent(this,DownloadsActivity.class)));
 
@@ -47,29 +47,43 @@ public final class SettingsActivity extends Activity {
         toggle("Tier 1 providers",prefs.providerTier1(),v->prefs.setProviderTier(1,v));
         toggle("Tier 2 providers",prefs.providerTier2(),v->prefs.setProviderTier(2,v));
         toggle("Tier 3 providers",prefs.providerTier3(),v->prefs.setProviderTier(3,v));
+        action("Configure individual providers",v->startActivity(new Intent(this,ProviderSettingsActivity.class)));
         action("Real-Debrid",v->startActivity(new Intent(this,DebridActivity.class)));
         action("Metadata & artwork",v->startActivity(new Intent(this,MetadataActivity.class)));
 
         sub("Interface");
         toggle("Navigation click sounds",prefs.clickSounds(),v->prefs.setClickSounds(v));
         toggle("Cow startup sound",prefs.startupCowSound(),v->prefs.setStartupCowSound(v));
-        action("Set M00V13 as Home (launch after startup)",v->{try{startActivity(new Intent(Settings.ACTION_HOME_SETTINGS));}catch(Exception e){DebugLog.append(this,"SETTINGS","Home chooser unavailable: "+e.getMessage());}});
+        action("Set M00V13 as Home — launch after device startup",v->{try{startActivity(new Intent(Settings.ACTION_HOME_SETTINGS));}catch(Exception e){DebugLog.append(this,"SETTINGS","Home chooser unavailable: "+e.getMessage());}});
 
         sub("Files & diagnostics");
         action("Choose local media / download folder",v->{Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);startActivityForResult(i,41);});
         String folder=getSharedPreferences("m00v13_storage",MODE_PRIVATE).getString("tree_uri","");
-        if(!folder.isEmpty()){TextView f=TvUi.text(this,"Storage permission saved ✓",14,false);f.setTextColor(TvUi.MUTED);root.addView(f);}
+        if(!folder.isEmpty()){TextView f=TvUi.text(this,"Storage folder access saved ✓",14,false);f.setTextColor(TvUi.MUTED);root.addView(f);}
+        action("App permissions",v->PermissionManager.show(this));
         action("Diagnostics & debug log",v->startActivity(new Intent(this,DiagnosticsActivity.class)));
-        action("Android app permissions",v->{Intent i=new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName()));startActivity(i);});
         action("Support / Donate",v->startActivity(new Intent(this,DonateActivity.class)));
         return scroll;
     }
+
+    private String downloadLimitLabel(){if(prefs.unlimitedDownloadSize())return "Unlimited";return prefs.maxDownloadGiB()+" GB";}
+    private void showDownloadLimitDialog(){
+        String[] options={"Use current free-space budget","Unlimited","2 GB","4 GB","8 GB","16 GB","Custom…"};
+        new AlertDialog.Builder(this).setTitle("Per-download size limit").setItems(options,(d,w)->{
+            if(w==0){getSharedPreferences("m00v13_app_settings",MODE_PRIVATE).edit().remove("max_download_gib").apply();rebuild();}
+            else if(w==1){prefs.setMaxDownloadGiB(0);rebuild();}
+            else if(w>=2&&w<=5){prefs.setMaxDownloadGiB(new int[]{2,4,8,16}[w-2]);rebuild();}
+            else showCustomLimit();
+        }).show();
+    }
+    private void showCustomLimit(){EditText e=new EditText(this);e.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);e.setHint("GB");new AlertDialog.Builder(this).setTitle("Custom download limit").setView(e).setPositiveButton("Save",(d,w)->{try{int gb=Integer.parseInt(e.getText().toString());if(gb>0)prefs.setMaxDownloadGiB(gb);}catch(Exception ignored){}rebuild();}).setNegativeButton("Cancel",null).show();}
+    private void rebuild(){setContentView(build());}
 
     @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){
         super.onActivityResult(requestCode,resultCode,data);
         if(requestCode==41&&resultCode==RESULT_OK&&data!=null&&data.getData()!=null){
             Uri uri=data.getData(); int flags=data.getFlags()&(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            try{getContentResolver().takePersistableUriPermission(uri,flags);getSharedPreferences("m00v13_storage",MODE_PRIVATE).edit().putString("tree_uri",uri.toString()).apply();DebugLog.append(this,"STORAGE","Persisted media tree permission");setContentView(build());}
+            try{getContentResolver().takePersistableUriPermission(uri,flags);getSharedPreferences("m00v13_storage",MODE_PRIVATE).edit().putString("tree_uri",uri.toString()).apply();DebugLog.append(this,"STORAGE","Persisted media tree permission");rebuild();}
             catch(Exception e){DebugLog.append(this,"STORAGE","Could not persist tree permission: "+e.getMessage());}
         }
     }
