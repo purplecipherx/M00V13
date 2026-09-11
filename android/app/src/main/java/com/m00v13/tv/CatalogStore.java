@@ -6,50 +6,136 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * Process-wide catalog cache.
+ *
+ * The old implementation reparsed and rewrote the entire JSON catalog for every single upsert.
+ * Discovery/genre refreshes can insert dozens of cards, so that turned one refresh into dozens of
+ * O(n) parses + O(n) serializations. Keep a process cache and coalesce persistence instead.
+ */
 public final class CatalogStore {
     private static final String PREFS = "m00v13_catalog";
     private static final String KEY = "items_v1";
-    private final SharedPreferences prefs;
+    private static final Object LOCK = new Object();
+    private static final Map<String, MediaCard> CACHE = new LinkedHashMap<>();
+    private static final ScheduledExecutorService WRITER = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "m00v13-catalog-writer");
+        t.setDaemon(true);
+        return t;
+    });
+    private static SharedPreferences sharedPrefs;
+    private static boolean loaded;
+    private static long generation;
+    private static ScheduledFuture<?> pendingWrite;
 
-    public CatalogStore(Context context) { prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE); }
+    public CatalogStore(Context context) {
+        synchronized (LOCK) {
+            if (sharedPrefs == null) {
+                sharedPrefs = context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+            }
+            ensureLoadedLocked();
+        }
+    }
 
-    public synchronized List<MediaCard> all() {
-        ArrayList<MediaCard> out = new ArrayList<>();
+    public List<MediaCard> all() {
+        synchronized (LOCK) {
+            ensureLoadedLocked();
+            return new ArrayList<>(CACHE.values());
+        }
+    }
+
+    public void upsert(MediaCard card) {
+        if (card == null || card.id == null || card.id.isEmpty()) return;
+        synchronized (LOCK) {
+            ensureLoadedLocked();
+            CACHE.put(card.id, card);
+            schedulePersistLocked();
+        }
+    }
+
+    public void upsertAll(Collection<MediaCard> cards) {
+        if (cards == null || cards.isEmpty()) return;
+        synchronized (LOCK) {
+            ensureLoadedLocked();
+            boolean changed = false;
+            for (MediaCard card : cards) {
+                if (card == null || card.id == null || card.id.isEmpty()) continue;
+                CACHE.put(card.id, card);
+                changed = true;
+            }
+            if (changed) schedulePersistLocked();
+        }
+    }
+
+    public MediaCard find(String id) {
+        if (id == null) return null;
+        synchronized (LOCK) {
+            ensureLoadedLocked();
+            return CACHE.get(id);
+        }
+    }
+
+    /** Force a durable snapshot when a caller explicitly needs it. */
+    public void flush() {
+        final List<MediaCard> snapshot;
+        synchronized (LOCK) {
+            ensureLoadedLocked();
+            generation++;
+            if (pendingWrite != null) pendingWrite.cancel(false);
+            pendingWrite = null;
+            snapshot = new ArrayList<>(CACHE.values());
+        }
+        persist(snapshot);
+    }
+
+    private static void ensureLoadedLocked() {
+        if (loaded || sharedPrefs == null) return;
+        loaded = true;
+        CACHE.clear();
         try {
-            JSONArray a = new JSONArray(prefs.getString(KEY, "[]"));
+            JSONArray a = new JSONArray(sharedPrefs.getString(KEY, "[]"));
             for (int i = 0; i < a.length(); i++) {
                 JSONObject o = a.getJSONObject(i);
-                out.add(new MediaCard(
+                MediaCard card = new MediaCard(
                     o.optString("id"), o.optString("title"), o.optString("subtitle"),
                     o.optBoolean("series"), o.optString("genre"), jsonStrings(o.optJSONArray("tags")),
                     emptyToNull(o.optString("artworkUrl")), emptyToNull(o.optString("streamUri")),
                     o.optLong("durationMs"), emptyToNull(o.optString("seriesKey")),
                     o.optInt("seasonNumber"), o.optInt("episodeNumber"),
-                    emptyToNull(o.optString("collectionKey")), o.optInt("collectionOrder")));
+                    emptyToNull(o.optString("collectionKey")), o.optInt("collectionOrder"));
+                if (card.id != null && !card.id.isEmpty()) CACHE.put(card.id, card);
             }
         } catch (JSONException ignored) {}
-        return out;
     }
 
-    public synchronized void upsert(MediaCard card) {
-        List<MediaCard> items = new ArrayList<>(all());
-        for (Iterator<MediaCard> it = items.iterator(); it.hasNext();) {
-            if (it.next().id.equals(card.id)) it.remove();
-        }
-        items.add(card);
-        save(items);
+    private static void schedulePersistLocked() {
+        final long myGeneration = ++generation;
+        if (pendingWrite != null) pendingWrite.cancel(false);
+        pendingWrite = WRITER.schedule(() -> {
+            final List<MediaCard> snapshot;
+            synchronized (LOCK) {
+                if (myGeneration != generation) return;
+                snapshot = new ArrayList<>(CACHE.values());
+                pendingWrite = null;
+            }
+            persist(snapshot);
+        }, 250, TimeUnit.MILLISECONDS);
     }
 
-    public MediaCard find(String id) {
-        for (MediaCard card : all()) if (card.id.equals(id)) return card;
-        return null;
-    }
-
-    private void save(List<MediaCard> items) {
+    private static void persist(List<MediaCard> items) {
+        SharedPreferences prefs;
+        synchronized (LOCK) { prefs = sharedPrefs; }
+        if (prefs == null) return;
         JSONArray a = new JSONArray();
         for (MediaCard c : items) {
             try {
