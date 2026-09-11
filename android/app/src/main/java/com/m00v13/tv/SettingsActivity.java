@@ -28,6 +28,8 @@ public final class SettingsActivity extends Activity {
         root.addView(TvUi.text(this,"M00V13 Settings",sp.mobile()?26:30,true));
 
         sub("Playback");
+        toggle("Smart one-click playback",prefs.smartOneClickPlayback(),v->prefs.setSmartOneClickPlayback(v));
+        TextView smart=TvUi.text(this,"Automatically chooses the highest-ranked compatible source; falls back to the source picker when needed.",14,false);smart.setTextColor(TvUi.MUTED);smart.setPadding(TvUi.dp(this,8),0,TvUi.dp(this,8),TvUi.dp(this,8));root.addView(smart);
         toggle("Automatic audio passthrough",prefs.automaticPassthrough(),v->prefs.setAutomaticPassthrough(v));
         action("Detect / test passthrough support",v->{String summary=AudioCapabilities.log(this);new AlertDialog.Builder(this).setTitle("Current audio output").setMessage(summary+"\n\nM00V13 uses Media3's platform audio sink. Encoded formats are passed through when the active Android output route reports direct support.").setPositiveButton("OK",null).show();});
         choice("Maximum video quality",new String[]{"4K","1080p","720p","480p"},prefs.maxQuality(),prefs::setMaxQuality);
