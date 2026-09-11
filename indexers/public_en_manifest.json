@@ -166,6 +166,16 @@
   "policy": "public + English + movie/TV + no explicit account login",
   "rejected": [
     {
+      "file": "0dayfiles-api.yml",
+      "id": "0dayfiles-api",
+      "language": "en-us",
+      "name": "0DayFiles (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
       "file": "0daykiev.yml",
       "id": "0daykiev",
       "language": "uk-ua",
@@ -659,18 +669,6 @@
         "not a public indexer type: private",
         "requires account/authentication",
         "no movie/TV capability"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "bigbbs.yml",
-      "id": "bigbbs",
-      "language": "pl-pl",
-      "name": "BigBBS",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: pl-pl",
-        "requires account/authentication"
       ],
       "type": "private"
     },
