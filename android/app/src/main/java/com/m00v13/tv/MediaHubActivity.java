@@ -566,19 +566,10 @@ public final class MediaHubActivity extends Activity {
 
     private void showFullDetails() {
         if (selected == null) return;
-        heroDescription.setMaxLines(8);
-        int token = heroToken;
-        MediaCard media = selected;
-        dataPool.submit(() -> {
-            String d = descriptions.get(media.id);
-            if (d == null || d.isEmpty()) {
-                try { d = new CinemetaClient().description(media); } catch (Exception ignored) {}
-            }
-            final String ready = d;
-            runOnUiThread(() -> {
-                if (!dead() && token == heroToken && selected == media && ready != null && !ready.isEmpty()) heroDescription.setText(ready);
-            });
-        });
+        Intent intent = new Intent(this, TitleDetailsActivity.class);
+        intent.putExtra(TitleDetailsActivity.EXTRA_MEDIA_ID, selected.id);
+        startActivity(intent);
+        overridePendingTransition(0, 0);
     }
 
     private void toggleWatchlist() {
