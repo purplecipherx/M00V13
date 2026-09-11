@@ -28,82 +28,60 @@ public final class MainActivity extends Activity {
     private final ExecutorService discoveryExecutor = Executors.newSingleThreadExecutor();
     private TextView heroTitle;
     private TextView heroMeta;
+    private ImageView heroArt;
+    private int heroToken=0;
 
     @Override protected void onCreate(Bundle state) {
-        super.onCreate(state);
-        profiles = new ProfileStore(this);
-        catalog = new CatalogStore(this);
-        discovery = new DiscoveryStore(this);
-        screen = ScreenProfile.detect(this);
-        DebugLog.boot(this);
-        DebugLog.append(this,"UI","Screen profile "+screen.kind+" "+screen.widthPx+"x"+screen.heightPx);
-        getWindow().getDecorView().setBackgroundColor(TvUi.BG);
-        setContentView(buildHome());
-        refreshDiscovery();
+        super.onCreate(state); TvUi.disableWindowAnimations(this);
+        profiles = new ProfileStore(this); catalog = new CatalogStore(this); discovery = new DiscoveryStore(this); screen = ScreenProfile.detect(this);
+        DebugLog.boot(this); DebugLog.append(this,"UI","Screen profile "+screen.kind+" "+screen.widthPx+"x"+screen.heightPx);
+        getWindow().getDecorView().setBackgroundColor(TvUi.BG); setContentView(buildHome()); refreshDiscovery();
     }
 
-    @Override protected void onResume() {
-        super.onResume();
-        if (profiles != null && catalog != null) { screen=ScreenProfile.detect(this); setContentView(buildHome()); }
-    }
-
+    @Override protected void onResume() { super.onResume(); if (profiles != null && catalog != null) { screen=ScreenProfile.detect(this); setContentView(buildHome()); } }
     @Override protected void onDestroy() { artworkExecutor.shutdownNow(); discoveryExecutor.shutdownNow(); super.onDestroy(); }
 
     private void refreshDiscovery(){
         if(discovery==null||!discovery.stale())return;
-        discoveryExecutor.submit(()->{
-            try{
-                discovery.refresh();
-                runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()){screen=ScreenProfile.detect(this);setContentView(buildHome());}});
-            }catch(Exception e){DebugLog.append(this,"DISCOVERY","Refresh failed: "+e.getMessage());}
-        });
+        discoveryExecutor.submit(()->{try{discovery.refresh();runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()){screen=ScreenProfile.detect(this);setContentView(buildHome());}});}catch(Exception e){DebugLog.append(this,"DISCOVERY","Refresh failed: "+e.getMessage());}});
     }
 
     private View buildHome() {
         ScrollView scroll = new ScrollView(this); scroll.setFillViewport(true); scroll.setVerticalScrollBarEnabled(false);
-        LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(screen.sidePaddingDp),dp(screen.mobile()?16:24),dp(screen.sidePaddingDp),dp(40)); root.setBackgroundColor(TvUi.BG); scroll.addView(root);
+        LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(screen.sidePaddingDp),dp(screen.mobile()?16:24),dp(screen.sidePaddingDp),dp(40)); root.setBackgroundColor(TvUi.BG); scroll.addView(root);
 
         LinearLayout top = new LinearLayout(this); top.setOrientation(LinearLayout.HORIZONTAL); top.setGravity(Gravity.CENTER_VERTICAL);
         ImageView logo = new ImageView(this); logo.setImageResource(R.drawable.ic_m00v13); logo.setScaleType(ImageView.ScaleType.FIT_CENTER); top.addView(logo,new LinearLayout.LayoutParams(dp(screen.mobile()?42:58),dp(screen.mobile()?42:58)));
-        TextView brand = TvUi.text(this,"M00V13",screen.mobile()?22:27,true); brand.setTextColor(TvUi.PURPLE);
-        LinearLayout.LayoutParams brandP=new LinearLayout.LayoutParams(0,dp(screen.mobile()?46:58),1f); brandP.setMarginStart(dp(12)); top.addView(brand,brandP);
+        TextView brand = TvUi.text(this,"M00V13",screen.mobile()?22:27,true); brand.setTextColor(TvUi.PURPLE); LinearLayout.LayoutParams brandP=new LinearLayout.LayoutParams(0,dp(screen.mobile()?46:58),1f); brandP.setMarginStart(dp(12)); top.addView(brand,brandP);
         addNav(top,"Home",null); addNav(top,"Movies",v->openBrowse(BrowseActivity.KIND_MOVIES)); addNav(top,"TV",v->openBrowse(BrowseActivity.KIND_TV)); addNav(top,"Search",v->startActivity(new Intent(this,SearchActivity.class)));
         if(!screen.mobile()) addNav(top,"Downloads",v->startActivity(new Intent(this,DownloadsActivity.class)));
-        addNav(top,"⚙",v->startActivity(new Intent(this,SettingsActivity.class))); root.addView(top);
+        addNav(top,"Support 💜",v->startActivity(new Intent(this,DonateActivity.class))); addNav(top,"Settings",v->startActivity(new Intent(this,SettingsActivity.class))); root.addView(top);
 
-        List<MediaCard> all=catalog.all();
-        List<MediaCard> continuing=continueWatching(all);
-        RecommendationEngine recommender=new RecommendationEngine();
-        List<MediaCard> recommended=recommender.rankOverall(all,profiles,16);
-        List<MediaCard> popularMovies=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.POPULAR_MOVIES);
-        List<MediaCard> popularTv=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.POPULAR_TV);
-        List<MediaCard> blockbusterMovies=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.BLOCKBUSTER_MOVIES);
-        List<MediaCard> blockbusterTv=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.BLOCKBUSTER_TV);
+        List<MediaCard> all=catalog.all(); List<MediaCard> continuing=continueWatching(all); RecommendationEngine recommender=new RecommendationEngine(); List<MediaCard> recommended=recommender.rankOverall(all,profiles,16);
+        List<MediaCard> popularMovies=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.POPULAR_MOVIES); List<MediaCard> popularTv=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.POPULAR_TV);
+        List<MediaCard> blockbusterMovies=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.BLOCKBUSTER_MOVIES); List<MediaCard> blockbusterTv=discovery==null?new ArrayList<>():discovery.get(DiscoveryStore.BLOCKBUSTER_TV);
         MediaCard hero=!continuing.isEmpty()?continuing.get(0):(!popularMovies.isEmpty()?popularMovies.get(0):(!recommended.isEmpty()?recommended.get(0):mostRecentlyTouched(all)));
         root.addView(buildHero(hero),new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,dp(screen.heroHeightDp)));
 
         if(!continuing.isEmpty()) addRow(root,"Continue Watching",continuing,"");
-        addRow(root,"Popular Movies",popularMovies,"Loading popular movies…");
-        addRow(root,"Popular TV",popularTv,"Loading popular TV…");
-        addRow(root,"Recommended Movies",filterRecommended(recommended,false),"Recommendations build from your profile");
-        addRow(root,"Recommended TV",filterRecommended(recommended,true),"Recommendations build from your profile");
-        addRow(root,"Blockbusters • Movies",blockbusterMovies,"Loading blockbuster movies…");
-        addRow(root,"Blockbusters • TV",blockbusterTv,"Loading blockbuster TV…");
+        addRow(root,"Popular Movies",popularMovies,"Loading popular movies…"); addRow(root,"Popular TV",popularTv,"Loading popular TV…");
+        addRow(root,"Recommended Movies",filterRecommended(recommended,false),"Recommendations build from your profile"); addRow(root,"Recommended TV",filterRecommended(recommended,true),"Recommendations build from your profile");
+        addRow(root,"Blockbusters • Movies",blockbusterMovies,"Loading blockbuster movies…"); addRow(root,"Blockbusters • TV",blockbusterTv,"Loading blockbuster TV…");
 
         LinearLayout footer=new LinearLayout(this); footer.setOrientation(LinearLayout.HORIZONTAL); footer.setGravity(Gravity.CENTER_VERTICAL); footer.setPadding(0,dp(20),0,0);
         TextView status=TvUi.text(this,storageSummary(),screen.mobile()?12:14,false); status.setTextColor(TvUi.MUTED); footer.addView(status,new LinearLayout.LayoutParams(0,dp(48),1f));
-        if(!screen.mobile()){ addFooterButton(footer,"Debrid",DebridActivity.class); addFooterButton(footer,"Support 💜",DonateActivity.class); }
-        addFooterButton(footer,profiles.activeProfile(),ProfileActivity.class); root.addView(footer); return scroll;
+        if(!screen.mobile()) addFooterButton(footer,"Debrid",DebridActivity.class); addFooterButton(footer,profiles.activeProfile(),ProfileActivity.class); root.addView(footer); return scroll;
     }
 
     private View buildHero(MediaCard hero) {
         LinearLayout panel=new LinearLayout(this); panel.setOrientation(LinearLayout.HORIZONTAL); panel.setGravity(Gravity.CENTER_VERTICAL); panel.setPadding(dp(screen.mobile()?18:30),dp(16),dp(screen.mobile()?18:30),dp(16)); panel.setBackgroundColor(TvUi.PANEL);
         LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,dp(screen.heroHeightDp)); pp.topMargin=dp(18); pp.bottomMargin=dp(12); panel.setLayoutParams(pp);
-        LinearLayout info=new LinearLayout(this); info.setOrientation(LinearLayout.VERTICAL); info.setGravity(Gravity.CENTER_VERTICAL); panel.addView(info,new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.MATCH_PARENT,1f));
+        LinearLayout info=new LinearLayout(this); info.setOrientation(LinearLayout.VERTICAL); info.setGravity(Gravity.CENTER_VERTICAL); panel.addView(info,new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.MATCH_PARENT,screen.mobile()?0.58f:0.48f));
         heroTitle=TvUi.text(this,hero==null?"What do you want to watch?":hero.title,screen.mobile()?26:34,true); info.addView(heroTitle);
         heroMeta=TvUi.text(this,hero==null?"Search • stream • download":heroDetail(hero),screen.mobile()?14:17,false); heroMeta.setTextColor(TvUi.MUTED); heroMeta.setPadding(0,dp(8),0,dp(16)); info.addView(heroMeta);
-        View action=TvUi.button(this,hero==null?"Search":"PLAY"); action.setOnClickListener(v->{if(hero==null)startActivity(new Intent(this,SearchActivity.class));else openMedia(hero);}); info.addView(action,new LinearLayout.LayoutParams(dp(screen.mobile()?140:180),dp(54))); return panel;
+        View action=TvUi.button(this,hero==null?"Search":"PLAY"); action.setOnClickListener(v->{if(hero==null)startActivity(new Intent(this,SearchActivity.class));else openMedia(hero);}); info.addView(action,new LinearLayout.LayoutParams(dp(screen.mobile()?140:180),dp(54)));
+        heroArt=new ImageView(this); heroArt.setScaleType(ImageView.ScaleType.CENTER_CROP); heroArt.setBackgroundColor(TvUi.CARD); LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.MATCH_PARENT,screen.mobile()?0.42f:0.52f); ap.setMarginStart(dp(18)); panel.addView(heroArt,ap); if(hero!=null)loadHero(hero);
+        return panel;
     }
 
     private void addNav(LinearLayout row,String label,View.OnClickListener click){ View b=TvUi.button(this,label); if(click!=null)b.setOnClickListener(click); LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,dp(screen.mobile()?44:48)); p.setMarginStart(dp(screen.mobile()?4:8)); row.addView(b,p); }
@@ -117,22 +95,23 @@ public final class MainActivity extends Activity {
     }
 
     private View poster(MediaCard item){
-        LinearLayout card=new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setFocusable(true); card.setClickable(true); card.setPadding(dp(4),dp(4),dp(4),dp(4)); card.setBackgroundColor(Color.TRANSPARENT);
+        LinearLayout card=new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL); card.setFocusable(true); card.setClickable(true); card.setPadding(dp(4),dp(4),dp(4),dp(4)); card.setBackground(TvUi.focusBackground(this,false,dp(7))); card.setStateListAnimator(null);
         ImageView art=new ImageView(this); art.setScaleType(ImageView.ScaleType.CENTER_CROP); art.setBackgroundColor(TvUi.CARD); card.addView(art,new LinearLayout.LayoutParams(dp(screen.posterWidthDp),dp(screen.posterHeightDp)));
         TextView title=TvUi.text(this,item.title,screen.mobile()?12:14,true); title.setSingleLine(true); title.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(title,new LinearLayout.LayoutParams(dp(screen.posterWidthDp),dp(32)));
-        card.setOnFocusChangeListener((v,focused)->{ title.setTextColor(focused?TvUi.BLUE:TvUi.WHITE); card.setBackgroundColor(focused?Color.rgb(43,34,55):Color.TRANSPARENT); card.animate().scaleX(focused?1.07f:1f).scaleY(focused?1.07f:1f).setDuration(100).start(); card.setElevation(dp(focused?12:0)); if(focused){showHero(item);if(new AppSettingsStore(this).clickSounds())card.playSoundEffect(android.view.SoundEffectConstants.CLICK);} });
+        card.setOnFocusChangeListener((v,focused)->{ card.animate().cancel();card.setScaleX(1f);card.setScaleY(1f);card.setElevation(0f);title.setTextColor(focused?TvUi.BLUE:TvUi.WHITE);card.setBackground(TvUi.focusBackground(this,focused,dp(7)));if(focused){showHero(item);if(new AppSettingsStore(this).clickSounds())card.playSoundEffect(android.view.SoundEffectConstants.CLICK);} });
         card.setOnClickListener(v->openMedia(item)); card.setOnLongClickListener(v->{profiles.setWatchlist(item.id,!profiles.isInWatchlist(item.id));return true;});
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(dp(screen.posterWidthDp+14),dp(screen.railHeightDp-4)); p.setMarginEnd(dp(10)); card.setLayoutParams(p); loadArtwork(art,item.artworkUrl); return card;
     }
 
     private void loadArtwork(ImageView image,String url){ if(url==null||url.trim().isEmpty())return; artworkExecutor.submit(()->{ try{ File f=new ArtworkCache(this).fetch(url,80,screen.artworkWidthPx); if(f==null)return; android.graphics.Bitmap bitmap=BitmapFactory.decodeFile(f.getAbsolutePath()); runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&bitmap!=null)image.setImageBitmap(bitmap);}); }catch(Exception e){DebugLog.append(this,"ART","Artwork failed: "+e.getMessage());} }); }
-    private void showHero(MediaCard item){if(heroTitle!=null)heroTitle.setText(item.title);if(heroMeta!=null)heroMeta.setText(heroDetail(item));}
+    private void loadHero(MediaCard item){if(heroArt==null||item.artworkUrl==null||item.artworkUrl.isEmpty())return;int token=++heroToken;artworkExecutor.submit(()->{try{File f=new ArtworkCache(this).fetch(item.artworkUrl,84,Math.min(screen.widthPx,1280));if(f==null)return;android.graphics.Bitmap b=BitmapFactory.decodeFile(f.getAbsolutePath());runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&b!=null&&token==heroToken&&heroArt!=null)heroArt.setImageBitmap(b);});}catch(Exception e){DebugLog.append(this,"ART","Hero art failed: "+e.getMessage());}});}
+    private void showHero(MediaCard item){if(heroTitle!=null)heroTitle.setText(item.title);if(heroMeta!=null)heroMeta.setText(heroDetail(item));if(heroArt!=null){heroArt.setImageDrawable(null);loadHero(item);}}
     private String heroDetail(MediaCard item){String type=item.series?"TV":"Movie";String sub=item.subtitle==null||item.subtitle.isEmpty()?"":" • "+item.subtitle;long p=profiles.progressMs(item.id),d=profiles.durationMs(item.id);String progress=p>0&&d>0?" • "+Math.min(99,p*100/d)+"% watched":"";return type+sub+progress;}
     private void openBrowse(String kind){Intent i=new Intent(this,BrowseActivity.class);i.putExtra(BrowseActivity.EXTRA_KIND,kind);startActivity(i);}
     private List<MediaCard> filterRecommended(List<MediaCard> in,boolean series){ArrayList<MediaCard> out=new ArrayList<>();for(MediaCard c:in)if(c.series==series)out.add(c);return out;}
     private List<MediaCard> continueWatching(List<MediaCard> all){ArrayList<MediaCard> out=new ArrayList<>();for(MediaCard c:all){long p=profiles.progressMs(c.id),d=profiles.durationMs(c.id);if(!profiles.isWatched(c.id)&&p>0&&d>0)out.add(c);}out.sort(Comparator.comparingLong((MediaCard c)->profiles.lastUpdatedMs(c.id)).reversed());return out;}
     private MediaCard mostRecentlyTouched(List<MediaCard> all){MediaCard best=null;long when=0;for(MediaCard c:all){long t=profiles.lastUpdatedMs(c.id);if(t>when){when=t;best=c;}}return best;}
-    private void openMedia(MediaCard item){List<SourceOption> sources=new SourceStore(this).getFresh(item.id);if(!sources.isEmpty()){Intent choose=new Intent(this,SourceSelectionActivity.class);choose.putExtra(SourceSelectionActivity.EXTRA_MEDIA_ID,item.id);choose.putExtra(SourceSelectionActivity.EXTRA_TITLE,item.title);startActivity(choose);return;}Intent search=new Intent(this,SearchActivity.class);startActivity(search);}
+    private void openMedia(MediaCard item){catalog.upsert(item);Intent open=new Intent(this,MediaOpenActivity.class);open.putExtra(MediaOpenActivity.EXTRA_MEDIA_ID,item.id);startActivity(open);}
     private String storageSummary(){long free=StoragePolicy.availableBytes(getFilesDir());String debrid=new DebridStore(this).isConnected()?"RD ✓":"RD off";String metadata=new MetadataStore(this).isConfigured()?"TMDB ✓":"Keyless metadata ✓";return debrid+" • "+metadata+" • Free "+(free/StoragePolicy.MIB)+" MiB";}
     private int dp(int value){return TvUi.dp(this,value);}
 }
