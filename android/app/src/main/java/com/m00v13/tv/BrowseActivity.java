@@ -2,7 +2,6 @@ package com.m00v13.tv;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -11,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,11 +24,12 @@ public final class BrowseActivity extends Activity {
     private static final int BG = Color.rgb(9, 5, 15);
     private final ExecutorService artExecutor=Executors.newFixedThreadPool(2);
     private ScreenProfile screen;
+    private ArtworkLoader artwork;
     private ImageView previewArt;
     private TextView previewTitle,previewMeta;
     private int previewToken=0;
 
-    @Override protected void onCreate(Bundle state) { super.onCreate(state); TvUi.disableWindowAnimations(this); screen=ScreenProfile.detect(this); String kind=getIntent().getStringExtra(EXTRA_KIND); setContentView(build(KIND_TV.equals(kind))); }
+    @Override protected void onCreate(Bundle state) { super.onCreate(state); TvUi.disableWindowAnimations(this); screen=ScreenProfile.detect(this); artwork=new ArtworkLoader(this); String kind=getIntent().getStringExtra(EXTRA_KIND); setContentView(build(KIND_TV.equals(kind))); }
     @Override protected void onDestroy(){artExecutor.shutdownNow();super.onDestroy();}
 
     private View build(boolean tv) {
@@ -57,7 +56,7 @@ public final class BrowseActivity extends Activity {
     }
 
     private void showPreview(MediaCard item){if(previewTitle==null)return;previewTitle.setText(item.title);String type=item.series?"TV":"Movie";String meta=type+(item.subtitle==null||item.subtitle.isEmpty()?"":" • "+item.subtitle)+(item.genre==null||item.genre.isEmpty()?"":"\n"+item.genre);previewMeta.setText(meta);previewArt.setImageDrawable(null);int token=++previewToken;loadArtwork(previewArt,item.artworkUrl,720,token);}
-    private void loadArtwork(ImageView target,String url,int width,int token){if(url==null||url.isEmpty())return;artExecutor.submit(()->{try{File f=new ArtworkCache(this).fetch(url,82,width);if(f==null)return;android.graphics.Bitmap b=BitmapFactory.decodeFile(f.getAbsolutePath());runOnUiThread(()->{if(!isFinishing()&&!isDestroyed()&&b!=null&&(token==0||token==previewToken))target.setImageBitmap(b);});}catch(Exception e){DebugLog.append(this,"ART","Browse art failed: "+e.getMessage());}});}
+    private void loadArtwork(ImageView target,String url,int width,int token){if(url==null||url.isEmpty())return;artwork.load(target,url,width,artExecutor);}
     private void open(MediaCard item){new CatalogStore(this).upsert(item);Intent i=new Intent(this,MediaOpenActivity.class);i.putExtra(MediaOpenActivity.EXTRA_MEDIA_ID,item.id);startActivity(i);}
     private int dp(int value) { return TvUi.dp(this,value); }
 }
