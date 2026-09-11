@@ -1,0 +1,170 @@
+package com.m00v13.tv;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.SoundEffectConstants;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/** Unified TV-first surface for Home, Movies and TV. No screen/focus animation. */
+public final class MediaHubActivity extends Activity {
+    public static final String EXTRA_MODE="mode";
+    public static final String MODE_HOME="home", MODE_MOVIES="movies", MODE_TV="tv";
+    private static final String[] GENRES={"Action","Comedy","Drama","Thriller","Sci-Fi","Horror","Animation","Documentary"};
+    private static final String PREFS="m00v13_hub_focus";
+    private static final int BG=Color.rgb(4,3,12), PANEL=Color.rgb(13,8,27), PURPLE=Color.rgb(180,78,255), BLUE=Color.rgb(44,157,255), WHITE=Color.rgb(247,245,250), MUTED=Color.rgb(190,181,202);
+
+    private ProfileStore profiles; private CatalogStore catalog; private DiscoveryStore discovery; private String mode;
+    private final ExecutorService artPool=Executors.newFixedThreadPool(3), dataPool=Executors.newFixedThreadPool(4);
+    private final Map<String,List<MediaCard>> genreData=new ConcurrentHashMap<>();
+    private final Map<String,String> descriptions=new ConcurrentHashMap<>();
+    private ImageView previewArt; private TextView previewTitle,previewMeta,previewDescription;
+    private int previewToken=0; private boolean genresLoading=false;
+
+    @Override protected void onCreate(Bundle state){
+        super.onCreate(state); TvUi.disableWindowAnimations(this);
+        profiles=new ProfileStore(this); catalog=new CatalogStore(this); discovery=new DiscoveryStore(this);
+        mode=getIntent().getStringExtra(EXTRA_MODE); if(!MODE_MOVIES.equals(mode)&&!MODE_TV.equals(mode))mode=MODE_HOME;
+        render();
+        if(discovery.stale()) dataPool.submit(()->{try{discovery.refresh();runOnUiThread(()->{if(!dead())render();});}catch(Exception e){DebugLog.append(this,"HUB","Discovery refresh: "+msg(e));}});
+        if(!MODE_HOME.equals(mode)) loadGenres();
+    }
+    @Override protected void onResume(){super.onResume();if(catalog!=null)render();}
+    @Override protected void onDestroy(){artPool.shutdownNow();dataPool.shutdownNow();super.onDestroy();}
+
+    private void render(){
+        int w=getResources().getDisplayMetrics().widthPixels,h=getResources().getDisplayMetrics().heightPixels;
+        FrameLayout root=new FrameLayout(this);root.setBackgroundColor(BG);
+        int topH=Math.max(dp(58),(int)(h*.075f));
+        LinearLayout top=topbar();root.addView(top,new FrameLayout.LayoutParams(-1,topH));
+        int previewW=w<1000?0:Math.max(dp(245),(int)(w*.20f));
+        if(previewW>0){View p=previewPane(previewW,h-topH);root.addView(p,new FrameLayout.LayoutParams(previewW,h-topH).apply(v->{}));((FrameLayout.LayoutParams)p.getLayoutParams()).topMargin=topH;}
+        ScrollView vertical=new ScrollView(this);vertical.setFillViewport(true);vertical.setVerticalScrollBarEnabled(false);
+        LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(22),dp(12),dp(22),dp(40));content.setBackgroundColor(BG);vertical.addView(content,new ScrollView.LayoutParams(-1,-2));
+        FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(w-previewW,h-topH);cp.leftMargin=previewW;cp.topMargin=topH;root.addView(vertical,cp);
+        List<Section> sections=sections();
+        if(sections.isEmpty()){content.addView(text("Loading catalog…",22,true));}
+        for(Section s:sections)addSection(content,s,w-previewW,h);
+        setContentView(root); restoreFocus(root);
+    }
+
+    private LinearLayout topbar(){
+        LinearLayout bar=new LinearLayout(this);bar.setOrientation(LinearLayout.HORIZONTAL);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(18),0,dp(14),0);bar.setBackgroundColor(Color.rgb(5,4,16));
+        TextView brand=text("M00V13",22,true);brand.setTextColor(PURPLE);bar.addView(brand,new LinearLayout.LayoutParams(0,-1,1f));
+        top(bar,"Home",MODE_HOME.equals(mode),()->switchMode(MODE_HOME));
+        top(bar,"Movies",MODE_MOVIES.equals(mode),()->switchMode(MODE_MOVIES));
+        top(bar,"TV Shows",MODE_TV.equals(mode),()->switchMode(MODE_TV));
+        top(bar,"⌕ Search",false,()->open(SearchActivity.class));
+        top(bar,"♡ My Lists",false,()->open(ProfileActivity.class));
+        top(bar,"↗ Real Debrid",false,()->open(DebridActivity.class));
+        top(bar,"◉ Providers",false,()->open(ProviderSettingsActivity.class));
+        top(bar,"⚙ Settings",false,()->open(SettingsActivity.class));
+        top(bar,"₿ Support",false,()->open(DonateActivity.class));
+        return bar;
+    }
+    private void top(LinearLayout p,String label,boolean active,Runnable action){
+        TextView v=text(label,13,active);v.setGravity(Gravity.CENTER);v.setFocusable(true);v.setClickable(true);v.setPadding(dp(10),0,dp(10),0);v.setTextColor(active?BLUE:Color.rgb(220,198,239));v.setBackground(active?outline(true,7):null);v.setStateListAnimator(null);
+        v.setOnFocusChangeListener((x,f)->{v.setTextColor((f||active)?BLUE:Color.rgb(220,198,239));v.setBackground((f||active)?outline(true,7):null);if(f&&new AppSettingsStore(this).clickSounds())v.playSoundEffect(SoundEffectConstants.CLICK);});
+        v.setOnClickListener(x->action.run());p.addView(v,new LinearLayout.LayoutParams(-2,-1));
+    }
+
+    private View previewPane(int w,int h){
+        LinearLayout p=new LinearLayout(this);p.setOrientation(LinearLayout.VERTICAL);p.setPadding(dp(14),dp(14),dp(14),dp(18));p.setBackgroundColor(Color.rgb(3,3,11));
+        previewArt=new ImageView(this);previewArt.setScaleType(ImageView.ScaleType.CENTER_CROP);previewArt.setBackgroundColor(PANEL);int artH=Math.min((int)(h*.54f),(int)(w*1.48f));p.addView(previewArt,new LinearLayout.LayoutParams(-1,artH));
+        previewTitle=text("Select a title",22,true);previewTitle.setPadding(0,dp(12),0,dp(4));p.addView(previewTitle);
+        previewMeta=text("",13,false);previewMeta.setTextColor(PURPLE);p.addView(previewMeta);
+        previewDescription=text("Move across a poster to preview it here.",14,false);previewDescription.setTextColor(MUTED);previewDescription.setMaxLines(7);previewDescription.setEllipsize(TextUtils.TruncateAt.END);previewDescription.setPadding(0,dp(9),0,0);p.addView(previewDescription,new LinearLayout.LayoutParams(-1,0,1f));
+        return p;
+    }
+
+    private List<Section> sections(){
+        ArrayList<Section> out=new ArrayList<>();List<MediaCard> all=catalog.all();
+        if(MODE_HOME.equals(mode)){
+            List<MediaCard> cont=new ArrayList<>();for(MediaCard c:all){long p=profiles.progressMs(c.id),d=profiles.durationMs(c.id);if(!profiles.isWatched(c.id)&&p>0&&d>0)cont.add(c);}cont.sort((a,b)->Long.compare(profiles.lastUpdatedMs(b.id),profiles.lastUpdatedMs(a.id)));
+            if(!cont.isEmpty())out.add(new Section("Continue Watching","continue",cont));
+            List<MediaCard> movies=nonEmpty(discovery.get(DiscoveryStore.POPULAR_MOVIES),filter(all,false));
+            List<MediaCard> tv=nonEmpty(discovery.get(DiscoveryStore.POPULAR_TV),filter(all,true));
+            out.add(new Section("Trending Movies","trending_movies",movies));out.add(new Section("Trending TV Shows","trending_tv",tv));
+            out.add(new Section("New Movies","new_movies",newest(movies)));out.add(new Section("New TV Shows","new_tv",newest(tv)));
+            out.add(new Section("Action Movies","action_movies",nonEmpty(discovery.get(DiscoveryStore.BLOCKBUSTER_MOVIES),movies)));
+            out.add(new Section("Action TV","action_tv",nonEmpty(discovery.get(DiscoveryStore.BLOCKBUSTER_TV),tv)));
+        }else{
+            boolean series=MODE_TV.equals(mode);List<MediaCard> base=filter(all,series);out.add(new Section(series?"Newest TV Shows":"Newest Movies","newest",newest(base)));
+            for(String g:GENRES){List<MediaCard> list=genreData.get(g);if(list==null||list.isEmpty())list=genreFilter(base,g);if(!list.isEmpty())out.add(new Section(g,g.toLowerCase(Locale.US).replace('-','_'),newest(list)));}
+        }
+        return out;
+    }
+
+    private void addSection(LinearLayout content,Section s,int bodyW,int screenH){
+        LinearLayout head=new LinearLayout(this);head.setOrientation(LinearLayout.HORIZONTAL);head.setGravity(Gravity.CENTER_VERTICAL);TextView title=text(s.title,20,true);head.addView(title,new LinearLayout.LayoutParams(0,dp(42),1f));
+        TextView see=text("See All  ›",13,true);see.setTextColor(PURPLE);see.setGravity(Gravity.CENTER);see.setFocusable(true);see.setClickable(true);see.setPadding(dp(12),0,dp(12),0);see.setOnFocusChangeListener((v,f)->{see.setTextColor(f?BLUE:PURPLE);see.setBackground(f?outline(true,7):null);});see.setOnClickListener(v->openGrid(s));head.addView(see,new LinearLayout.LayoutParams(dp(112),dp(38)));content.addView(head);
+        int cardH=Math.max(dp(190),Math.min(dp(270),(int)(screenH*.31f)));int cardW=(int)(cardH*.67f);
+        HorizontalScrollView hsv=new HorizontalScrollView(this);hsv.setHorizontalScrollBarEnabled(false);hsv.setFillViewport(false);LinearLayout rail=new LinearLayout(this);rail.setOrientation(LinearLayout.HORIZONTAL);
+        List<MediaCard> src=s.items;int repeat=src.size()>1?4:1;for(int r=0;r<repeat;r++)for(int i=0;i<src.size();i++){MediaCard m=src.get(i);View card=poster(m,s.key,i,cardW,cardH);LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(cardW,cardH);pp.rightMargin=dp(10);rail.addView(card,pp);}
+        hsv.addView(rail,new HorizontalScrollView.LayoutParams(-2,cardH));content.addView(hsv,new LinearLayout.LayoutParams(-1,cardH));Space(content,dp(15));
+    }
+
+    private View poster(MediaCard m,String section,int index,int w,int h){
+        FrameLayout c=new FrameLayout(this);c.setFocusable(true);c.setClickable(true);c.setStateListAnimator(null);c.setPadding(dp(3),dp(3),dp(3),dp(3));c.setBackground(outline(false,6));c.setTag("poster:"+section+":"+m.id);
+        ImageView im=new ImageView(this);im.setScaleType(ImageView.ScaleType.CENTER_CROP);im.setBackgroundColor(PANEL);c.addView(im,new FrameLayout.LayoutParams(-1,-1));loadArt(im,m.artworkUrl,w*2);
+        TextView name=text(m.title,12,true);name.setGravity(Gravity.BOTTOM);name.setMaxLines(2);name.setEllipsize(TextUtils.TruncateAt.END);name.setPadding(dp(7),0,dp(6),dp(7));name.setBackgroundColor(Color.argb(95,0,0,0));c.addView(name,new FrameLayout.LayoutParams(-1,(int)(h*.25f),Gravity.BOTTOM));
+        c.setOnFocusChangeListener((v,f)->{c.setBackground(outline(f,6));name.setTextColor(f?BLUE:WHITE);if(f){remember(section,m.id);showPreview(m);if(new AppSettingsStore(this).clickSounds())c.playSoundEffect(SoundEffectConstants.CLICK);}});c.setOnClickListener(v->openMedia(m));return c;
+    }
+
+    private void showPreview(MediaCard m){
+        if(previewTitle==null)return;previewTitle.setText(m.title);previewMeta.setText(detail(m));previewDescription.setText("Loading description…");previewArt.setImageDrawable(null);int token=++previewToken;loadArt(previewArt,m.artworkUrl,700);
+        String cached=descriptions.get(m.id);if(cached!=null){previewDescription.setText(cached);return;}
+        dataPool.submit(()->{String d;try{d=new CinemetaClient().description(m);}catch(Exception e){d="";}if(d==null||d.trim().isEmpty())d=detail(m);descriptions.put(m.id,d);final String text=d;runOnUiThread(()->{if(!dead()&&token==previewToken&&previewDescription!=null)previewDescription.setText(text);});});
+    }
+
+    private void openGrid(Section s){ArrayList<String> ids=new ArrayList<>();for(MediaCard c:s.items)ids.add(c.id);Intent i=new Intent(this,CatalogGridActivity.class);i.putExtra(CatalogGridActivity.EXTRA_TITLE,s.title);i.putStringArrayListExtra(CatalogGridActivity.EXTRA_IDS,ids);i.putExtra(CatalogGridActivity.EXTRA_FOCUS_KEY,mode+":"+s.key);startActivity(i);overridePendingTransition(0,0);}
+    private void openMedia(MediaCard m){remember("media",m.id);Intent i=new Intent(this,MediaOpenActivity.class);i.putExtra(MediaOpenActivity.EXTRA_MEDIA_ID,m.id);startActivity(i);overridePendingTransition(0,0);}
+    private void switchMode(String next){if(next.equals(mode))return;Intent i=new Intent(this,MediaHubActivity.class);i.putExtra(EXTRA_MODE,next);i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);startActivity(i);finish();overridePendingTransition(0,0);}
+    private void open(Class<?> c){startActivity(new Intent(this,c));overridePendingTransition(0,0);}
+
+    private void remember(String section,String id){getSharedPreferences(PREFS,MODE_PRIVATE).edit().putString("section."+mode,section).putString("id."+mode,id).apply();}
+    private void restoreFocus(View root){SharedPreferences p=getSharedPreferences(PREFS,MODE_PRIVATE);String section=p.getString("section."+mode,null),id=p.getString("id."+mode,null);if(section==null||id==null)return;String tag="poster:"+section+":"+id;root.post(()->{View v=findTag(root,tag);if(v!=null)v.requestFocus();});}
+    private View findTag(View v,String tag){if(tag.equals(v.getTag()))return v;if(v instanceof android.view.ViewGroup){android.view.ViewGroup g=(android.view.ViewGroup)v;for(int i=0;i<g.getChildCount();i++){View x=findTag(g.getChildAt(i),tag);if(x!=null)return x;}}return null;}
+
+    private void loadGenres(){if(genresLoading)return;genresLoading=true;AtomicInteger left=new AtomicInteger(GENRES.length);for(String genre:GENRES)dataPool.submit(()->{try{List<MediaCard> got=new CinemetaClient().genre(MODE_TV.equals(mode)?"series":"movie",genre);genreData.put(genre,got);for(MediaCard c:got)catalog.upsert(c);}catch(Exception e){DebugLog.append(this,"HUB","Genre "+genre+": "+msg(e));}finally{if(left.decrementAndGet()==0)runOnUiThread(()->{genresLoading=false;if(!dead())render();});}});}
+    private void loadArt(ImageView v,String url,int target){if(url==null||url.isEmpty())return;artPool.submit(()->{try{File f=new ArtworkCache(this).fetch(url,86,Math.min(target,getResources().getDisplayMetrics().widthPixels));if(f==null)return;Bitmap b=BitmapFactory.decodeFile(f.getAbsolutePath());runOnUiThread(()->{if(!dead()&&b!=null)v.setImageBitmap(b);});}catch(Exception ignored){}});}
+    private static List<MediaCard> filter(List<MediaCard> all,boolean series){ArrayList<MediaCard> o=new ArrayList<>();for(MediaCard c:all)if(c.series==series)o.add(c);return o;}
+    private static List<MediaCard> genreFilter(List<MediaCard> all,String g){ArrayList<MediaCard> o=new ArrayList<>();for(MediaCard c:all){if(c.genre.equalsIgnoreCase(g)){o.add(c);continue;}for(String t:c.tags)if(t.equalsIgnoreCase(g)){o.add(c);break;}}return o;}
+    private static List<MediaCard> newest(List<MediaCard> in){ArrayList<MediaCard> o=new ArrayList<>(in);o.sort((a,b)->Integer.compare(year(b),year(a)));return o;}
+    private static int year(MediaCard c){if(c.subtitle==null)return 0;java.util.regex.Matcher m=java.util.regex.Pattern.compile("(19|20)\\d{2}").matcher(c.subtitle);return m.find()?Integer.parseInt(m.group()):0;}
+    private static List<MediaCard> nonEmpty(List<MediaCard> a,List<MediaCard> b){return a!=null&&!a.isEmpty()?a:b;}
+    private String detail(MediaCard m){return (m.series?"TV Series":"Movie")+(m.subtitle==null||m.subtitle.isEmpty()?"":" • "+m.subtitle)+(m.genre.isEmpty()?"":" • "+m.genre);}
+    private TextView text(String s,int sp,boolean bold){TextView v=new TextView(this);v.setText(s);v.setTextColor(WHITE);v.setTextSize(sp);v.setGravity(Gravity.CENTER_VERTICAL);if(bold)v.setTypeface(Typeface.DEFAULT_BOLD);return v;}
+    private GradientDrawable outline(boolean f,int radius){GradientDrawable g=new GradientDrawable();g.setColor(PANEL);g.setCornerRadius(dp(radius));g.setStroke(dp(f?3:1),f?BLUE:Color.rgb(42,34,53));return g;}
+    private void Space(LinearLayout p,int h){p.addView(new View(this),new LinearLayout.LayoutParams(1,h));}
+    private int dp(int x){return TvUi.dp(this,x);}private boolean dead(){return isFinishing()||isDestroyed();}private static String msg(Throwable t){Throwable x=t;while(x.getCause()!=null)x=x.getCause();return x.getMessage()==null?x.getClass().getSimpleName():x.getMessage();}
+    private static final class Section{final String title,key;final List<MediaCard> items;Section(String t,String k,List<MediaCard> i){title=t;key=k;items=i==null?Collections.emptyList():i;}}
+}
