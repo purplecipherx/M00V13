@@ -32,7 +32,7 @@ public final class NativeProviderDefinition {
     public boolean isXml(){return "xml".equalsIgnoreCase(responseType);}
     public static List<NativeProviderDefinition> load(Context context){return load(context,0);}
     public static List<NativeProviderDefinition> load(Context context,int wantedTier){
-        ArrayList<NativeProviderDefinition> out=new ArrayList<>();
+        ArrayList<NativeProviderDefinition> out=new ArrayList<>(); AppSettingsStore settings=new AppSettingsStore(context);
         try(InputStream in=context.getAssets().open("cardigann_providers.json")){
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] b=new byte[8192];int n;while((n=in.read(b))>=0)bytes.write(b,0,n);
             JSONObject root=new JSONObject(new String(bytes.toByteArray(),StandardCharsets.UTF_8));JSONArray providers=root.optJSONArray("providers");
@@ -43,7 +43,7 @@ public final class NativeProviderDefinition {
                 boolean hasDirect=!d.rowMagnetSelector.isEmpty()||!d.rowInfoHashSelector.isEmpty();
                 boolean hasDetail=!d.detailMagnetSelector.isEmpty()||!d.detailInfoHashSelector.isEmpty();
                 boolean validMarkup=!d.isJson()&&!d.rowSelector.isEmpty()&&!d.titleSelector.isEmpty()&&(hasDirect||hasDetail);
-                if(!d.mirrors.isEmpty()&&!d.searchPath.isEmpty()&&(validJson||validMarkup)&&(wantedTier==0||d.tier==wantedTier))out.add(d);
+                if(!d.mirrors.isEmpty()&&!d.searchPath.isEmpty()&&(validJson||validMarkup)&&(wantedTier==0||d.tier==wantedTier)&&settings.providerEnabled(d.id,d.tier))out.add(d);
             }
         }catch(Exception ignored){}
         return Collections.unmodifiableList(out);
