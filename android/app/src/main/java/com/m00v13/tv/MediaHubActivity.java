@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,16 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Fast TV shell for Home, Movies and TV.
- *
- * Performance rules:
- *  - horizontal rails are RecyclerViews, so off-screen poster views do not exist;
- *  - one recycled-view pool is shared by every rail;
- *  - artwork is memory + disk cached and only requested for bound/visible cells;
- *  - focus continuity is kept in RAM while navigating and persisted only when leaving;
- *  - metadata descriptions are debounced so fast D-pad movement never floods the network.
- */
+/** Fast TV shell for Home, Movies and TV. Both axes recycle views. */
 public final class MediaHubActivity extends Activity {
     public static final String EXTRA_MODE = "mode";
     public static final String MODE_HOME = "home", MODE_MOVIES = "movies", MODE_TV = "tv";
@@ -68,6 +58,8 @@ public final class MediaHubActivity extends Activity {
     private CatalogStore catalog;
     private DiscoveryStore discovery;
     private ArtworkLoader artwork;
+    private DescriptionCacheStore descriptionCache;
+    private boolean clickSounds;
     private String mode;
     private ImageView previewArt;
     private TextView previewTitle;
@@ -77,6 +69,9 @@ public final class MediaHubActivity extends Activity {
     private boolean genresLoading;
     private String focusSection;
     private String focusMediaId;
+    private RecyclerView sectionList;
+    private SectionAdapter sectionAdapter;
+    private int screenHeight;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -85,23 +80,30 @@ public final class MediaHubActivity extends Activity {
         catalog = new CatalogStore(this);
         discovery = new DiscoveryStore(this);
         artwork = new ArtworkLoader(this);
+        descriptionCache = new DescriptionCacheStore(this);
+        clickSounds = new AppSettingsStore(this).clickSounds();
         mode = getIntent().getStringExtra(EXTRA_MODE);
         if (!MODE_MOVIES.equals(mode) && !MODE_TV.equals(mode)) mode = MODE_HOME;
         loadFocusMemory();
-        posterPool.setMaxRecycledViews(0, 18);
-        render();
+        posterPool.setMaxRecycledViews(0, 24);
+        renderShell();
 
         if (discovery.stale()) {
             dataPool.submit(() -> {
                 try {
                     discovery.refresh();
-                    runOnUiThread(() -> { if (!dead()) render(); });
+                    runOnUiThread(() -> { if (!dead()) refreshSections(); });
                 } catch (Exception e) {
                     DebugLog.append(this, "HUB", "Discovery " + msg(e));
                 }
             });
         }
         if (!MODE_HOME.equals(mode)) loadGenres();
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        clickSounds = new AppSettingsStore(this).clickSounds();
     }
 
     @Override protected void onPause() {
@@ -115,43 +117,49 @@ public final class MediaHubActivity extends Activity {
         super.onDestroy();
     }
 
-    private void render() {
+    private void renderShell() {
         int width = getResources().getDisplayMetrics().widthPixels;
-        int height = getResources().getDisplayMetrics().heightPixels;
-        int topH = Math.max(dp(58), (int) (height * .075f));
+        screenHeight = getResources().getDisplayMetrics().heightPixels;
+        int topH = Math.max(dp(58), (int) (screenHeight * .075f));
 
-        railAdapters.clear();
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(BG);
         root.addView(topbar(), new FrameLayout.LayoutParams(-1, topH));
 
         int previewW = width < 1000 ? 0 : Math.max(dp(245), (int) (width * .20f));
         if (previewW > 0) {
-            View pane = previewPane(previewW, height - topH);
-            FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(previewW, height - topH);
+            View pane = previewPane(previewW, screenHeight - topH);
+            FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(previewW, screenHeight - topH);
             p.topMargin = topH;
             root.addView(pane, p);
         }
 
-        ScrollView scroll = new ScrollView(this);
-        scroll.setFillViewport(true);
-        scroll.setVerticalScrollBarEnabled(false);
-        scroll.setSmoothScrollingEnabled(false);
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(22), dp(12), dp(22), dp(40));
-        content.setBackgroundColor(BG);
-        scroll.addView(content, new ScrollView.LayoutParams(-1, -2));
-        FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(width - previewW, height - topH);
+        sectionList = new RecyclerView(this);
+        sectionList.setBackgroundColor(BG);
+        sectionList.setHasFixedSize(false);
+        sectionList.setItemAnimator(null);
+        sectionList.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        sectionList.setVerticalScrollBarEnabled(false);
+        sectionList.setItemViewCacheSize(2);
+        LinearLayoutManager vertical = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
+        vertical.setInitialPrefetchItemCount(1);
+        sectionList.setLayoutManager(vertical);
+        sectionAdapter = new SectionAdapter(sections(), screenHeight);
+        sectionList.setAdapter(sectionAdapter);
+
+        FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(width - previewW, screenHeight - topH);
         cp.leftMargin = previewW;
         cp.topMargin = topH;
-        root.addView(scroll, cp);
-
-        List<Section> sections = sections();
-        if (sections.isEmpty()) content.addView(text("Loading catalog…", 22, true));
-        for (Section section : sections) addSection(content, section, height);
+        root.addView(sectionList, cp);
 
         setContentView(root);
+        restoreFocus();
+    }
+
+    private void refreshSections() {
+        if (sectionAdapter == null) return;
+        railAdapters.clear();
+        sectionAdapter.setSections(sections());
         restoreFocus();
     }
 
@@ -232,14 +240,18 @@ public final class MediaHubActivity extends Activity {
 
             List<MediaCard> movies = nonEmpty(discovery.get(DiscoveryStore.POPULAR_MOVIES), filter(all, false));
             List<MediaCard> tv = nonEmpty(discovery.get(DiscoveryStore.POPULAR_TV), filter(all, true));
-            out.add(new Section("Trending Movies", "trending_movies", movies));
-            out.add(new Section("Trending TV Shows", "trending_tv", tv));
-            out.add(new Section("New Movies", "new_movies", newest(movies)));
-            out.add(new Section("New TV Shows", "new_tv", newest(tv)));
+            if (!movies.isEmpty()) {
+                out.add(new Section("Trending Movies", "trending_movies", movies));
+                out.add(new Section("New Movies", "new_movies", newest(movies)));
+            }
+            if (!tv.isEmpty()) {
+                out.add(new Section("Trending TV Shows", "trending_tv", tv));
+                out.add(new Section("New TV Shows", "new_tv", newest(tv)));
+            }
         } else {
             boolean series = MODE_TV.equals(mode);
             List<MediaCard> base = filter(all, series);
-            out.add(new Section(series ? "Newest TV Shows" : "Newest Movies", "newest", newest(base)));
+            if (!base.isEmpty()) out.add(new Section(series ? "Newest TV Shows" : "Newest Movies", "newest", newest(base)));
             for (String genre : GENRES) {
                 List<MediaCard> list = genreData.get(genre);
                 if (list == null || list.isEmpty()) list = genreFilter(base, genre);
@@ -250,43 +262,99 @@ public final class MediaHubActivity extends Activity {
         return out;
     }
 
-    private void addSection(LinearLayout root, Section section, int screenHeight) {
-        if (section.items.isEmpty()) return;
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        header.addView(text(section.title, 20, true), new LinearLayout.LayoutParams(0, dp(42), 1f));
-        TextView seeAll = text("See All  ›", 13, true);
-        seeAll.setTextColor(PURPLE);
-        seeAll.setGravity(Gravity.CENTER);
-        seeAll.setFocusable(true);
-        seeAll.setClickable(true);
-        seeAll.setPadding(dp(10), 0, dp(10), 0);
-        seeAll.setOnFocusChangeListener((v, focused) -> {
-            seeAll.setTextColor(focused ? BLUE : PURPLE);
-            seeAll.setBackground(focused ? outline(true, 7) : null);
-        });
-        seeAll.setOnClickListener(v -> openGrid(section));
-        header.addView(seeAll, new LinearLayout.LayoutParams(dp(110), dp(38)));
-        root.addView(header);
+    private final class SectionAdapter extends RecyclerView.Adapter<SectionHolder> {
+        private List<Section> sections;
+        private final int height;
 
-        int cardH = Math.max(dp(190), Math.min(dp(270), (int) (screenHeight * .31f)));
-        int cardW = (int) (cardH * .67f);
-        RecyclerView rail = new RecyclerView(this);
-        rail.setHasFixedSize(true);
-        rail.setItemAnimator(null);
-        rail.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        rail.setHorizontalScrollBarEnabled(false);
-        rail.setItemViewCacheSize(4);
-        rail.setRecycledViewPool(posterPool);
-        LinearLayoutManager manager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
-        manager.setInitialPrefetchItemCount(2);
-        rail.setLayoutManager(manager);
-        RailAdapter adapter = new RailAdapter(section, cardW, cardH);
-        rail.setAdapter(adapter);
-        railAdapters.put(section.key, adapter);
-        root.addView(rail, new LinearLayout.LayoutParams(-1, cardH));
-        root.addView(new View(this), new LinearLayout.LayoutParams(1, dp(15)));
+        SectionAdapter(List<Section> sections, int height) {
+            this.sections = sections == null ? Collections.emptyList() : sections;
+            this.height = height;
+            setHasStableIds(true);
+        }
+
+        void setSections(List<Section> next) {
+            sections = next == null ? Collections.emptyList() : next;
+            notifyDataSetChanged();
+        }
+
+        int indexOf(String key) {
+            if (key == null) return -1;
+            for (int i = 0; i < sections.size(); i++) if (key.equals(sections.get(i).key)) return i;
+            return -1;
+        }
+
+        @Override public long getItemId(int position) { return sections.get(position).key.hashCode(); }
+
+        @Override public SectionHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LinearLayout row = new LinearLayout(MediaHubActivity.this);
+            row.setOrientation(LinearLayout.VERTICAL);
+            row.setPadding(dp(22), dp(8), dp(22), dp(7));
+            row.setBackgroundColor(BG);
+
+            LinearLayout header = new LinearLayout(MediaHubActivity.this);
+            header.setOrientation(LinearLayout.HORIZONTAL);
+            header.setGravity(Gravity.CENTER_VERTICAL);
+            TextView title = text("", 20, true);
+            header.addView(title, new LinearLayout.LayoutParams(0, dp(42), 1f));
+            TextView seeAll = text("See All  ›", 13, true);
+            seeAll.setTextColor(PURPLE);
+            seeAll.setGravity(Gravity.CENTER);
+            seeAll.setFocusable(true);
+            seeAll.setClickable(true);
+            seeAll.setPadding(dp(10), 0, dp(10), 0);
+            header.addView(seeAll, new LinearLayout.LayoutParams(dp(110), dp(38)));
+            row.addView(header, new LinearLayout.LayoutParams(-1, dp(42)));
+
+            RecyclerView rail = new RecyclerView(MediaHubActivity.this);
+            rail.setHasFixedSize(true);
+            rail.setItemAnimator(null);
+            rail.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            rail.setHorizontalScrollBarEnabled(false);
+            rail.setItemViewCacheSize(4);
+            rail.setRecycledViewPool(posterPool);
+            LinearLayoutManager manager = new LinearLayoutManager(MediaHubActivity.this, RecyclerView.HORIZONTAL, false);
+            manager.setInitialPrefetchItemCount(2);
+            rail.setLayoutManager(manager);
+            int cardH = Math.max(dp(190), Math.min(dp(270), (int) (height * .31f)));
+            row.addView(rail, new LinearLayout.LayoutParams(-1, cardH));
+            return new SectionHolder(row, title, seeAll, rail, cardH);
+        }
+
+        @Override public void onBindViewHolder(SectionHolder holder, int position) {
+            Section section = sections.get(position);
+            holder.title.setText(section.title);
+            holder.seeAll.setOnFocusChangeListener((v, focused) -> {
+                holder.seeAll.setTextColor(focused ? BLUE : PURPLE);
+                holder.seeAll.setBackground(focused ? outline(true, 7) : null);
+            });
+            holder.seeAll.setOnClickListener(v -> openGrid(section));
+            int cardW = (int) (holder.cardH * .67f);
+            RailAdapter adapter = new RailAdapter(section, cardW, holder.cardH);
+            holder.rail.setAdapter(adapter);
+            railAdapters.put(section.key, adapter);
+        }
+
+        @Override public void onViewRecycled(SectionHolder holder) {
+            RecyclerView.Adapter<?> a = holder.rail.getAdapter();
+            if (a instanceof RailAdapter) {
+                RailAdapter ra = (RailAdapter) a;
+                RailAdapter mapped = railAdapters.get(ra.section.key);
+                if (mapped == ra) railAdapters.remove(ra.section.key);
+            }
+            holder.rail.setAdapter(null);
+            super.onViewRecycled(holder);
+        }
+
+        @Override public int getItemCount() { return sections.size(); }
+    }
+
+    private static final class SectionHolder extends RecyclerView.ViewHolder {
+        final TextView title, seeAll;
+        final RecyclerView rail;
+        final int cardH;
+        SectionHolder(View item, TextView title, TextView seeAll, RecyclerView rail, int cardH) {
+            super(item); this.title = title; this.seeAll = seeAll; this.rail = rail; this.cardH = cardH;
+        }
     }
 
     private final class RailAdapter extends RecyclerView.Adapter<PosterHolder> {
@@ -302,9 +370,7 @@ public final class MediaHubActivity extends Activity {
             setHasStableIds(true);
         }
 
-        @Override public long getItemId(int position) {
-            return section.items.get(position).id.hashCode();
-        }
+        @Override public long getItemId(int position) { return section.items.get(position).id.hashCode(); }
 
         @Override public PosterHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             FrameLayout card = new FrameLayout(MediaHubActivity.this);
@@ -347,8 +413,7 @@ public final class MediaHubActivity extends Activity {
                 if (focused) {
                     rememberInMemory(section.key, media.id);
                     showPreview(media);
-                    if (new AppSettingsStore(MediaHubActivity.this).clickSounds())
-                        holder.card.playSoundEffect(SoundEffectConstants.CLICK);
+                    if (clickSounds) holder.card.playSoundEffect(SoundEffectConstants.CLICK);
                 }
             });
             holder.card.setOnClickListener(v -> openMedia(media));
@@ -357,30 +422,22 @@ public final class MediaHubActivity extends Activity {
                 int current = holder.getBindingAdapterPosition();
                 if (current == RecyclerView.NO_POSITION) return false;
                 if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && current == 0) {
-                    focusPosition(section.items.size() - 1);
-                    return true;
+                    focusPosition(section.items.size() - 1); return true;
                 }
                 if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && current == section.items.size() - 1) {
-                    focusPosition(0);
-                    return true;
+                    focusPosition(0); return true;
                 }
                 return false;
             });
         }
 
         @Override public int getItemCount() { return section.items.size(); }
-
-        @Override public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-            recycler = recyclerView;
-        }
+        @Override public void onAttachedToRecyclerView(RecyclerView recyclerView) { recycler = recyclerView; }
 
         void focusId(String id) {
             if (id == null || recycler == null) return;
             for (int i = 0; i < section.items.size(); i++) {
-                if (id.equals(section.items.get(i).id)) {
-                    focusPosition(i);
-                    return;
-                }
+                if (id.equals(section.items.get(i).id)) { focusPosition(i); return; }
             }
         }
 
@@ -399,10 +456,7 @@ public final class MediaHubActivity extends Activity {
         final ImageView image;
         final TextView name;
         PosterHolder(FrameLayout card, ImageView image, TextView name) {
-            super(card);
-            this.card = card;
-            this.image = image;
-            this.name = name;
+            super(card); this.card = card; this.image = image; this.name = name;
         }
     }
 
@@ -415,6 +469,10 @@ public final class MediaHubActivity extends Activity {
 
         int token = ++previewToken;
         String cached = descriptions.get(media.id);
+        if (cached == null) {
+            cached = descriptionCache.get(media.id);
+            if (cached != null) descriptions.put(media.id, cached);
+        }
         if (cached != null) {
             previewDescription.setText(cached);
             return;
@@ -427,6 +485,7 @@ public final class MediaHubActivity extends Activity {
                 catch (Exception e) { description = ""; }
                 if (description == null || description.trim().isEmpty()) description = detail(media);
                 descriptions.put(media.id, description);
+                descriptionCache.put(media.id, description);
                 final String result = description;
                 runOnUiThread(() -> {
                     if (!dead() && token == previewToken) previewDescription.setText(result);
@@ -475,10 +534,7 @@ public final class MediaHubActivity extends Activity {
         focusMediaId = prefs.getString("id." + mode, null);
     }
 
-    private void rememberInMemory(String section, String id) {
-        focusSection = section;
-        focusMediaId = id;
-    }
+    private void rememberInMemory(String section, String id) { focusSection = section; focusMediaId = id; }
 
     private void persistFocusMemory() {
         if (focusSection == null || focusMediaId == null) return;
@@ -489,12 +545,21 @@ public final class MediaHubActivity extends Activity {
     }
 
     private void restoreFocus() {
-        if (focusSection == null || focusMediaId == null) return;
-        RailAdapter adapter = railAdapters.get(focusSection);
-        if (adapter != null) {
-            String id = focusMediaId;
-            previewDescription.postDelayed(() -> adapter.focusId(id), 40);
-        }
+        if (focusSection == null || focusMediaId == null || sectionList == null || sectionAdapter == null) return;
+        int row = sectionAdapter.indexOf(focusSection);
+        if (row < 0) return;
+        String sectionKey = focusSection;
+        String mediaId = focusMediaId;
+        sectionList.scrollToPosition(row);
+        sectionList.post(() -> {
+            RecyclerView.ViewHolder holder = sectionList.findViewHolderForAdapterPosition(row);
+            if (holder == null) {
+                sectionList.postDelayed(() -> restoreFocus(), 35);
+                return;
+            }
+            RailAdapter adapter = railAdapters.get(sectionKey);
+            if (adapter != null) adapter.focusId(mediaId);
+        });
     }
 
     private void loadGenres() {
@@ -513,7 +578,7 @@ public final class MediaHubActivity extends Activity {
                     if (left.decrementAndGet() == 0) {
                         runOnUiThread(() -> {
                             genresLoading = false;
-                            if (!dead()) render();
+                            if (!dead()) refreshSections();
                         });
                     }
                 }
@@ -530,15 +595,9 @@ public final class MediaHubActivity extends Activity {
     private static List<MediaCard> genreFilter(List<MediaCard> all, String genre) {
         ArrayList<MediaCard> out = new ArrayList<>();
         for (MediaCard card : all) {
-            if (card.genre.equalsIgnoreCase(genre)) {
-                out.add(card);
-                continue;
-            }
+            if (card.genre.equalsIgnoreCase(genre)) { out.add(card); continue; }
             for (String tag : card.tags) {
-                if (tag.equalsIgnoreCase(genre)) {
-                    out.add(card);
-                    break;
-                }
+                if (tag.equalsIgnoreCase(genre)) { out.add(card); break; }
             }
         }
         return out;
