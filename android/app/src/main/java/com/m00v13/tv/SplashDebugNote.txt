@@ -1,0 +1,1 @@
+Temporary note: black startup screen reproduced as a five-second empty splash while the launcher delay completed. Startup should not impose a fixed five-second delay after this point.
