@@ -7,22 +7,16 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-/** Branded five-second startup screen that uses the same artwork as all blocking loads. */
+/** Branded five-second startup screen. Keep startup deliberately simple and crash-resistant. */
 public final class StartupActivity extends Activity {
     private static final int RC = 7001;
     private static final long SPLASH_MS = 5000L;
     private final Handler main = new Handler(Looper.getMainLooper());
-    private final ExecutorService prewarm = Executors.newSingleThreadExecutor();
-    private long splashStarted;
     private boolean splashDone;
 
     @Override protected void onCreate(Bundle state) {
@@ -31,22 +25,7 @@ public final class StartupActivity extends Activity {
         getWindow().setStatusBarColor(Color.BLACK);
         getWindow().setNavigationBarColor(Color.BLACK);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        splashStarted = SystemClock.elapsedRealtime();
         setContentView(splashView());
-
-        // Spend the splash time parsing local stores so Home has less work on first frame.
-        prewarm.submit(() -> {
-            try {
-                CatalogStore c = new CatalogStore(this);
-                c.all();
-                DiscoveryStore d = new DiscoveryStore(this);
-                d.get(DiscoveryStore.POPULAR_MOVIES);
-                d.get(DiscoveryStore.POPULAR_TV);
-            } catch (Throwable t) {
-                DebugLog.append(this, "STARTUP", "Prewarm: " + t.getClass().getSimpleName());
-            }
-        });
-
         main.postDelayed(this::finishSplash, SPLASH_MS);
     }
 
@@ -54,9 +33,15 @@ public final class StartupActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.BLACK);
         ImageView image = new ImageView(this);
-        image.setImageResource(R.drawable.m00v13_loading);
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image.setBackgroundColor(Color.BLACK);
+        try {
+            image.setImageResource(R.drawable.m00v13_loading);
+        } catch (Throwable t) {
+            DebugLog.append(this, "STARTUP", "Splash artwork fallback: " + t.getClass().getSimpleName());
+            image.setImageResource(R.drawable.loading_cow_hd);
+            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        }
         root.addView(image, new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         return root;
@@ -74,7 +59,9 @@ public final class StartupActivity extends Activity {
                 .setPositiveButton("Continue", (d, w) -> {
                     getSharedPreferences("m00v13_startup", MODE_PRIVATE).edit()
                         .putBoolean("permissions_explained", true).apply();
-                    requestPermissions(PermissionManager.runtimePermissions(), RC);
+                    String[] permissions = PermissionManager.runtimePermissions();
+                    if (permissions == null || permissions.length == 0) launch();
+                    else requestPermissions(permissions, RC);
                 })
                 .setNegativeButton("Not now", (d, w) -> {
                     getSharedPreferences("m00v13_startup", MODE_PRIVATE).edit()
@@ -94,18 +81,23 @@ public final class StartupActivity extends Activity {
     }
 
     private void launch() {
-        if (isFinishing()) return;
-        Intent i = new Intent(this, MediaHubActivity.class);
-        i.putExtra(MediaHubActivity.EXTRA_MODE, MediaHubActivity.MODE_HOME);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
+        if (isFinishing() || isDestroyed()) return;
+        try {
+            Intent i = new Intent(this, MediaHubActivity.class);
+            i.putExtra(MediaHubActivity.EXTRA_MODE, MediaHubActivity.MODE_HOME);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+            finish();
+            overridePendingTransition(0, 0);
+        } catch (Throwable t) {
+            DebugLog.append(this, "STARTUP", "Launch failed: " + t.getClass().getSimpleName() + ": " + String.valueOf(t.getMessage()));
+            // Keep the splash alive instead of silently terminating so diagnostics remain possible.
+            splashDone = false;
+        }
     }
 
     @Override protected void onDestroy() {
         main.removeCallbacksAndMessages(null);
-        prewarm.shutdownNow();
         super.onDestroy();
     }
 }
