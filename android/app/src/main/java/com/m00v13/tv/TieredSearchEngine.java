@@ -8,12 +8,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /** Tier 1 -> Tier 2 -> Tier 3 waterfall optimized for fast first usable result. */
 public final class TieredSearchEngine {
     private static final int MIN_USABLE = 5;
     private static final int MIN_WITHOUT_DEBRID = 8;
     private static final int MAX_CACHE_PROBES = 1;
+    private static final int FAST_CACHE_PROBE_BUDGET_MS = 800;
     private static final int MAX_RETURNED = 40;
     private final Context context;
 
@@ -41,12 +47,25 @@ public final class TieredSearchEngine {
         collected = rank(filterBySettings(dedupe(collected), settings));
 
         if (debridConnected && !collected.isEmpty()) {
+            // Cache probing is useful for smart one-click, but it must never hold the source
+            // picker hostage behind a slow Real-Debrid request. Give the best-candidate probe
+            // a very small latency budget; on timeout we return the ranked sources immediately.
+            final ArrayList<SourceOption> probeInput = new ArrayList<>(collected);
+            ExecutorService probeExecutor = Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "m00v13-rd-fast-probe");
+                t.setDaemon(true);
+                return t;
+            });
+            Future<List<SourceOption>> probe = probeExecutor.submit(() -> new RealDebridClient(context).probeCache(probeInput, MAX_CACHE_PROBES));
             try {
-                // One best-candidate probe preserves smart one-click when possible without
-                // making the user wait on a batch of Real-Debrid torrent API round trips.
-                collected = new ArrayList<>(new RealDebridClient(context).probeCache(collected, MAX_CACHE_PROBES));
+                collected = new ArrayList<>(probe.get(FAST_CACHE_PROBE_BUDGET_MS, TimeUnit.MILLISECONDS));
+            } catch (TimeoutException e) {
+                probe.cancel(true);
+                DebugLog.append(context, "SEARCH", "debrid cache probe cutoff after " + FAST_CACHE_PROBE_BUDGET_MS + "ms");
             } catch (Exception e) {
                 errors.add("debrid cache probe: " + shortMessage(e));
+            } finally {
+                probeExecutor.shutdownNow();
             }
         }
 
