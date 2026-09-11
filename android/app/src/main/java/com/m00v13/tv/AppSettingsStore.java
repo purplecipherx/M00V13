@@ -26,7 +26,7 @@ public final class AppSettingsStore {
     public int maxDownloadGiB(){
         if(p.contains("max_download_gib")) return Math.max(0,p.getInt("max_download_gib",0));
         long free=StoragePolicy.availableBytes(context.getFilesDir());
-        long usable=Math.max(0L,free-StoragePolicy.PROTECTED_SYSTEM_RESERVE_BYTES-256L*StoragePolicy.MIB);
+        long usable=Math.max(0L,free-StoragePolicy.SYSTEM_RESERVE_BYTES-StoragePolicy.DOWNLOAD_HEADROOM_BYTES);
         return (int)Math.max(1L,usable/(1024L*StoragePolicy.MIB));
     }
     public void setMaxDownloadGiB(int v){ p.edit().putInt("max_download_gib",Math.max(0,v)).apply(); }
