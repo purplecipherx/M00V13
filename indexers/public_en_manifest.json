@@ -2183,22 +2183,10 @@
       "type": "private"
     },
     {
-      "file": "hdforever.yml",
-      "id": "hdforever",
+      "file": "hdforever-api.yml",
+      "id": "hdforever-api",
       "language": "fr-fr",
-      "name": "HD-Forever",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: fr-fr",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "hdforever2fa.yml",
-      "id": "hdforever2fa",
-      "language": "fr-fr",
-      "name": "HD-Forever2FA",
+      "name": "HD-Forever API",
       "reasons": [
         "not a public indexer type: private",
         "not English: fr-fr",
@@ -6191,6 +6179,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 525,
+  "rejected_count": 524,
   "source": "Prowlarr/Indexers definitions/v11"
 }
