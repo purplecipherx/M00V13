@@ -2186,7 +2186,7 @@
       "file": "hdforever-api.yml",
       "id": "hdforever-api",
       "language": "fr-fr",
-      "name": "HD-Forever API",
+      "name": "HD-Forever (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: fr-fr",
