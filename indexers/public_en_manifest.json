@@ -6111,12 +6111,13 @@
       "type": "private"
     },
     {
-      "file": "zamundarip.yml",
-      "id": "zamundarip",
+      "file": "zamundalife.yml",
+      "id": "zamundalife",
       "language": "bg-bg",
-      "name": "Zamunda RIP",
+      "name": "Zamunda LIFE",
       "reasons": [
-        "not English: bg-bg"
+        "not English: bg-bg",
+        "no movie/TV capability"
       ],
       "type": "public"
     },
