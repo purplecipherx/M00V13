@@ -1606,18 +1606,6 @@
       "type": "public"
     },
     {
-      "file": "ebooks-shares.yml",
-      "id": "ebooks-shares",
-      "language": "en-us",
-      "name": "Ebooks-Shares",
-      "reasons": [
-        "not a public indexer type: private",
-        "requires account/authentication",
-        "no movie/TV capability"
-      ],
-      "type": "private"
-    },
-    {
       "file": "electro-torrent.yml",
       "id": "electro-torrent",
       "language": "pl-pl",
@@ -6180,6 +6168,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 524,
+  "rejected_count": 523,
   "source": "Prowlarr/Indexers definitions/v11"
 }
