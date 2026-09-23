@@ -382,6 +382,18 @@
       "type": "private"
     },
     {
+      "file": "alingpt-api.yml",
+      "id": "alingpt-api",
+      "language": "zh-cn",
+      "name": "alingPT (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "amigosshare.yml",
       "id": "amigosshare",
       "language": "pt-br",
@@ -548,6 +560,18 @@
       "name": "AsianDVDClub",
       "reasons": [
         "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "astratorrent.yml",
+      "id": "astratorrent",
+      "language": "fr-fr",
+      "name": "AstraTorrent",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: fr-fr",
         "requires account/authentication"
       ],
       "type": "private"
@@ -1393,6 +1417,18 @@
       "id": "daxiangjiao",
       "language": "zh-cn",
       "name": "DaXiangJiao (\u5927\u9999\u8549)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "daxiangjiao-api.yml",
+      "id": "daxiangjiao-api",
+      "language": "zh-cn",
+      "name": "DaXiangJiao (\u5927\u9999\u8549) (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -2758,6 +2794,18 @@
       "type": "private"
     },
     {
+      "file": "kufei-api.yml",
+      "id": "kufei-api",
+      "language": "zh-cn",
+      "name": "Kufei (\u5e93\u975e) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "kufirc.yml",
       "id": "kufirc",
       "language": "hu-hu",
@@ -3718,6 +3766,18 @@
       "type": "private"
     },
     {
+      "file": "oshenpt-api.yml",
+      "id": "oshenpt-api",
+      "language": "zh-cn",
+      "name": "OshenPT (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "ourbits.yml",
       "id": "ourbits",
       "language": "zh-cn",
@@ -4192,6 +4252,18 @@
       "id": "ptskit",
       "language": "zh-cn",
       "name": "PTSKIT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptskit-api.yml",
+      "id": "ptskit-api",
+      "language": "zh-cn",
+      "name": "PTSKIT (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -4820,6 +4892,18 @@
       "id": "soulvoice",
       "language": "zh-cn",
       "name": "SoulVoice (\u8046\u97f3Club)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "soulvoice-api.yml",
+      "id": "soulvoice-api",
+      "language": "zh-cn",
+      "name": "SoulVoice (\u8046\u97f3Club) (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -5713,6 +5797,18 @@
       "type": "private"
     },
     {
+      "file": "ultrahd-api.yml",
+      "id": "ultrahd-api",
+      "language": "zh-cn",
+      "name": "UltraHD (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "unbreakable.yml",
       "id": "unbreakable",
       "language": "de-de",
@@ -5940,6 +6036,18 @@
       "type": "private"
     },
     {
+      "file": "xdy-api.yml",
+      "id": "xdy-api",
+      "language": "zh-cn",
+      "name": "XDY (\u4fee\u9053\u9662) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "xingtan.yml",
       "id": "xingtan",
       "language": "zh-cn",
@@ -5981,6 +6089,18 @@
       "id": "xloli",
       "language": "zh-cn",
       "name": "xloli",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "xloli-api.yml",
+      "id": "xloli-api",
+      "language": "zh-cn",
+      "name": "xloli (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -6144,6 +6264,18 @@
       "type": "private"
     },
     {
+      "file": "zmpt-api.yml",
+      "id": "zmpt-api",
+      "language": "zh-cn",
+      "name": "ZmPT (\u7ec7\u68a6) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "zrpt.yml",
       "id": "zrpt",
       "language": "zh-cn",
@@ -6168,6 +6300,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 523,
+  "rejected_count": 534,
   "source": "Prowlarr/Indexers definitions/v11"
 }
