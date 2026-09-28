@@ -211,10 +211,34 @@
       "type": "private"
     },
     {
+      "file": "13city-api.yml",
+      "id": "13city-api",
+      "language": "zh-cn",
+      "name": "13City (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "1ptbar.yml",
       "id": "1ptbar",
       "language": "zh-cn",
       "name": "1ptbar",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "1ptbar-api.yml",
+      "id": "1ptbar-api",
+      "language": "zh-cn",
+      "name": "1ptbar (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -1907,6 +1931,18 @@
       "type": "private"
     },
     {
+      "file": "freefarm-api.yml",
+      "id": "freefarm-api",
+      "language": "zh-cn",
+      "name": "Free Farm (\u81ea\u7531\u519c\u573a) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "freejavtorrent.yml",
       "id": "freejavtorrent",
       "language": "en-us",
@@ -2844,6 +2880,18 @@
       "type": "private"
     },
     {
+      "file": "lajidui-api.yml",
+      "id": "lajidui-api",
+      "language": "zh-cn",
+      "name": "lajidui (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "lastdigitalunderground.yml",
       "id": "lastdigitalunderground",
       "language": "en-us",
@@ -2904,6 +2952,18 @@
       "id": "lemonhd-net",
       "language": "zh-cn",
       "name": "LemonHD.net",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "lemonhd-net-api.yml",
+      "id": "lemonhd-net-api",
+      "language": "zh-cn",
+      "name": "LemonHD.net (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -2985,6 +3045,18 @@
       "id": "longpt",
       "language": "zh-cn",
       "name": "LongPT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "longpt-api.yml",
+      "id": "longpt-api",
+      "language": "zh-cn",
+      "name": "LongPT (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -3546,6 +3618,19 @@
       "id": "nicept",
       "language": "zh-cn",
       "name": "NicePT",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "nicept-api.yml",
+      "id": "nicept-api",
+      "language": "zh-cn",
+      "name": "NicePT (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -4129,6 +4214,18 @@
       "type": "private"
     },
     {
+      "file": "ptcafe-api.yml",
+      "id": "ptcafe-api",
+      "language": "zh-cn",
+      "name": "PTCafe (\u5496\u5561) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "ptcc.yml",
       "id": "ptcc",
       "language": "zh-cn",
@@ -4180,6 +4277,18 @@
       "id": "ptgtk",
       "language": "zh-cn",
       "name": "PT GTK",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptgtk-api.yml",
+      "id": "ptgtk-api",
+      "language": "zh-cn",
+      "name": "PT GTK (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -4312,6 +4421,18 @@
       "id": "ptzone",
       "language": "zh-cn",
       "name": "PTzone",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptzone-api.yml",
+      "id": "ptzone-api",
+      "language": "zh-cn",
+      "name": "PTzone (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -5266,6 +5387,18 @@
         "not a public indexer type: private",
         "requires account/authentication",
         "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thewordmusic.yml",
+      "id": "thewordmusic",
+      "language": "de-de",
+      "name": "The Word Music",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
       ],
       "type": "private"
     },
@@ -6300,6 +6433,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 534,
+  "rejected_count": 545,
   "source": "Prowlarr/Indexers definitions/v11"
 }
