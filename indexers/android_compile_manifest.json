@@ -81,6 +81,14 @@
   "compiler_schema": 9,
   "rejected": [
     {
+      "file": "animetosho-xyz.yml",
+      "id": "animetosho-xyz",
+      "reasons": [
+        "search path/inputs need unsupported template logic",
+        "title must be a direct static selector"
+      ]
+    },
+    {
       "file": "bangumi-moe.yml",
       "id": "bangumi-moe",
       "reasons": [
@@ -112,7 +120,7 @@
       ]
     }
   ],
-  "rejected_count": 4,
+  "rejected_count": 5,
   "tier_counts": {
     "1": 5,
     "2": 12,

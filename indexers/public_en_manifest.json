@@ -15,6 +15,13 @@
       "type": "public"
     },
     {
+      "file": "animetosho-xyz.yml",
+      "id": "animetosho-xyz",
+      "language": "en-us",
+      "name": "Anime Tosho",
+      "type": "public"
+    },
+    {
       "file": "anisource.yml",
       "id": "anisource",
       "language": "en-us",
@@ -162,7 +169,7 @@
       "type": "public"
     }
   ],
-  "included_count": 23,
+  "included_count": 24,
   "policy": "public + English + movie/TV + no explicit account login",
   "rejected": [
     {
@@ -394,6 +401,18 @@
       "type": "private"
     },
     {
+      "file": "alabala.yml",
+      "id": "alabala",
+      "language": "bg-bg",
+      "name": "AlaBala",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: bg-bg",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "alingpt.yml",
       "id": "alingpt",
       "language": "zh-cn",
@@ -474,17 +493,6 @@
         "requires account/authentication"
       ],
       "type": "private"
-    },
-    {
-      "file": "animetosho-xyz.yml",
-      "id": "animetosho-xyz",
-      "language": "en-us",
-      "name": "Anime Tosho",
-      "reasons": [
-        "not a public indexer type: semi-private",
-        "requires account/authentication"
-      ],
-      "type": "semi-private"
     },
     {
       "file": "animeworld-api.yml",
@@ -673,6 +681,18 @@
       "type": "private"
     },
     {
+      "file": "baozipt-api.yml",
+      "id": "baozipt-api",
+      "language": "zh-cn",
+      "name": "baoziPT (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "beload.yml",
       "id": "beload",
       "language": "hu-hu",
@@ -798,18 +818,6 @@
         "not a public indexer type: semi-private"
       ],
       "type": "semi-private"
-    },
-    {
-      "file": "bitpalace.yml",
-      "id": "bitpalace",
-      "language": "hu-hu",
-      "name": "Bitpalace",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: hu-hu",
-        "requires account/authentication"
-      ],
-      "type": "private"
     },
     {
       "file": "bitporn.yml",
@@ -1237,17 +1245,6 @@
       "type": "semi-private"
     },
     {
-      "file": "concen.yml",
-      "id": "concen",
-      "language": "en-us",
-      "name": "ConCen",
-      "reasons": [
-        "not a public indexer type: private",
-        "no movie/TV capability"
-      ],
-      "type": "private"
-    },
-    {
       "file": "concertos.yml",
       "id": "concertos",
       "language": "en-us",
@@ -1262,6 +1259,18 @@
       "id": "crabpt",
       "language": "zh-cn",
       "name": "CrabPT (\u87f9\u9ec4\u5821)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "crabpt-api.yml",
+      "id": "crabpt-api",
+      "language": "zh-cn",
+      "name": "CrabPT (\u87f9\u9ec4\u5821) (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -1477,6 +1486,18 @@
       "id": "depthstudio",
       "language": "zh-cn",
       "name": "Depth Studio",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "depthstudio-api.yml",
+      "id": "depthstudio-api",
+      "language": "zh-cn",
+      "name": "Depth Studio (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -2422,6 +2443,18 @@
       "id": "hdvideo",
       "language": "zh-cn",
       "name": "HDVideo",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdvideo-api.yml",
+      "id": "hdvideo-api",
+      "language": "zh-cn",
+      "name": "HDVideo (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -3463,6 +3496,19 @@
       "type": "private"
     },
     {
+      "file": "musopia-api.yml",
+      "id": "musopia-api",
+      "language": "zh-cn",
+      "name": "Musopia (\u97f3\u4e50\u4e4c\u6258\u90a6) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
       "file": "muxuege.yml",
       "id": "muxuege",
       "language": "zh-cn",
@@ -3977,6 +4023,18 @@
       "type": "private"
     },
     {
+      "file": "periodical.yml",
+      "id": "periodical",
+      "language": "en-us",
+      "name": "Periodical",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
       "file": "phoenixproject.yml",
       "id": "phoenixproject",
       "language": "en-us",
@@ -3985,6 +4043,30 @@
         "not a public indexer type: private",
         "requires account/authentication",
         "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "phoenixpt.yml",
+      "id": "phoenixpt",
+      "language": "zh-cn",
+      "name": "PhoenixPT (\u51e4\u51f0PT)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "phoenixpt-api.yml",
+      "id": "phoenixpt-api",
+      "language": "zh-cn",
+      "name": "PhoenixPT (\u51e4\u51f0PT) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
       ],
       "type": "private"
     },
@@ -4325,6 +4407,18 @@
       "id": "ptlao",
       "language": "zh-cn",
       "name": "PTLAO",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "ptlao-api.yml",
+      "id": "ptlao-api",
+      "language": "zh-cn",
+      "name": "PTLAO (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -5312,6 +5406,18 @@
       "id": "thenewfun",
       "language": "de-de",
       "name": "The-New-Fun",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "thenewheaven.yml",
+      "id": "thenewheaven",
+      "language": "de-de",
+      "name": "The New Heaven",
       "reasons": [
         "not a public indexer type: private",
         "not English: de-de",
@@ -6433,6 +6539,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 545,
+  "rejected_count": 553,
   "source": "Prowlarr/Indexers definitions/v11"
 }
