@@ -763,6 +763,17 @@
       "type": "public"
     },
     {
+      "file": "bitagent.yml",
+      "id": "bitagent",
+      "language": "en-us",
+      "name": "BitAgent",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "bitbazis.yml",
       "id": "bitbazis",
       "language": "hu-hu",
@@ -1562,6 +1573,18 @@
       "type": "private"
     },
     {
+      "file": "dirtybytes-api.yml",
+      "id": "dirtybytes-api",
+      "language": "en-us",
+      "name": "DirtyBytes (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
       "file": "discfan.yml",
       "id": "discfan",
       "language": "zh-cn",
@@ -1908,6 +1931,17 @@
       "type": "semi-private"
     },
     {
+      "file": "fileiplay.yml",
+      "id": "fileiplay",
+      "language": "en-us",
+      "name": "FileIplay",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "filemood.yml",
       "id": "filemood",
       "language": "en-us",
@@ -2208,6 +2242,18 @@
       "id": "hdbao",
       "language": "zh-cn",
       "name": "HDBao",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "hdbao-api.yml",
+      "id": "hdbao-api",
+      "language": "zh-cn",
+      "name": "HDBao (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
@@ -5195,6 +5241,17 @@
       "type": "private"
     },
     {
+      "file": "stellarwinds.yml",
+      "id": "stellarwinds",
+      "language": "en-us",
+      "name": "Stellarwinds",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "sukebeinyaasi.yml",
       "id": "sukebeinyaasi",
       "language": "en-us",
@@ -5445,18 +5502,6 @@
       "reasons": [
         "not a public indexer type: private",
         "not English: fr-fr"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "theparadiese.yml",
-      "id": "theparadiese",
-      "language": "de-de",
-      "name": "The Paradiese",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: de-de",
-        "requires account/authentication"
       ],
       "type": "private"
     },
@@ -5777,17 +5822,6 @@
         "requires account/authentication"
       ],
       "type": "semi-private"
-    },
-    {
-      "file": "torrentoyunindir.yml",
-      "id": "torrentoyunindir",
-      "language": "tr-tr",
-      "name": "Torrent Oyun indir",
-      "reasons": [
-        "not English: tr-tr",
-        "no movie/TV capability"
-      ],
-      "type": "public"
     },
     {
       "file": "torrentproject2.yml",
@@ -6539,6 +6573,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 553,
+  "rejected_count": 556,
   "source": "Prowlarr/Indexers definitions/v11"
 }
