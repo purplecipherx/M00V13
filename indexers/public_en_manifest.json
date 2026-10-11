@@ -5114,18 +5114,6 @@
       "type": "semi-private"
     },
     {
-      "file": "slobitgames.yml",
-      "id": "slobitgames",
-      "language": "en-us",
-      "name": "Slobit Games",
-      "reasons": [
-        "not a public indexer type: private",
-        "requires account/authentication",
-        "no movie/TV capability"
-      ],
-      "type": "private"
-    },
-    {
       "file": "snowpt.yml",
       "id": "snowpt",
       "language": "zh-cn",
@@ -6573,6 +6561,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 556,
+  "rejected_count": 555,
   "source": "Prowlarr/Indexers definitions/v11"
 }
