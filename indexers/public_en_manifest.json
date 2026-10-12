@@ -286,6 +286,18 @@
       "type": "private"
     },
     {
+      "file": "52movie.yml",
+      "id": "52movie",
+      "language": "zh-cn",
+      "name": "52movie",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "52pt.yml",
       "id": "52pt",
       "language": "zh-cn",
@@ -6561,6 +6573,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 555,
+  "rejected_count": 556,
   "source": "Prowlarr/Indexers definitions/v11"
 }
