@@ -4696,6 +4696,17 @@
       "type": "private"
     },
     {
+      "file": "racing4us.yml",
+      "id": "racing4us",
+      "language": "en-us",
+      "name": "Racing4us",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "racingforme.yml",
       "id": "racingforme",
       "language": "en-us",
@@ -5211,17 +5222,6 @@
       "id": "sportscult",
       "language": "en-us",
       "name": "SportsCult",
-      "reasons": [
-        "not a public indexer type: private",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "sportz247.yml",
-      "id": "sportz247",
-      "language": "en-us",
-      "name": "Sportz247",
       "reasons": [
         "not a public indexer type: private",
         "requires account/authentication"
