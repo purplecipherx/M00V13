@@ -413,10 +413,10 @@
       "type": "private"
     },
     {
-      "file": "alabala.yml",
-      "id": "alabala",
+      "file": "alabala-api.yml",
+      "id": "alabala-api",
       "language": "bg-bg",
-      "name": "AlaBala",
+      "name": "AlaBala (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: bg-bg",
@@ -2075,17 +2075,6 @@
         "not English: fr-fr"
       ],
       "type": "private"
-    },
-    {
-      "file": "gamestorrents.yml",
-      "id": "gamestorrents",
-      "language": "es-es",
-      "name": "GamesTorrents",
-      "reasons": [
-        "not English: es-es",
-        "no movie/TV capability"
-      ],
-      "type": "public"
     },
     {
       "file": "gay-torrents.yml",
@@ -6573,6 +6562,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 556,
+  "rejected_count": 555,
   "source": "Prowlarr/Indexers definitions/v11"
 }
