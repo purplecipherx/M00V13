@@ -1609,6 +1609,18 @@
       "type": "private"
     },
     {
+      "file": "discfan-api.yml",
+      "id": "discfan-api",
+      "language": "zh-cn",
+      "name": "DiscFan (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "dmhy.yml",
       "id": "dmhy",
       "language": "zh-tw",
@@ -1720,6 +1732,16 @@
         "no movie/TV capability"
       ],
       "type": "public"
+    },
+    {
+      "file": "echelonhd-api.yml",
+      "id": "echelonhd-api",
+      "language": "en-us",
+      "name": "EchelonHD (API)",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
     },
     {
       "file": "electro-torrent.yml",
@@ -6186,6 +6208,19 @@
       "type": "private"
     },
     {
+      "file": "vc-lib-api.yml",
+      "id": "vc-lib-api",
+      "language": "zh-cn",
+      "name": "VC-Lib (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
       "file": "vietmediaf.yml",
       "id": "vietmediaf",
       "language": "vi-vn",
@@ -6562,6 +6597,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 555,
+  "rejected_count": 558,
   "source": "Prowlarr/Indexers definitions/v11"
 }
