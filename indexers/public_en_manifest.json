@@ -1734,16 +1734,6 @@
       "type": "public"
     },
     {
-      "file": "echelonhd-api.yml",
-      "id": "echelonhd-api",
-      "language": "en-us",
-      "name": "EchelonHD (API)",
-      "reasons": [
-        "not a public indexer type: private"
-      ],
-      "type": "private"
-    },
-    {
       "file": "electro-torrent.yml",
       "id": "electro-torrent",
       "language": "pl-pl",
@@ -4242,18 +4232,6 @@
       "type": "private"
     },
     {
-      "file": "polskie-torrenty.yml",
-      "id": "polskie-torrenty",
-      "language": "pl-pl",
-      "name": "Polskie-Torrenty",
-      "reasons": [
-        "not a public indexer type: semi-private",
-        "not English: pl-pl",
-        "requires account/authentication"
-      ],
-      "type": "semi-private"
-    },
-    {
       "file": "pornolab.yml",
       "id": "pornolab",
       "language": "ru-ru",
@@ -6597,6 +6575,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 558,
+  "rejected_count": 556,
   "source": "Prowlarr/Indexers definitions/v11"
 }
