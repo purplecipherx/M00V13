@@ -4438,30 +4438,6 @@
       "type": "private"
     },
     {
-      "file": "ptlao.yml",
-      "id": "ptlao",
-      "language": "zh-cn",
-      "name": "PTLAO",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: zh-cn",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "ptlao-api.yml",
-      "id": "ptlao-api",
-      "language": "zh-cn",
-      "name": "PTLAO (API)",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: zh-cn",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
       "file": "ptlgs.yml",
       "id": "ptlgs",
       "language": "zh-cn",
@@ -6563,6 +6539,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 555,
+  "rejected_count": 553,
   "source": "Prowlarr/Indexers definitions/v11"
 }
