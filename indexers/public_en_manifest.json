@@ -6241,10 +6241,10 @@
       "type": "private"
     },
     {
-      "file": "world-of-tomorrow.yml",
-      "id": "world-of-tomorrow",
+      "file": "world-of-tomorrow-api.yml",
+      "id": "world-of-tomorrow-api",
       "language": "de-de",
-      "name": "World-of-Tomorrow",
+      "name": "World-of-Tomorrow (API)",
       "reasons": [
         "not a public indexer type: private",
         "not English: de-de",
