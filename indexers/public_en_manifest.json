@@ -4876,6 +4876,17 @@
       "type": "private"
     },
     {
+      "file": "sapibr.yml",
+      "id": "sapibr",
+      "language": "pt-pt",
+      "name": "SAPIbr (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: pt-pt"
+      ],
+      "type": "private"
+    },
+    {
       "file": "sbpt.yml",
       "id": "sbpt",
       "language": "zh-cn",
@@ -5548,17 +5559,6 @@
       "reasons": [
         "not a public indexer type: private",
         "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "tocashare.yml",
-      "id": "tocashare",
-      "language": "pt-pt",
-      "name": "Toca Share (API)",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: pt-pt"
       ],
       "type": "private"
     },
