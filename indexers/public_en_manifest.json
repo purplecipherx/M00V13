@@ -763,6 +763,17 @@
       "type": "public"
     },
     {
+      "file": "binarybay.yml",
+      "id": "binarybay",
+      "language": "en-us",
+      "name": "BinaryBay",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "bitagent.yml",
       "id": "bitagent",
       "language": "en-us",
@@ -861,18 +872,6 @@
       "reasons": [
         "not a public indexer type: private",
         "not English: pt-br",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "bluebird.yml",
-      "id": "bluebirdhd",
-      "language": "ru-ru",
-      "name": "BlueBird",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: ru-ru",
         "requires account/authentication"
       ],
       "type": "private"
@@ -4233,6 +4232,18 @@
       "type": "semi-private"
     },
     {
+      "file": "pornorip.yml",
+      "id": "pornorip",
+      "language": "en-us",
+      "name": "Pornorip",
+      "reasons": [
+        "not a public indexer type: private",
+        "requires account/authentication",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
       "file": "pornotorrent.yml",
       "id": "pornotorrent",
       "language": "pt-br",
@@ -4502,18 +4513,6 @@
       "id": "pttime",
       "language": "zh-cn",
       "name": "PTTime",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: zh-cn",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
-      "file": "ptying.yml",
-      "id": "ptying",
-      "language": "zh-cn",
-      "name": "PTYING (\u6a31\u82b1)",
       "reasons": [
         "not a public indexer type: private",
         "not English: zh-cn",
