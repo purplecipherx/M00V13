@@ -5986,6 +5986,18 @@
       "type": "public"
     },
     {
+      "file": "uatorrent.yml",
+      "id": "uatorrent",
+      "language": "uk-ua",
+      "name": "UATorrent",
+      "reasons": [
+        "not a public indexer type: semi-private",
+        "not English: uk-ua",
+        "requires account/authentication"
+      ],
+      "type": "semi-private"
+    },
+    {
       "file": "ubits.yml",
       "id": "ubits",
       "language": "zh-cn",
@@ -6538,6 +6550,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 553,
+  "rejected_count": 554,
   "source": "Prowlarr/Indexers definitions/v11"
 }
