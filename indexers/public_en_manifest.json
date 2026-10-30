@@ -4864,6 +4864,17 @@
       "type": "public"
     },
     {
+      "file": "sagmire.yml",
+      "id": "sagmire",
+      "language": "en-us",
+      "name": "Sagmire",
+      "reasons": [
+        "not a public indexer type: private",
+        "no movie/TV capability"
+      ],
+      "type": "private"
+    },
+    {
       "file": "samaritano.yml",
       "id": "samaritano",
       "language": "pt-br",
@@ -6550,6 +6561,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 554,
+  "rejected_count": 555,
   "source": "Prowlarr/Indexers definitions/v11"
 }
