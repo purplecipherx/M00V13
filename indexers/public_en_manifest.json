@@ -1480,6 +1480,17 @@
       "type": "private"
     },
     {
+      "file": "deep-water-api.yml",
+      "id": "deep-water-api",
+      "language": "de-de",
+      "name": "Deep-Water (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de"
+      ],
+      "type": "private"
+    },
+    {
       "file": "deildu.yml",
       "id": "deildu",
       "language": "is-is",
@@ -2141,6 +2152,18 @@
       "reasons": [
         "not a public indexer type: private",
         "not English: it-it",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
+      "file": "goldengate.yml",
+      "id": "goldengate",
+      "language": "de-de",
+      "name": "Golden Gate (GG)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: de-de",
         "requires account/authentication"
       ],
       "type": "private"
@@ -5341,18 +5364,6 @@
       "type": "private"
     },
     {
-      "file": "thebrothers.yml",
-      "id": "thebrothers",
-      "language": "de-de",
-      "name": "The Brothers",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: de-de",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
       "file": "thecrazyones.yml",
       "id": "thecrazyones",
       "language": "de-de",
@@ -6561,6 +6572,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 555,
+  "rejected_count": 556,
   "source": "Prowlarr/Indexers definitions/v11"
 }
