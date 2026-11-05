@@ -4152,18 +4152,6 @@
       "type": "private"
     },
     {
-      "file": "pignetwork.yml",
-      "id": "pignetwork",
-      "language": "zh-cn",
-      "name": "PigNetwork (\u732a\u732a\u7f51)",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: zh-cn",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
       "file": "pixelcove.yml",
       "id": "pixelcove",
       "language": "en-us",
@@ -4727,6 +4715,18 @@
       "type": "private"
     },
     {
+      "file": "redangel.yml",
+      "id": "redangel",
+      "language": "hu-hu",
+      "name": "Red Angel",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: hu-hu",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "redstartorrent.yml",
       "id": "redstartorrent",
       "language": "pl-pl",
@@ -5029,6 +5029,17 @@
         "no movie/TV capability"
       ],
       "type": "public"
+    },
+    {
+      "file": "shadow-api.yml",
+      "id": "shadow-api",
+      "language": "ro-ro",
+      "name": "Shadow (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: ro-ro"
+      ],
+      "type": "private"
     },
     {
       "file": "shadowbit.yml",
@@ -6381,18 +6392,6 @@
       "type": "private"
     },
     {
-      "file": "xtorrenty.yml",
-      "id": "xtorrenty",
-      "language": "pl-pl",
-      "name": "xTorrenty",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: pl-pl",
-        "requires account/authentication"
-      ],
-      "type": "private"
-    },
-    {
       "file": "xtremebytes.yml",
       "id": "xtremebytes",
       "language": "en-us",
@@ -6548,6 +6547,16 @@
       "type": "private"
     },
     {
+      "file": "zootoons.yml",
+      "id": "zootoons",
+      "language": "en-us",
+      "name": "ZooToons",
+      "reasons": [
+        "not a public indexer type: private"
+      ],
+      "type": "private"
+    },
+    {
       "file": "zrpt.yml",
       "id": "zrpt",
       "language": "zh-cn",
@@ -6572,6 +6581,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 556,
+  "rejected_count": 557,
   "source": "Prowlarr/Indexers definitions/v11"
 }
