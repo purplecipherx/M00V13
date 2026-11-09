@@ -9,7 +9,7 @@ on:
     paths:
       - "tools/sync_indexers.py"
       - "tools/compile_cardigann_android.py"
-      - "m00v13/indexers/**"
+      - "tools/indexer_definition.py"
       - "requirements-dev.txt"
       - ".github/workflows/sync-indexers.yml"
 

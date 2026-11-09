@@ -1,12 +1,14 @@
-# M00V13 Android TV appliance
+# M00V13 standalone Android TV APK
 
-This directory contains the native Android TV shell for M00V13.
+This directory is the installable **standalone native Android application** for M00V13. It does not run inside Kodi and requires no Kodi installation or Python runtime.
 
 ## Current implemented foundation
 
 - TV/Leanback launcher activity that can be selected as HOME
 - purple low-overhead programmatic UI
 - cow + popcorn launcher/loading artwork
+- first-class Real-Debrid integration: official device-code login, secure token storage, cached-source probing, and magnet resolution
+- native source discovery with tiered provider search and build-time-compiled indexer definitions
 - Media3/ExoPlayer playback
 - per-profile preferred language
 - preferred audio first; preferred subtitles only when preferred audio is unavailable
@@ -49,17 +51,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 After installation choose M00V13 as the HOME/launcher app when Android prompts. Google TV package debloating is intentionally postponed; it is not part of the current app build work.
 
-## Next implementation slices
+## Verification and next improvements
 
-1. native Android search bridge to the M00V13 tiered scraper engine without embedding a Python runtime
-2. movie/series metadata provider and Search/Movies/TV screens
-3. background/foreground download execution service around the resumable transfer engine
-4. automatic next-N episode and collection/trilogy queue scheduler
-5. persistent completed-download catalog and cleanup history
-6. actual artwork network fetcher + cache index + home-card images
-7. pre-resolve scheduler for Next Up and a small backup-source window
-8. HDMI/audio capability probing and passthrough policy
-9. full profile picker/editor UI and optional profile PIN/content policy
-10. device RAM/storage/playback benchmark pass on the Xiaomi TV Stick 4K (2nd Gen)
+1. Validate the APK build and installation on target Android/Google TV devices.
+2. Smoke-test Real-Debrid device authorization, cached-source ranking, magnet resolution, and playback.
+3. Exercise native provider/indexer compatibility and tiered search against permitted endpoints.
+4. Test downloads, resume, profile isolation, and cleanup at low available storage.
+5. Benchmark RAM, storage, remote responsiveness, video codecs, and HDMI/audio behavior on the Xiaomi TV Stick 4K (2nd Gen).
+6. Improve remaining behavior based on observed device and playback results rather than duplicating features already implemented.
 
 The Android process should remain small: prefer platform APIs and Media3 over large frameworks, cache only likely-near-future content, and measure RAM/storage on the actual 2 GB / 8 GB target before adding dependencies.

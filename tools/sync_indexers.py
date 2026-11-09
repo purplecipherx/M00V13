@@ -17,7 +17,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 
 import yaml
 
-from m00v13.indexers.definition import IndexerDefinition
+from indexer_definition import IndexerDefinition
 
 
 ARCHIVE_URL = "https://github.com/Prowlarr/Indexers/archive/refs/heads/master.zip"
