@@ -2297,6 +2297,18 @@
       "type": "private"
     },
     {
+      "file": "hdchina.yml",
+      "id": "hdchina",
+      "language": "zh-cn",
+      "name": "HDChina",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "hdclone.yml",
       "id": "hdclone",
       "language": "zh-cn",
@@ -2683,19 +2695,6 @@
         "requires account/authentication"
       ],
       "type": "semi-private"
-    },
-    {
-      "file": "hxpt.yml",
-      "id": "hxpt",
-      "language": "zh-cn",
-      "name": "HxPT (\u597d\u5b66)",
-      "reasons": [
-        "not a public indexer type: private",
-        "not English: zh-cn",
-        "requires account/authentication",
-        "no movie/TV capability"
-      ],
-      "type": "private"
     },
     {
       "file": "ilcorsaroblu.yml",
