@@ -1370,6 +1370,18 @@
       "type": "private"
     },
     {
+      "file": "cyanbug-api.yml",
+      "id": "cyanbug-api",
+      "language": "zh-cn",
+      "name": "cyanbug (\u5927\u9752\u866b) (API)",
+      "reasons": [
+        "not a public indexer type: private",
+        "not English: zh-cn",
+        "requires account/authentication"
+      ],
+      "type": "private"
+    },
+    {
       "file": "cyclingarchiveclub.yml",
       "id": "cyclingarchiveclub",
       "language": "en-us",
@@ -6580,6 +6592,6 @@
       "type": "semi-private"
     }
   ],
-  "rejected_count": 557,
+  "rejected_count": 558,
   "source": "Prowlarr/Indexers definitions/v11"
 }
